@@ -1,0 +1,17 @@
+
+Datafile ex1.dat;
+Set buffersize=327670;
+set constraint=cases;
+Format pid 1-5 responses 12-23 v1 12 v2 15;
+Key acddbcebbacc ! 1;
+Model item;
+group v1;
+Estimate!fit=no,stderr=quick;
+
+mh ! group = v1 >> mh2.txt;
+
+banddefine ! label = "L0 (critical)", upper = -2.133, lower = -100;
+banddefine ! label = "L1 (upper)", upper = 100, lower = 2.133;
+
+put ! compress = no >> Ex1.cqs;
+
