@@ -2,3 +2,6 @@
 
 exportPattern("^[[:alpha:]]+") # this exports all functions that start with an alphanumeric charachter so that every function in the package is visible (otherwise need to manually add exports to NAMESPACE)
 if (.Platform$OS.type=="windows") importFrom(utils,shortPathName)
+importFrom(Rcpp,sourceCpp)
+importFrom(stats,reshape)
+useDynLib(conquestr)

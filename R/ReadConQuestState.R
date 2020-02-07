@@ -465,6 +465,20 @@ ReadSys<-function(myFile){
 
 	gCommandHistory<- ReadStringList(myFile)
 	gBandDefines<- ReadBandDefinesList(myFile)
+	gDIC<- ReadDouble(myFile)
+	gPostiveScores<- ReadBoolean(myFile)
+	gScoresMax<- ReadDouble(myFile)
+	gRandomStructure<- ReadRandomStructure(myFile)
+	gSConstraint<-ReadInteger(myFile)
+	gBurn<-ReadInteger(myFile)
+	gSkip<-ReadInteger(myFile)
+	gXsiProposalVariance<-ReadDouble(myFile)
+	gTauProposalVariance<-ReadDouble(myFile)
+	gThetaProposalVariance<-ReadDouble(myFile)
+	gXsiIncMax<-ReadDouble(myFile)
+	gFacOldXsi<-ReadDouble(myFile)
+	gBlockBeta<-ReadInteger(myFile)
+
 
 	  # debug
 	  # gXsiParameterLabelsTemp<<- gXsiParameterLabels; print("gXsiParameterLabelsTemp is available for debugging") # debug
@@ -696,10 +710,25 @@ ReadSys<-function(myFile){
 		gPIDLookUp=gPIDLookUp,
 		# check 15
 	  gCommandHistory=gCommandHistory,
-		gBandDefines=gBandDefines
+		gBandDefines=gBandDefines,
+		gDIC = gDIC,
+		gPostiveScores = gPostiveScores,
+		gScoresMax = gScoresMax,
+		gRandomStructure = gRandomStructure,
+		gSConstraint=gSConstraint,
+		gBurn=gBurn,
+		gSkip=gSkip,
+		gXsiProposalVariance=gXsiProposalVariance,
+		gTauProposalVariance=gTauProposalVariance,
+		gThetaProposalVariance=gThetaProposalVariance,
+		gXsiIncMax=gXsiIncMax,
+		gFacOldXsi=gFacOldXsi,
+		gBlockBeta=gBlockBeta
+
   )
 
   # return the list with all the stuff in it
+  class(systemFile)<- append(class(systemFile), "conQuestSysFile")
   return(systemFile)
 
 }

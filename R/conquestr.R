@@ -1,6 +1,9 @@
+#' @useDynLib conquestr
+#' @importFrom Rcpp sourceCpp
+NULL
+
 #' @rawNamespace exportPattern("^[[:alpha:]]+") # this exports all functions that start with an alphanumeric charachter so that every function in the package is visible (otherwise need to manually add exports to NAMESPACE)
 #' @rawNamespace if (.Platform$OS.type=="windows") importFrom(utils,shortPathName)
-
 
 #' @include conquestrFunc.R
 
@@ -87,9 +90,11 @@ ConQuestSys<- function(myCqs){
 
     message("no system file provide, loading the example system file instead")
     systemFile<- list()
-    myFile<- file(system.file("extdata", "myPutFile.cqs", package = "conquestr"), "rb")
+    myFile<- file(system.file("extdata", "mySysFile.cqs", package = "conquestr"), "rb")
     r<-invisible(ReadSys(myFile))
-    close(myFile)
+    on.exit(
+      close(myFile)
+    )
 
     } else {
 
@@ -98,26 +103,56 @@ ConQuestSys<- function(myCqs){
     # is myCqs is missing, use myFile<- file(system.file("extdata", "myState.cqs", package = "conquestr"), "rb")
     myFile<- file(myCqs, "rb")
     r<-invisible(ReadSys(myFile))
-    close(myFile)
+    on.exit(
+      close(myFile)
+    )
 
 
     }
 
-  return(r) # remove this when createDf is implmented
-
-  # if(createDf == TRUE){
-  #
-  #   message("creating DFs")
-  #   r<- castReadSysToDf(r)
-  #   return(r)
-  #
-  # } else {
-  #
-  #   return(r)
-  #
-  # }
-
+  return(r)
 
 }
 
 
+
+#' @title ConQuestRout
+#'
+#' @description Read an ''ACER ConQuest'' rout file created by a `plot` command in 'ACER ConQuest'.
+#'
+#' @param myRout The location of an 'ACER ConQuest' rout file created by 'ACER ConQuest' > 5.1.4.
+#' @return A list containing the data objects created by 'ACER ConQuest' plot command.
+#' @examples
+#' myPlot<- ConQuestRout()
+#' \dontrun{
+#' # if you run the above example you will have the points from a plot ICC command.
+#' str(myPlot)
+#' }
+ConQuestRout<- function(myRout){
+
+  if(missing(myRout)){
+
+    message("no rout file provide, loading the example rout file instead")
+    routFile<- list()
+    myFile<- file(system.file("extdata", "myIcc.rout", package = "conquestr"), "rb")
+    r<-invisible(ReadGraph(myFile))
+    on.exit(
+      close(myFile)
+    )
+
+  } else {
+
+    # create required lists
+    routFile<- list()
+    myFile<- file(myRout, "rb")
+    r<-invisible(ReadGraph(myFile))
+    on.exit(
+      close(myFile)
+    )
+
+
+  }
+
+  return(r)
+
+}

@@ -8,8 +8,6 @@ Model item;
 group v1;
 Estimate!fit=no,stderr=quick;
 
-mh ! group = v1 >> mh2.txt;
-
 banddefine ! label = "L0 (critical)", upper = -2.133, lower = -100;
 banddefine ! label = "L1 (upper)", upper = 100, lower = 2.133;
 

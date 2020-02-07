@@ -1,15 +1,14 @@
-set conquestr = true;
-gen >> x.dat;
+/* gen ! npersons = 5000 >> x.dat; */
 data x.dat;
 format responses 1-10;
 set constraints = cases;
 model item;
-estimate ! matrixout = m;
-print m_history ! filetype=xls >> x%date%.xls;
-print m_itemparams ! filetype=text >> x%date%.txt;
-print m_itemparams ! filetype=xlsx >> x1%date%.xlsx;
-print m_itemparams ! filetype=spss >> x2%date%.sav;
-plot icc ! rout = x2%date%.dat;
-matrixsampler ! sets=10, matrixout=s,fit=true;
+estimate ! abilities = yes, matrixout = m;
+/* print m_history ! filetype=xls >> x%date%.xls;       */
+/* print m_itemparams ! filetype=text >> x%date%.txt;   */
+/* print m_itemparams ! filetype=xlsx >> x1%date%.xlsx; */
+/* print m_itemparams ! filetype=spss >> x2%date%.sav;  */
+/* plot icc ! rout = x2%date%.dat;  */
+matrixsampler ! sets=10, matrixout=s,fit=true;       
 put ! compress = no >> mySysFile.cqs;
-exit;
+

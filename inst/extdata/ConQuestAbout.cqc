@@ -1,5 +1,4 @@
 /* this file is used to return a few CQ settings to R */
-set conquestr=yes;
 dir;
 about;
 /* exit; */

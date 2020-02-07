@@ -129,7 +129,7 @@ ReadMatrix<-function(myFile)
 	Rows<-ReadInteger(myFile)
 	Columns<-ReadInteger(myFile)
 	Empty<-ReadBoolean(myFile)
-  Title<-ReadString(myFile)
+	Title<-ReadString(myFile)
   Labels<-list()
   A<-matrix()
   if(Rows==0 || Columns==0)return(A)
@@ -703,10 +703,11 @@ ReadFit<-function(myFile)
 	WeightedDenominator<-ReadDouble(myFile)
 	UnWeightedSE<-ReadDouble(myFile)
 	WeightedSE<-ReadDouble(myFile)
+	Failed<-ReadBoolean(myFile)
   V<-list(UnWeightedMNSQ,UnWeightedtfit,WeightedCW2,WeightedMNSQ,Weightedtfit,
-          WeightedNumerator,WeightedDenominator,UnWeightedSE,WeightedSE)
+          WeightedNumerator,WeightedDenominator,UnWeightedSE,WeightedSE,Failed)
   names(V)<-c("UnWeightedMNSQ","UnWeightedtfit","WeightedCW2","WeightedMNSQ","Weightedtfit",
-              "WeightedNumerator","WeightedDenominator","UnWeightedSE","WeightedSE")
+              "WeightedNumerator","WeightedDenominator","UnWeightedSE","WeightedSE","Failed")
   return (V)
 }
 
@@ -800,9 +801,8 @@ ReadHistory<-function(myFile)
   Variance<-list()
   Xsi<-list()
   Tau<-list()
-  V<-list(Iter,Likelihood,Beta,Variance,Xsi,Tau)
-  names(V)<-c("Iter","Likelihood","Beta","Variance","Xsi","Tau")
-	for(i in seq_len(N))
+  RanTermVariance<-list()
+  for(i in seq_len(N))
 	{
 	  Iter[[i]]<-ReadInteger(myFile)
 		Likelihood[[i]]<-ReadDouble(myFile)
@@ -810,9 +810,10 @@ ReadHistory<-function(myFile)
   	Variance[[i]]<-ReadMatrix(myFile)
     Xsi[[i]]<-ReadMatrix(myFile)
     Tau[[i]]<-ReadMatrix(myFile)
+    RanTermVariance[[i]]<-ReadMatrix(myFile)
   }
-  V<-list(Iter,Likelihood,Beta,Variance,Xsi,Tau)
-  names(V)<-c("Iter","Likelihood","Beta","Variance","Xsi","Tau")
+  V<-list(Iter,Likelihood,Beta,Variance,Xsi,Tau,RanTermVariance)
+  names(V)<-c("Iter","Likelihood","Beta","Variance","Xsi","Tau","RanTermVariance")
   return (V)
 }
 
@@ -1177,7 +1178,7 @@ ReadPoint<-function(myFile)
 ReadSeries<-function(myFile)
 {
 	SType<-ReadInteger(myFile)
-	# print(SType)
+	# print(paste0("SType = ", SType))
 	PointCount<-ReadInteger(myFile)
 	# print(PointCount)
 	Points<-list()
@@ -1234,12 +1235,12 @@ ReadGraph<-function(myFile)
 	GType<-ReadInteger(myFile)
 	# print(GType)
 	NSeries<-ReadInteger(myFile)
-	# print(NSeries)
+	#print(NSeries)
 	Series<-list()
 	for(i in seq_len(NSeries))
 	{
-		# print(p("Series ",i))
-		Series[[i]]=ReadSeries(myFile)
+		#print("Series ",i)
+		Series[[i]]<- ReadSeries(myFile)
 	}
 	MinX<-ReadDouble(myFile)
 	MaxX<-ReadDouble(myFile)
@@ -1286,3 +1287,20 @@ ReadGraph<-function(myFile)
 	  return(Graph)
 	}
 
+#' @title ReadRandomStructure
+#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @return A list
+#' @keywords internal
+ReadRandomStructure<-function(myFile)
+{
+  randomStructureList<- list()
+  termName<- ReadString(myFile)
+  termNumber<- ReadInteger(myFile)
+  randomL<- ReadBooleanList(myFile)
+  randomV<- ReadMatrix(myFile)
+  randomStructureList[["termName"]]<- termName
+  randomStructureList[["termNumber"]]<- termNumber
+  randomStructureList[["randomL"]]<- randomL
+  randomStructureList[["randomV"]]<- randomV
+  return(randomStructureList)
+}
