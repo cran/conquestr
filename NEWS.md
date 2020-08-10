@@ -1,4 +1,15 @@
-# CHANGES IN bookdown VERSION 0.4.0
+# CHANGES IN conquestr VERSION 0.8.4
+
+## NEW FEATURES
+
+* conquestr now requires ACER ConQuest > 5.12.3
+* added support for ACER ConQuest objects from BTL/pairwise models 
+* added `plotRout` to supporting plotting ROUT obejcts
+
+## MAJOR CHANGES
+
+
+# CHANGES IN conquestr VERSION 0.4.0
 
 ## NEW FEATURES
 
@@ -14,7 +25,7 @@
 
 * 
 
-# CHANGES IN bookdown VERSION 0.3.7
+# CHANGES IN conquestr VERSION 0.3.7
 
 ## NEW FEATURES
 

@@ -6,10 +6,11 @@
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #' @seealso conquestr::ConQuestSys()
 ReadSys<-function(myFile){
-
+  myDebug<- FALSE
   # requires funtions in R/ReadConQuestLibrary.R
 
-  Compressed<-ReadString(myFile); Compressed
+  Compressed<-ReadString(myFile);
+  if(myDebug) print(paste0("Compressed: ", Compressed))
   # insert code to check that Compressed="uncompressed" if not we can't proceed
   if(!(Compressed == "uncompressed"))
     stop("This system file is compressed and i dont know how to handle it, use option ! compress = no in conquest")
@@ -18,7 +19,7 @@ ReadSys<-function(myFile){
   writedate<-ReadString(myFile)           # file write date
   version<-ReadInteger(myFile)            # system file version
   # insert code to check that version=>19 if not we can't proceed
-
+  if(myDebug) print(paste0("version: ", version))
 
   gNCases<-ReadInteger(myFile)
   gNDim<-ReadInteger(myFile)
@@ -30,6 +31,7 @@ ReadSys<-function(myFile){
   gPlausibleExist<-ReadBoolean(myFile)
   gSystemMissing<-ReadDouble(myFile)
   gApplyFilter<-ReadBoolean(myFile)
+  if(myDebug) print(paste0("gApplyFilter: ", gApplyFilter))
 
     # debugging block - creates objects in global env in case this funtion fails before it creates the system file object at the end
     # gNCasesTemp<<- gNCases; print("gNCasesTemp is available for debugging") # debug
@@ -44,9 +46,10 @@ ReadSys<-function(myFile){
     # gApplyFilterTemp<<- gApplyFilter; print("gApplyFilterTemp is available for debugging") # debug
 
   check<-ReadInteger(myFile)
-  #print(check) # check 1
+  if(myDebug) print(paste0("check: ", check)) # check 1
 
   gFilter<-ReadBitSet(myFile)
+  if(myDebug) print(paste0("gFilter: ", gFilter)) #
   gBeta<-ReadMatrix(myFile)
   gOldBeta<-ReadMatrix(myFile)
   gBestBeta<-ReadMatrix(myFile)
@@ -96,7 +99,7 @@ ReadSys<-function(myFile){
     # gYBetaTemp<<- gYBeta; print("gYBetaTemp is available for debugging") # debug
 
   check<-ReadInteger(myFile)
-  #print(check) # check 2
+  if(myDebug) print(paste0("check: ", check)) # check 2
 
   gWeightFactor<-ReadDouble(myFile)
   gSuffXsi<-ReadMatrix(myFile)
@@ -164,7 +167,7 @@ ReadSys<-function(myFile){
     # gRespMissTemp<<- gRespMiss; print("gRespMissTemp is available for debugging") # debug
 
   check<-ReadInteger(myFile)
-  #print(check) # check 3
+  if(myDebug) print(paste0("check: ", check)) # check 3
 
   gDatafileName<-ReadString(myFile)
   gDatafileFormats<-ReadInteger(myFile)
@@ -362,63 +365,70 @@ ReadSys<-function(myFile){
 
   check<-ReadInteger(myFile)
   #print(check) # check 7
+  if(!gPairWise){
 
-  gAllCaseEstimates<-ReadAllCaseEstimates(myFile=myFile,
-                                          Dimensions=gNDim,
-                                          N=gNCases,
-                                          NPlausibles=gNPlausiblesEstimate)
+    gAllCaseEstimates<-ReadAllCaseEstimates(myFile=myFile,
+                                            Dimensions=gNDim,
+                                            N=gNCases,
+                                            NPlausibles=gNPlausiblesEstimate)
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 8
+    check<-ReadInteger(myFile)
+    #print(check) # check 8
 
-  gAMatrices<-ReadADesignMatrices(myFile=myFile,
-                                  Columns=gNParameters,
-                                  Items=gNGins,
-                                  ItemSteps=gItemSteps)
+    gAMatrices<-ReadADesignMatrices(myFile=myFile,
+                                    Columns=gNParameters,
+                                    Items=gNGins,
+                                    ItemSteps=gItemSteps)
 
-    # print(str(gAMatrices)); # debug
-    # print(names(gAMatrices)); # debug
-    # gAMatricesTemp<<- gAMatrices; print("object `gAMatricesTemp` is available for debugging"); # debug
+      # print(str(gAMatrices)); # debug
+      # print(names(gAMatrices)); # debug
+      # gAMatricesTemp<<- gAMatrices; print("object `gAMatricesTemp` is available for debugging"); # debug
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 100
+    check<-ReadInteger(myFile)
+    #print(check) # check 100
 
-  gACMatrices<-ReadADesignMatrices(myFile=myFile,
-                                   Columns=gNParameters_C,
-                                   Items=gNGins,
-                                   ItemSteps=gItemSteps)
+    gACMatrices<-ReadADesignMatrices(myFile=myFile,
+                                     Columns=gNParameters_C,
+                                     Items=gNGins,
+                                     ItemSteps=gItemSteps)
 
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 200
+    check<-ReadInteger(myFile)
+    #print(check) # check 200
 
-  gBMatrices<-ReadBDesignMatrices(myFile=myFile,
-                                  ItemSteps=gItemSteps,
-                                  Items=gNGins)
-
-    # print(str(gBMatrices)); # debug
-    # print(names(gBMatrices)); # debug
-    # gBmatricesTemp<<- gBMatrices; print("object `gBmatricesTemp` is available for debugging"); # debug
-
-  check<-ReadInteger(myFile)
-  #print(check) # check 300
-
-  if(gScore)
-  {
-    gCmatrices<-ReadCDesignMatrices(myFile,
-                                    Dimensions=gNDim,
+    gBMatrices<-ReadBDesignMatrices(myFile=myFile,
                                     ItemSteps=gItemSteps,
                                     Items=gNGins)
-  }
-  else
-  {
+
+      # print(str(gBMatrices)); # debug
+      # print(names(gBMatrices)); # debug
+      # gBmatricesTemp<<- gBMatrices; print("object `gBmatricesTemp` is available for debugging"); # debug
+
+    check<-ReadInteger(myFile)
+    #print(check) # check 300
+
+    if(gScore)
+    {
+      gCmatrices<-ReadCDesignMatrices(myFile,
+                                      Dimensions=gNDim,
+                                      ItemSteps=gItemSteps,
+                                      Items=gNGins)
+    }
+    else
+    {
+      gCmatrices<- list()
+    }
+
+    # print("printing str(gCmatrices)"); print(str(gCmatrices)); # debug
+    # print("printing names(gCmatrices)"); print(names(gCmatrices)); # debug
+    # gCmatricesTemp<<- gCmatrices; print("object `gCmatricesTemp` is available for debugging"); # debug
+  } else {
+    gAllCaseEstimates<- list()
+    gAMatrices<- list()
+    gACMatrices<- list()
+    gBMatrices<- list()
     gCmatrices<- list()
   }
-
-  # print("printing str(gCmatrices)"); print(str(gCmatrices)); # debug
-  # print("printing names(gCmatrices)"); print(names(gCmatrices)); # debug
-  # gCmatricesTemp<<- gCmatrices; print("object `gCmatricesTemp` is available for debugging"); # debug
-
   check<-ReadInteger(myFile)
   # print(paste(check, " : check #9, gCmatrices")) # check 9
 

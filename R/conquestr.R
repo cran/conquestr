@@ -10,7 +10,8 @@ NULL
 
 # for vignette or default we can access files like this: system.file("extdata", "ConQuestTest.cqc", package = "conquestr")
 
-# defaults for cqc is COnQuestTest.cqc, default for cqInstallLocation is defaultCqLoc
+# defaults for cqc is ConQuestTest.cqc, default for cqInstallLocation is defaultCqLoc
+# consider using this in the future https://www.tidyverse.org/blog/2018/09/processx-3.2.0/
 
 #' @title ConQuestCall
 #'
@@ -18,12 +19,13 @@ NULL
 #'
 #' @param cqInstallLocation The location of the 'ACER ConQuest' executable.
 #' @param cqc The locaiton of the control file to be run.
+#' @param stdout On Mac only, can be toggled to NULL (or a connection) to supress output to R console.
 #' @return prints 'ACER ConQuest' output to stdout.
 #' @examples
 #' \dontrun{
 #' ConQuestCall(cqInstallLocation = file.path("/Applications", "ConQuest BETA", "ConQuest"))
 #' }
-ConQuestCall<- function(cqInstallLocation, cqc){ # note cqc must not use illegal ConQuest chars - e.g., ~ in relative paths
+ConQuestCall<- function(cqInstallLocation, cqc, stdout = ""){ # note cqc must not use illegal ConQuest chars - e.g., ~ in relative paths
 
   if(missing(cqInstallLocation)){
 
@@ -56,12 +58,8 @@ ConQuestCall<- function(cqInstallLocation, cqc){ # note cqc must not use illegal
 
     system2(
         cqInstallLocation,
-        paste(
-          paste('"', cqc, '"', sep = ""),
-          " true",
-          sep = ""
-        ),
-        stdout = "", stderr = ""
+        paste0('"', cqc, '"', ' true'),
+        stdout = stdout, stderr = ""
     )
 
   } else {
@@ -100,7 +98,7 @@ ConQuestSys<- function(myCqs){
 
     # create required lists
     systemFile<- list()
-    # is myCqs is missing, use myFile<- file(system.file("extdata", "myState.cqs", package = "conquestr"), "rb")
+
     myFile<- file(myCqs, "rb")
     r<-invisible(ReadSys(myFile))
     on.exit(
@@ -153,6 +151,10 @@ ConQuestRout<- function(myRout){
 
   }
 
+  # append class to r (used later for dispaching)
+  myRoutType<- routType(r)
+  # append class so we can do dispaching
+  class(r)<- append(class(r), myRoutType)
   return(r)
 
 }

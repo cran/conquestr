@@ -4,12 +4,14 @@
 \alias{ConQuestCall}
 \title{ConQuestCall}
 \usage{
-ConQuestCall(cqInstallLocation, cqc)
+ConQuestCall(cqInstallLocation, cqc, stdout = "")
 }
 \arguments{
 \item{cqInstallLocation}{The location of the 'ACER ConQuest' executable.}
 
 \item{cqc}{The locaiton of the control file to be run.}
+
+\item{stdout}{On Mac only, can be toggled to NULL (or a connection) to supress output to R console.}
 }
 \value{
 prints 'ACER ConQuest' output to stdout.

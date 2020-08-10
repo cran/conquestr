@@ -13,6 +13,6 @@ zapSystemMissing(x)
 x
 }
 \description{
-Coerce ConQuest system missing values to NA.
+Coerce ConQuest system missing values to NA. Note this is very slow and users should use the internal function conquestr::replaceInDataFrame where possible.
 }
 \keyword{internal}

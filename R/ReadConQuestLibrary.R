@@ -110,12 +110,23 @@ ReadStringList<-function(myFile)
 #' @keywords internal
 ReadBitSet<-function(myFile)
 {
-	String<-''
+	String<- matrix()
 	Items<-ReadInteger(myFile)
 	Columns<-ReadInteger(myFile)
 	Size<-ReadInteger(myFile)
- 	if(Size>0){String<-readChar(myFile, Size)}
- 	V<-list(String,Items,Columns,Size)
+	if(Size>0){
+	  for(i in 1:Size){
+	    tmpString<- readBin(myFile, what = "raw")
+      tmpLogical<- as.logical(rawToBits(tmpString))
+	    if(i == 1){
+	      String<- tmpLogical
+	    } else {
+	      String<- c(String, tmpLogical)
+	    }
+	  }
+	  String<- matrix(String[1:(Items*Columns)], nrow = Items, ncol = Columns, byrow = TRUE) # subset String as it is likely too big!
+	}
+	V<-list(String,Items,Columns,Size)
 	names(V)<-c("String","Items","Columns","Size")
 	return (V)
 }
@@ -483,7 +494,7 @@ ReadKeyList<-function(myFile)
 ReadLabel<-function(myFile)
 {
 	VarNum<-ReadInteger(myFile)
-	VarType<-ReadInteger(myFile)
+	VarType<-ReadInteger(myFile) #IMPLICIT=0, EXPLICIT=1, DIMENSION=2, PARAMETER=3, FIT=4
 	N<-ReadInteger(myFile)
   Code<-list()
 	for(i in seq_len(N))
@@ -529,19 +540,19 @@ ReadTerms<-function(myFile)
   ParamType<-list()
 	for(i in seq_len(N))
 	{
-			VariableNumber[[i]]<-ReadInteger(myFile)
+			VariableNumber[[i]]<-ReadInteger(myFile) # MAYBE: sequential count of terms in model
 	}
 	for(i in seq_len(N))
 	{
-			VariableType[[i]]<-ReadInteger(myFile)
+			VariableType[[i]]<-ReadInteger(myFile) # 0 if implicit, 1 if explicit
 	}
 	for(i in seq_len(NP))
 	{
-			ParamNumber[[i]]<-ReadInteger(myFile)
+			ParamNumber[[i]]<-ReadInteger(myFile) # param number in the model (0 offset)
 	}
 	for(i in seq_len(NP))
 	{
-			ParamType[[i]]<-ReadInteger(myFile)
+			ParamType[[i]]<-ReadInteger(myFile) # 0 if estimated, 1 if constrained
 	}
 	Sign<-readChar(myFile, 1)
 	Label<-ReadString(myFile)
@@ -1031,26 +1042,26 @@ ReadBDesignMatrices<-function(myFile,ItemSteps,Items)
 #' @description  ReadSys Read the C design matrix (A list of length gNGins of lists, one per item. For each item a list of length gItemSteps of matrices).
 ReadCDesignMatrices<-function(myFile,Dimensions,ItemSteps,Items)
 {
-	print(paste(Dimensions, " : printing Dimensions - gNDim")); # debug
-  print(paste(ItemSteps, " : printing ItemSteps - gItemSteps")); # debug
-  print(paste(Items, " : printing Items - gNGins")); # debug
+	#print(paste(Dimensions, " : printing Dimensions - gNDim")); # debug
+  #print(paste(ItemSteps, " : printing ItemSteps - gItemSteps")); # debug
+  #print(paste(Items, " : printing Items - gNGins")); # debug
 
   V<-list()
 	for(d in seq_len(Dimensions))
 	{
-	  print(d); print("d in seq_len(Dimensions)") # debug
+	  # print(d); print("d in seq_len(Dimensions)") # debug
 	  V[[d]]<-list()
 		for (i in seq_len(Items))
 		{
-		  print(paste(i, ": item. from call: (i in seq_len(Items))")) # debug
+		  #print(paste(i, ": item. from call: (i in seq_len(Items))")) # debug
 		  V[[d]][[i]]<-list()
 		  TempIndex<- ItemSteps[[i]]
-		  print(paste(ItemSteps[[i]], ": item steps for item i, from call: ItemSteps[[i]]")) # debug
+		  #print(paste(ItemSteps[[i]], ": item steps for item i, from call: ItemSteps[[i]]")) # debug
       if(TempIndex==0)TempIndex<- 1
-		  print(paste(TempIndex, ": TempIndex from call: TempIndex<- ItemSteps[[i]]")) # debug
+		  #print(paste(TempIndex, ": TempIndex from call: TempIndex<- ItemSteps[[i]]")) # debug
       for (k in seq_len(TempIndex))
       {
-        print(paste(k, ": kth item step from call, seq_len(ItemSteps[[i]])")) # debug
+        #print(paste(k, ": kth item step from call, seq_len(ItemSteps[[i]])")) # debug
 			  V[[d]][[i]][[k]]<-ReadMatrix(myFile);
       }
     }

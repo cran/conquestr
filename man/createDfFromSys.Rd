@@ -10,10 +10,10 @@ createDfFromSys(mySys)
 \item{mySys}{An R object of class ConQuestSys, returned by the function conquestr::ConQuestSys}
 }
 \value{
-A list containing R data frames based on the list objects in the ConQuest system file that has been read in.
+A data frame containing R data frames based on the list objects in the ConQuest system file that has been read in.
 }
 \description{
-Internal function to read an R object of class ConQuestSys (which returns a list) and create neat R data frame objects. Called by conquestr::ConQuestSysDf.
+Read an R object of class ConQuestSys and create neat R data frame object.
 }
 \seealso{
 conquestr::ConQuestSys()

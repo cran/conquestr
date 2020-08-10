@@ -6,10 +6,24 @@ Format pid 1-5 responses 12-23 v1 12 v2 15;
 Key acddbcebbacc ! 1;
 Model item;
 group v1;
-Estimate!fit=no,stderr=quick;
+
+labels 1  "item one"      ! item;
+labels 2  "item two"      ! item;
+labels 3  "item three"    ! item;
+labels 4  "item four"     ! item;
+labels 5  "item five"     ! item;
+labels 6  "item six"      ! item;
+labels 7  "item seven"    ! item;
+labels 8  "item eight"    ! item;
+labels 9  "item nine"     ! item;
+labels 10 "item ten"      ! item;
+labels 11 "item eleven"   ! item;
+labels 12 "item twelve"   ! item;
+
+Estimate!abilities = yes,fit=no,stderr=quick;
 
 banddefine ! label = "L0 (critical)", upper = -2.133, lower = -100;
 banddefine ! label = "L1 (upper)", upper = 100, lower = 2.133;
 
-put ! compress = no >> Ex1.cqs;
+put ! compress = no >> mySysFile.cqs;
 
