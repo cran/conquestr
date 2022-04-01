@@ -5,35 +5,43 @@
 #' @param myFile An 'ACER ConQuest' system file created by the `put` command in 'ACER ConQuest'. The put command must use the option `compressed = no`.
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #' @seealso conquestr::ConQuestSys()
-ReadSys<-function(myFile){
+ReadSys <- function(myFile){
   myDebug<- FALSE
-  # requires funtions in R/ReadConQuestLibrary.R
+  # requires functions in R/ReadConQuestLibrary.R
 
-  Compressed<-ReadString(myFile);
+  Compressed <- ReadString(myFile);
   if(myDebug) print(paste0("Compressed: ", Compressed))
   # insert code to check that Compressed="uncompressed" if not we can't proceed
   if(!(Compressed == "uncompressed"))
-    stop("This system file is compressed and i dont know how to handle it, use option ! compress = no in conquest")
+  {
+    close(myFile)
+    stop("This system file is compressed and I dont know how to handle it, use option '! compress = no' in ACER ConQuest")
+  }
 
-  builddate<-ReadString(myFile)           # conquest build date
-  writedate<-ReadString(myFile)           # file write date
-  version<-ReadInteger(myFile)            # system file version
-  # insert code to check that version=>19 if not we can't proceed
+  builddate <- ReadString(myFile)           # conquest build date
+  writedate <- ReadString(myFile)           # file write date
+  version <- ReadInteger(myFile)            # system file version
   if(myDebug) print(paste0("version: ", version))
+  if(!(version >= 23))
+  {
+    close(myFile)
+    stop("This system file is from a version of ACER ConQuest before version 5.17.4 and cannot be read. Either recreate your system file in a newer release of ACER ConQuest or install a legacy version of conquestr")
+  }
 
-  gNCases<-ReadInteger(myFile)
-  gNDim<-ReadInteger(myFile)
-  gNGins<-ReadInteger(myFile)
-  gNPlausiblesEstimate<-ReadInteger(myFile)
-  gMLEExist<-ReadBoolean(myFile)
-  gWLEExist<-ReadBoolean(myFile)
-  gEAPExist<-ReadBoolean(myFile)
-  gPlausibleExist<-ReadBoolean(myFile)
-  gSystemMissing<-ReadDouble(myFile)
-  gApplyFilter<-ReadBoolean(myFile)
+  gNCases <- ReadInteger(myFile)
+  if(myDebug) print(paste0("gNCases: ", gNCases))
+  gNDim <- ReadInteger(myFile)
+  gNGins <- ReadInteger(myFile)
+  gNPlausiblesEstimate <- ReadInteger(myFile)
+  gMLEExist <- ReadBoolean(myFile)
+  gWLEExist <- ReadBoolean(myFile)
+  gEAPExist <- ReadBoolean(myFile)
+  gPlausibleExist <- ReadBoolean(myFile)
+  gSystemMissing <- ReadDouble(myFile)
+  gApplyFilter <- ReadBoolean(myFile)
   if(myDebug) print(paste0("gApplyFilter: ", gApplyFilter))
 
-    # debugging block - creates objects in global env in case this funtion fails before it creates the system file object at the end
+    # debugging block - creates objects in global env in case this function fails before it creates the system file object at the end
     # gNCasesTemp<<- gNCases; print("gNCasesTemp is available for debugging") # debug
     # gNDimTemp<<- gNDim; print("gNDim is available for debugging") # debug
     # gNGinsTemp<<- gNGins; print("gNGinsTemp is available for debugging") # debug
@@ -45,33 +53,34 @@ ReadSys<-function(myFile){
     # gSystemMissingTemp<<- gSystemMissing; print("gSystemMissingTemp is available for debugging") # debug
     # gApplyFilterTemp<<- gApplyFilter; print("gApplyFilterTemp is available for debugging") # debug
 
-  check<-ReadInteger(myFile)
+  check <- ReadInteger(myFile)
   if(myDebug) print(paste0("check: ", check)) # check 1
 
-  gFilter<-ReadBitSet(myFile)
-  if(myDebug) print(paste0("gFilter: ", gFilter)) #
-  gBeta<-ReadMatrix(myFile)
-  gOldBeta<-ReadMatrix(myFile)
-  gBestBeta<-ReadMatrix(myFile)
-  gXsi<-ReadMatrix(myFile)
-  gOldXsi<-ReadMatrix(myFile)
-  gBestXsi<-ReadMatrix(myFile)
-  gTau<-ReadMatrix(myFile)
-  gOldTau<-ReadMatrix(myFile)
-  gBestTau<-ReadMatrix(myFile)
-  gQuickErrorsXsi<-ReadMatrix(myFile)
-  gQuickErrorsTau<-ReadMatrix(myFile)
-  gQuickErrorsSigma<-ReadMatrix(myFile)
-  gQuickErrorsBeta<-ReadMatrix(myFile)
-  gMasterTheta<-ReadMatrix(myFile)
-  gTheta<-ReadMatrix(myFile)
-  gVariance<-ReadMatrix(myFile)
-  gOldVariance<-ReadMatrix(myFile)
-  gBestVariance<-ReadMatrix(myFile)
-  gHistoWeights<-ReadMatrix(myFile)
-  gOldHisto<-ReadMatrix(myFile)
-  gBestHisto<-ReadMatrix(myFile)
-  gYBeta<-ReadMatrix(myFile)
+  gFilter <- ReadBitSet(myFile)
+  if(myDebug) print(paste0("gFilter: ", names(gFilter))) #
+  if(myDebug) print(paste0("gFilter: ", gFilter))
+  gBeta <- ReadMatrix(myFile)
+  gOldBeta <- ReadMatrix(myFile)
+  gBestBeta <- ReadMatrix(myFile)
+  gXsi <- ReadMatrix(myFile)
+  gOldXsi <- ReadMatrix(myFile)
+  gBestXsi <- ReadMatrix(myFile)
+  gTau <- ReadMatrix(myFile)
+  gOldTau <- ReadMatrix(myFile)
+  gBestTau <- ReadMatrix(myFile)
+  gQuickErrorsXsi <- ReadMatrix(myFile)
+  gQuickErrorsTau <- ReadMatrix(myFile)
+  gQuickErrorsSigma <- ReadMatrix(myFile)
+  gQuickErrorsBeta <- ReadMatrix(myFile)
+  gMasterTheta <- ReadMatrix(myFile)
+  gTheta <- ReadMatrix(myFile)
+  gVariance <- ReadMatrix(myFile)
+  gOldVariance <- ReadMatrix(myFile)
+  gBestVariance <- ReadMatrix(myFile)
+  gHistoWeights <- ReadMatrix(myFile)
+  gOldHisto <- ReadMatrix(myFile)
+  gBestHisto <- ReadMatrix(myFile)
+  gYBeta <- ReadMatrix(myFile)
 
     # debugging block - creates objects in global env in case this funtion fails before it creates the system file object at the end
     # gFilterTemp<<- gFilter; print("gFilterTemp is available for debugging") # debug
@@ -98,24 +107,24 @@ ReadSys<-function(myFile){
     # gBestHistoTemp<<- gBestHisto; print("gBestHistoTemp is available for debugging") # debug
     # gYBetaTemp<<- gYBeta; print("gYBetaTemp is available for debugging") # debug
 
-  check<-ReadInteger(myFile)
+  check <- ReadInteger(myFile)
   if(myDebug) print(paste0("check: ", check)) # check 2
 
-  gWeightFactor<-ReadDouble(myFile)
-  gSuffXsi<-ReadMatrix(myFile)
-  gSuffTau<-ReadMatrix(myFile)
-  gModelText<-ReadString(myFile)
-  gFormatText<-ReadString(myFile)
-  gRegressionText<-ReadString(myFile)
-  gGroupText<-ReadString(myFile)
-  gOSSCP<-ReadMatrix(myFile)
-  gLOSSCP<-ReadMatrix(myFile)
-  gLSSCP<-ReadMatrix(myFile)
-  gFullSSCP<-ReadMatrix(myFile)
-  gFullSums<-ReadMatrix(myFile)
-  gMinAlpha<-ReadDouble(myFile)
-  gModelEstimated<-ReadBoolean(myFile)
-  gIntegrationMethod<-ReadInteger(myFile) # 1 Bock Aitkin, 2 Monte Carlo, 3 gauss-hermite quadrature, 4 joint maximum likelihood, 5 estimation method has not been requested, 6 sparse gauss-hermite quadrature (KPN), 7 markov chain montecarlo
+  gWeightFactor <- ReadDouble(myFile)
+  gSuffXsi <- ReadMatrix(myFile)
+  gSuffTau <- ReadMatrix(myFile)
+  gModelText <- ReadString(myFile)
+  gFormatText <- ReadString(myFile)
+  gRegressionText <- ReadString(myFile)
+  gGroupText <- ReadString(myFile)
+  gOSSCP <- ReadMatrix(myFile)
+  gLOSSCP <- ReadMatrix(myFile)
+  gLSSCP <- ReadMatrix(myFile)
+  gFullSSCP <- ReadMatrix(myFile)
+  gFullSums <- ReadMatrix(myFile)
+  gMinAlpha <- ReadDouble(myFile)
+  gModelEstimated <- ReadBoolean(myFile)
+  gIntegrationMethod <- ReadInteger(myFile) # 1 Bock Aitkin, 2 Monte Carlo, 3 gauss-hermite quadrature, 4 joint maximum likelihood, 5 estimation method has not been requested, 6 sparse gauss-hermite quadrature (KPN), 7 markov chain montecarlo
     # create text version of gIntegrationMethod
     if(!(is.null(gIntegrationMethod))) {
 
@@ -123,18 +132,18 @@ ReadSys<-function(myFile){
       gIntegrationMethodText<- as.character(gIntegrationMethodLookUp$gIntegrationMethodText[gIntegrationMethod])
 
     }
-  gPopulation<-ReadInteger(myFile)
-  gSeeds<-ReadInteger(myFile)
-  gMaxSinceBests<-ReadInteger(myFile)
-  gInnerLoopss<-ReadInteger(myFile)
-  gWarningss<-ReadBoolean(myFile)
-  gEstsToLog<-ReadBoolean(myFile)
-  gKeepLast<-ReadBoolean(myFile)
-  gAddExtension<-ReadBoolean(myFile)
-  gMLEMax<-ReadDouble(myFile)
-  gPlotWinMax<-ReadInteger(myFile)
-  gZero<-ReadDouble(myFile)
-  gRespMiss<-ReadInteger(myFile)
+  gPopulation <- ReadInteger(myFile)
+  gSeeds <- ReadInteger(myFile)
+  gMaxSinceBests <- ReadInteger(myFile)
+  gInnerLoopss <- ReadInteger(myFile)
+  gWarningss <- ReadBoolean(myFile)
+  gEstsToLog <- ReadBoolean(myFile)
+  gKeepLast <- ReadBoolean(myFile)
+  gAddExtension <- ReadBoolean(myFile)
+  gMLEMax <- ReadDouble(myFile)
+  gPlotWinMax <- ReadInteger(myFile)
+  gZero <- ReadDouble(myFile)
+  gRespMiss <- ReadInteger(myFile)
 
     # debugging block - creates objects in global env in case this funtion fails before it creates the system file object at the end
     # gWeightFactorTemp<<- gWeightFactor; print("gWeightFactorTemp is available for debugging") # debug
@@ -166,129 +175,129 @@ ReadSys<-function(myFile){
     # gZeroTemp<<- gZero; print("gZeroTemp is available for debugging") # debug
     # gRespMissTemp<<- gRespMiss; print("gRespMissTemp is available for debugging") # debug
 
-  check<-ReadInteger(myFile)
+  check <- ReadInteger(myFile)
   if(myDebug) print(paste0("check: ", check)) # check 3
 
-  gDatafileName<-ReadString(myFile)
-  gDatafileFormats<-ReadInteger(myFile)
-  gDatafileNameDisplay<-ReadString(myFile)
-  gStopReason<-ReadInteger(myFile)
-  gImplicit<-ReadImplicitVar(myFile)
-  gNImpValue<-ReadInteger(myFile)
-  gPIDVar<-ReadInteger(myFile)
-  gModelVariables<-ReadVarList(myFile)
-  gNRec<-ReadInteger(myFile)
-  gResponseLookUp<-ReadLookUp(myFile)
-  gPreKeyLookUp<-ReadLookUp(myFile)
-  gNDataRecords<-ReadInteger(myFile)
-  gFacetVariables<-ReadVarList(myFile)
-  gRegressionVariables<-ReadVarList(myFile)
-  gGroupVariables<-ReadVarList(myFile)
-  gWeightVariable<-ReadVarList(myFile)
-  gTDFileV<-ReadVarList(myFile)
-  gValidC<-ReadStringList(myFile)
-  gFileRebuildNeeded<-ReadBoolean(myFile)
-  gAMatrixImportFileName<-ReadString(myFile)
-  gCMatrixImportFileName<-ReadString(myFile)
-  gExportXsiFile<-ReadString(myFile)
-  gExportTauFile<-ReadString(myFile)
-  gExportScoredDataFile<-ReadString(myFile)
-  gAMatrixExportFileName<-ReadString(myFile)
-  gCMatrixExportFileName<-ReadString(myFile)
-  gExportBetaFile<-ReadString(myFile)
-  gExportSigmaFile<-ReadString(myFile)
-  gExportScoredDataFile<-ReadString(myFile)
-  gHistoryFileName<-ReadString(myFile)
-  gTitle<-ReadString(myFile)
-  gStoreInRAM<-ReadBoolean(myFile)
+  gDatafileName <- ReadString(myFile)
+  gDatafileFormats <- ReadInteger(myFile)
+  gDatafileNameDisplay <- ReadString(myFile)
+  gStopReason <- ReadInteger(myFile)
+  gImplicit <- ReadImplicitVar(myFile)
+  gNImpValue <- ReadInteger(myFile)
+  gPIDVar <- ReadInteger(myFile)
+  gModelVariables <- ReadVarList(myFile)
+  gNRec <- ReadInteger(myFile)
+  gResponseLookUp <- ReadLookUp(myFile)
+  gPreKeyLookUp <- ReadLookUp(myFile)
+  gNDataRecords <- ReadInteger(myFile)
+  gFacetVariables <- ReadVarList(myFile)
+  gRegressionVariables <- ReadVarList(myFile)
+  gGroupVariables <- ReadVarList(myFile)
+  gWeightVariable <- ReadVarList(myFile)
+  gTDFileV <- ReadVarList(myFile)
+  gValidC <- ReadStringList(myFile)
+  gFileRebuildNeeded <- ReadBoolean(myFile)
+  gAMatrixImportFileName <- ReadString(myFile)
+  gCMatrixImportFileName <- ReadString(myFile)
+  gExportXsiFile <- ReadString(myFile)
+  gExportTauFile <- ReadString(myFile)
+  gExportScoredDataFile <- ReadString(myFile)
+  gAMatrixExportFileName <- ReadString(myFile)
+  gCMatrixExportFileName <- ReadString(myFile)
+  gExportBetaFile <- ReadString(myFile)
+  gExportSigmaFile <- ReadString(myFile)
+  gExportScoredDataFile <- ReadString(myFile)
+  gHistoryFileName <- ReadString(myFile)
+  gTitle <- ReadString(myFile)
+  gStoreInRAM <- ReadBoolean(myFile)
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 4
+  check <- ReadInteger(myFile)
+  if(myDebug) print(paste0("check: ", check)) # check 4
 
-  gSubmitMode<-ReadBoolean(myFile)
-  gMaxCats<-ReadInteger(myFile)
-  gConvergenceOK<-ReadBoolean(myFile)
-  gParameterConvCriterion<-ReadDouble(myFile)
-  gDevianceConvCriterion<-ReadDouble(myFile)
-  gFitDraws<-ReadInteger(myFile)
-  gMaxIterations<-ReadInteger(myFile)
-  gAccuracy<-ReadInteger(myFile)
-  gPVNodes<-ReadInteger(myFile)
-  gFitNodes<-ReadInteger(myFile)
-  gIteration<-ReadInteger(myFile)
-  gBestIter<-ReadInteger(myFile)
-  gStdError<-ReadInteger(myFile)
-  gIFit<-ReadBoolean(myFile)
-  gPFit<-ReadBoolean(myFile)
-  gScore<-ReadBoolean(myFile)
-  gSLM<-ReadBoolean(myFile)
-  gTwoPL<-ReadBoolean(myFile)
-  gNominalResponse<-ReadBoolean(myFile)
-  gPairWise<-ReadBoolean(myFile)
-  gRegC<-ReadBoolean(myFile)
-  gNPlausibles<-ReadInteger(myFile)
-  gLConstraint<-ReadInteger(myFile)
-  gNRegressors<-ReadInteger(myFile)
-  gThreePL<-ReadBoolean(myFile)
-  gUniquePID<-ReadBoolean(myFile)
-  gNGroup<-ReadInteger(myFile)
-  gNReg<-ReadInteger(myFile)
+  gSubmitMode <- ReadBoolean(myFile)
+  gMaxCats <- ReadInteger(myFile)
+  gConvergenceOK <- ReadBoolean(myFile)
+  gParameterConvCriterion <- ReadDouble(myFile)
+  gDevianceConvCriterion <- ReadDouble(myFile)
+  gFitDraws <- ReadInteger(myFile)
+  gMaxIterations <- ReadInteger(myFile)
+  gAccuracy <- ReadInteger(myFile)
+  gPVNodes <- ReadInteger(myFile)
+  gFitNodes <- ReadInteger(myFile)
+  gIteration <- ReadInteger(myFile)
+  gBestIter <- ReadInteger(myFile)
+  gStdError <- ReadInteger(myFile) # 0 = QUICK; 1 = FULL (deprecated); 2 = EMPIRICAL; 3 = NONE;
+  gIFit <- ReadBoolean(myFile)
+  gPFit <- ReadBoolean(myFile)
+  gScore <- ReadBoolean(myFile)
+  gSLM <- ReadBoolean(myFile)
+  gTwoPL <- ReadBoolean(myFile)
+  gNominalResponse <- ReadBoolean(myFile)
+  gPairWise <- ReadBoolean(myFile)
+  gRegC <- ReadBoolean(myFile)
+  gNPlausibles <- ReadInteger(myFile)
+  gLConstraint <- ReadInteger(myFile)
+  gNRegressors <- ReadInteger(myFile)
+  gThreePL <- ReadBoolean(myFile)
+  gUniquePID <- ReadBoolean(myFile)
+  gNGroup <- ReadInteger(myFile)
+  gNReg <- ReadInteger(myFile)
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 5
+  check <- ReadInteger(myFile)
+  if(myDebug) print(paste0("check: ", check)) # check 5
 
-  gDeriv2nd<-ReadMatrix(myFile)
-  gMLEReliability<-ReadMatrix(myFile)
-  gEAPReliability<-ReadMatrix(myFile)
-  gWLEReliability<-ReadMatrix(myFile)
-  gLogLike<-ReadDouble(myFile)
-  gOldLogLike<-ReadDouble(myFile)
-  gBestLogLike<-ReadDouble(myFile)
-  gRegParamConverged<-ReadBoolean(myFile)
-  gCovParamConverged<-ReadBoolean(myFile)
-  gCovarianceAnchors<-ReadMatrix(myFile)
-  gBetaAnchors<-ReadMatrix(myFile)
-  gVarianceInverse<-ReadMatrix(myFile)
-  gOriginalNParameters<-ReadInteger(myFile)
-  gNParameters<-ReadInteger(myFile)
-  gNParameters_C<-ReadInteger(myFile)
-  gNTau<-ReadInteger(myFile)
-  gImportParameters<-ReadAnchorList(myFile)
-  gKeyDefault<-ReadString(myFile)
-  gMLECriterion<-ReadDouble(myFile)
-  gDist<-ReadInteger(myFile)
-  gMinBin<-ReadDouble(myFile)
-  gMaxBin<-ReadDouble(myFile)
-  gUnconstrainedYY<-ReadMatrix(myFile)
-  gNXsiAnchors<-ReadInteger(myFile)
-  gVarList<-ReadStringList(myFile)
-  gNTauAnchors<-ReadInteger(myFile)
-  gVarNoDim<-ReadInteger(myFile)
-  gAnchor<-ReadBooleanList(myFile)
-  gTauAnchors<-ReadBooleanList(myFile)
-  gYYinv<-ReadMatrixList(myFile)
-  gVar<-ReadVariableList(myFile)
-  gResponseBlock<-ReadResponseList(myFile)
-  gKeys<-ReadKeyList(myFile)
-  gLabels<-ReadLabelList(myFile)
-  gImpValue<-ReadIntegerListList(myFile)
-  gTerms<-ReadTermsList(myFile)
-  gExplicit<-ReadLookUpList(myFile)
-  gRecodes<-ReadIRecodeList(myFile)
-  gScores<-ReadIRecodeList(myFile)
-  gDeletes<-ReadIRecodeList(myFile)
-  gLevel<-ReadIntegerList(myFile) # // No. of levels for each variable in model statement
+  gDeriv2nd <- ReadMatrix(myFile)
+  gMLEReliability <- ReadMatrix(myFile)
+  gEAPReliability <- ReadMatrix(myFile)
+  gWLEReliability <- ReadMatrix(myFile)
+  gLogLike <- ReadDouble(myFile)
+  gOldLogLike <- ReadDouble(myFile)
+  gBestLogLike <- ReadDouble(myFile)
+  gRegParamConverged <- ReadBoolean(myFile)
+  gCovParamConverged <- ReadBoolean(myFile)
+  gCovarianceAnchors <- ReadMatrix(myFile)
+  gBetaAnchors <- ReadMatrix(myFile)
+  gVarianceInverse <- ReadMatrix(myFile)
+  gOriginalNParameters <- ReadInteger(myFile)
+  gNParameters <- ReadInteger(myFile)
+  gNParameters_C <- ReadInteger(myFile)
+  gNTau <- ReadInteger(myFile)
+  gImportParameters <- ReadAnchorList(myFile)
+  gKeyDefault <- ReadString(myFile)
+  gMLECriterion <- ReadDouble(myFile)
+  gDist <- ReadInteger(myFile)
+  gMinBin <- ReadDouble(myFile)
+  gMaxBin <- ReadDouble(myFile)
+  gUnconstrainedYY <- ReadMatrix(myFile)
+  gNXsiAnchors <- ReadInteger(myFile)
+  gVarList <- ReadStringList(myFile)
+  gNTauAnchors <- ReadInteger(myFile)
+  gVarNoDim <- ReadInteger(myFile)
+  gAnchor <- ReadBooleanList(myFile)
+  gTauAnchors <- ReadBooleanList(myFile)
+  gYYinv <- ReadMatrixList(myFile)
+  gVar <- ReadVariableList(myFile)
+  gResponseBlock <- ReadResponseList(myFile)
+  gKeys <- ReadKeyList(myFile)
+  gLabels <- ReadLabelList(myFile)
+  gImpValue <- ReadIntegerListList(myFile)
+  gTerms <- ReadTermsList(myFile)
+  gExplicit <- ReadLookUpList(myFile)
+  gRecodes <- ReadIRecodeList(myFile)
+  gScores <- ReadIRecodeList(myFile)
+  gDeletes <- ReadIRecodeList(myFile)
+  gLevel <- ReadIntegerList(myFile) # // No. of levels for each variable in model statement
     # gLevelTemp<<- gLevel; print("gLevelTemp is available for debugging") # debug
-  gItemSteps<-ReadIntegerList(myFile)
+  gItemSteps <- ReadIntegerList(myFile)
     # gItemStepsTemp<<- gItemSteps; print("gItemStepsTemp is available for debugging") # debug
-  gStartSteps<-ReadIntegerList(myFile)
-  gParam<-ReadParametersList(myFile)
-  gParamConstrained<-ReadParametersList(myFile)
-  gNRegC<-ReadIntegerList(myFile) # number of regressors by dim
-  gRegConstraints<-ReadMatrixList(myFile)
-  gRegLookUp<-ReadMatrixList(myFile)
-  gPIndex<-ReadIntegerList(myFile)
-  gProblemGins<-ReadIntegerList(myFile)
+  gStartSteps <- ReadIntegerList(myFile)
+  gParam <- ReadParametersList(myFile)
+  gParamConstrained <- ReadParametersList(myFile)
+  gNRegC <- ReadIntegerList(myFile) # number of regressors by dim
+  gRegConstraints <- ReadMatrixList(myFile)
+  gRegLookUp <- ReadMatrixList(myFile)
+  gPIndex <- ReadIntegerList(myFile)
+  gProblemGins <- ReadIntegerList(myFile)
 
     # debugging block - creates objects in global env in case this funtion fails before it creates the system file object at the end
     # gDeriv2ndTemp<<- gDeriv2nd; print("gDeriv2ndTemp is available for debugging") # debug
@@ -342,81 +351,89 @@ ReadSys<-function(myFile){
     # gPIndexTemp<<- gPIndex; print("gPIndexTemp is available for debugging") # debug
     # gProblemGinsTemp<<- gProblemGins; print("gProblemGinsTemp is available for debugging") # debug
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 6
+  check <- ReadInteger(myFile)
+  if(myDebug) print(paste0("check: ", check)) # check 6
 
-  gItemListByD<-ReadIntegerListList(myFile)
-  gGeneraliseditemList_D<-ReadIntegerListList(myFile)
-  gRegToCategorise<-ReadCategoriseList(myFile)
-  gFitStatistics<-ReadFitList(myFile)
-  gRegressors<-ReadRegressionList(myFile)
-  gDummies<-ReadMatrixList(myFile)
-  gHasDummies<-ReadBooleanList(myFile)
-  gItemGroups<-ReadItemSetList(myFile)
-  gHistory<-ReadHistory(myFile)
+  gItemListByD <- ReadIntegerListList(myFile)
+  gGeneraliseditemList_D <- ReadIntegerListList(myFile)
+  gRegToCategorise <- ReadCategoriseList(myFile)
+  gFitStatistics <- ReadFitList(myFile)
+  gRegressors <- ReadRegressionListLeg(myFile) # this is the legacy regression object - not retained and replaced by read later (ReadRegressionList)
+  gDummies <- ReadMatrixList(myFile)
+  gHasDummies <- ReadBooleanList(myFile)
+  gItemGroups <- ReadItemSetList(myFile)
+  if(myDebug) print(paste0("gHasDummies: ", gHasDummies)) #
+  gHistory <- ReadHistory(myFile)
     # print(str(gHistory)); # debug
     # print(names(gHistory)); # debug
     # gHistoryTemp<<- gHistory; print("object `gHistoryTemp` is available for debugging"); # debug
-  gNModelVariables<-ReadInteger(myFile)
-  gModelVariables<-ReadVarList(myFile)
-  gMinNode<-ReadDouble(myFile)
-  gMaxNode<-ReadDouble(myFile)
-  gTotalNodes<-ReadInteger(myFile)    #need to raise to power gNdim
+  gNModelVariables <- ReadInteger(myFile)
+  gModelVariables <- ReadVarList(myFile)
+  gMinNode <- ReadDouble(myFile)
+  gMaxNode <- ReadDouble(myFile)
+  gTotalNodes <- ReadInteger(myFile)    #need to raise to power gNdim
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 7
-  if(!gPairWise){
+  check <- ReadInteger(myFile)
+  if (myDebug) print(paste0("check: ", check)) # check 7
 
-    gAllCaseEstimates<-ReadAllCaseEstimates(myFile=myFile,
-                                            Dimensions=gNDim,
-                                            N=gNCases,
-                                            NPlausibles=gNPlausiblesEstimate)
+  if (!gPairWise) {
+    
+    gAllCaseEstimates <- ReadAllCaseEstimates(
+      myFile = myFile,
+      Dimensions = gNDim,
+      N = gNCases,
+      NPlausibles = gNPlausiblesEstimate
+    )
 
-    check<-ReadInteger(myFile)
-    #print(check) # check 8
+    check <- ReadInteger(myFile)
+    if (myDebug) print(paste0("check: ", check)) # check 8
 
-    gAMatrices<-ReadADesignMatrices(myFile=myFile,
-                                    Columns=gNParameters,
-                                    Items=gNGins,
-                                    ItemSteps=gItemSteps)
+    gAMatrices <- ReadADesignMatrices(
+      myFile = myFile,
+      Columns = gNParameters,
+      Items = gNGins,
+      ItemSteps = gItemSteps
+    )
 
       # print(str(gAMatrices)); # debug
       # print(names(gAMatrices)); # debug
       # gAMatricesTemp<<- gAMatrices; print("object `gAMatricesTemp` is available for debugging"); # debug
 
-    check<-ReadInteger(myFile)
-    #print(check) # check 100
+    check <- ReadInteger(myFile)
+    if (myDebug) print(paste0("check: ", check)) # check 100
 
-    gACMatrices<-ReadADesignMatrices(myFile=myFile,
-                                     Columns=gNParameters_C,
-                                     Items=gNGins,
-                                     ItemSteps=gItemSteps)
+    gACMatrices <- ReadADesignMatrices(
+      myFile = myFile,
+      Columns = gNParameters_C,
+      Items = gNGins,
+      ItemSteps = gItemSteps
+    )
 
 
-    check<-ReadInteger(myFile)
-    #print(check) # check 200
+    check <- ReadInteger(myFile)
+    if(myDebug) print(paste0("check: ", check)) # check 200
 
-    gBMatrices<-ReadBDesignMatrices(myFile=myFile,
-                                    ItemSteps=gItemSteps,
-                                    Items=gNGins)
+    gBMatrices <- ReadBDesignMatrices(myFile = myFile,
+                                    ItemSteps = gItemSteps,
+                                    Items = gNGins)
 
       # print(str(gBMatrices)); # debug
       # print(names(gBMatrices)); # debug
       # gBmatricesTemp<<- gBMatrices; print("object `gBmatricesTemp` is available for debugging"); # debug
 
-    check<-ReadInteger(myFile)
-    #print(check) # check 300
+    check <- ReadInteger(myFile)
+    if(myDebug) print(paste0("check: ", check)) # check 300
 
     if(gScore)
     {
-      gCmatrices<-ReadCDesignMatrices(myFile,
-                                      Dimensions=gNDim,
-                                      ItemSteps=gItemSteps,
-                                      Items=gNGins)
+      gCmatrices <- ReadCDesignMatrices(myFile,
+                                      Dimensions = gNDim,
+                                      ItemSteps = gItemSteps,
+                                      Items = gNGins)
     }
     else
     {
-      gCmatrices<- list()
+      gCmatrices <- list()
     }
 
     # print("printing str(gCmatrices)"); print(str(gCmatrices)); # debug
@@ -424,81 +441,94 @@ ReadSys<-function(myFile){
     # gCmatricesTemp<<- gCmatrices; print("object `gCmatricesTemp` is available for debugging"); # debug
   } else {
     gAllCaseEstimates<- list()
-    gAMatrices<- list()
-    gACMatrices<- list()
-    gBMatrices<- list()
-    gCmatrices<- list()
+    gAMatrices <- list()
+    gACMatrices <- list()
+    gBMatrices <- list()
+    gCmatrices <- list()
   }
-  check<-ReadInteger(myFile)
-  # print(paste(check, " : check #9, gCmatrices")) # check 9
+  check <- ReadInteger(myFile)
+  if(myDebug) print(paste0("check: ", check)) # check 9
 
-  gYData<-ReadAllY(myFile=myFile,N=gNCases,NReg=gNReg)
+  gYData <- ReadAllY(myFile = myFile,N = gNCases,NReg = gNReg)
   # gYDataTemp<<- gYData; print("object `gYDataTemp` is available for debugging"); # debug
 
 
-  check<-ReadInteger(myFile)
-  # print(paste(check, " : check #10, gYData")) # check 10
+  check <- ReadInteger(myFile)
+  if(myDebug) print(paste0("check: ", check)) # check 10
 
-  gGroupData<-ReadAllGroupsData(myFile=myFile,
-                                N=gNCases,
-                                GroupVariables=gGroupVariables,
-                                AllVariables=gVar)
+  gGroupData <- ReadAllGroupsData(myFile = myFile,
+                                N = gNCases,
+                                GroupVariables = gGroupVariables,
+                                AllVariables = gVar)
 
-    # gGroupDataTemp<<- gGroupData; print("object `gGroupDataTemp` is available for debugging"); # debug
+  # gGroupDataTemp<<- gGroupData; print("object `gGroupDataTemp` is available for debugging"); # debug
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 11
+  check <- ReadInteger(myFile)
+  if (myDebug) print(paste0("check: ", check)) # check 11
 
-  gResponseData<-ReadAllResponseData(myFile,N=gNDataRecords)
+  gResponseData <- ReadAllResponseData(myFile,N = gNDataRecords)
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 12
+  check <- ReadInteger(myFile)
+  if(myDebug) print(paste0("check: ", check)) # check 12
 
   gMatrixList<- ReadMatrixVars(myFile)
 
-  check<-ReadInteger(myFile)
-  #print(check) # check 13
+  check <- ReadInteger(myFile)
+  if(myDebug) print(paste0("check: ", check)) # check 13
 
-  gXsiParameterLabels<-ReadStringList(myFile)
-	gTauParameterLabels<-ReadStringList(myFile)
+  gXsiParameterLabels <- ReadStringList(myFile)
+  gTauParameterLabels <- ReadStringList(myFile)
 
-	check<-ReadInteger(myFile)
-	#print(check) # check 14
+  check <- ReadInteger(myFile)
+  if(myDebug) print(paste0("check: ", check)) # check 14
 
-	gRegressorLabels<-ReadStringList(myFile)
-	gGinLongLabels<-ReadStringList(myFile)
-	gGinShortLabels<-ReadStringList(myFile)
-	gPIDLookUp<-ReadStringList(myFile)
+  gRegressorLabels <- ReadStringList(myFile)
+  gGinLongLabels <- ReadStringList(myFile)
+  gGinShortLabels <- ReadStringList(myFile)
+  gPIDLookUp <- ReadStringList(myFile)
 
-	check<-ReadInteger(myFile)
-	#print(check) # check 15
+  check <- ReadInteger(myFile)
+  #print(check) # check 15
 
-	gCommandHistory<- ReadStringList(myFile)
-	gBandDefines<- ReadBandDefinesList(myFile)
-	gDIC<- ReadDouble(myFile)
-	gPostiveScores<- ReadBoolean(myFile)
-	gScoresMax<- ReadDouble(myFile)
-	gRandomStructure<- ReadRandomStructure(myFile)
-	gSConstraint<-ReadInteger(myFile)
-	gBurn<-ReadInteger(myFile)
-	gSkip<-ReadInteger(myFile)
-	gXsiProposalVariance<-ReadDouble(myFile)
-	gTauProposalVariance<-ReadDouble(myFile)
-	gThetaProposalVariance<-ReadDouble(myFile)
-	gXsiIncMax<-ReadDouble(myFile)
-	gFacOldXsi<-ReadDouble(myFile)
-	gBlockBeta<-ReadInteger(myFile)
+  gCommandHistory<- ReadStringList(myFile)
+  gBandDefines<- ReadBandDefinesList(myFile)
+  gDIC<- ReadDouble(myFile)
+  gPostiveScores<- ReadBoolean(myFile)
+  gScoresMax<- ReadDouble(myFile)
+  gRandomStructure<- ReadRandomStructure(myFile)
+  gSConstraint <- ReadInteger(myFile)
+  gBurn <- ReadInteger(myFile)
+  gSkip <- ReadInteger(myFile)
+  gXsiProposalVariance <- ReadDouble(myFile)
+  gTauProposalVariance <- ReadDouble(myFile)
+  gThetaProposalVariance <- ReadDouble(myFile)
+  gXsiIncMax <- ReadDouble(myFile)
+  gFacOldXsi <- ReadDouble(myFile)
+  gBlockBeta <- ReadInteger(myFile)
 
+  check<- ReadInteger(myFile)
+  #print(check) # check 16
 
-	  # debug
-	  # gXsiParameterLabelsTemp<<- gXsiParameterLabels; print("gXsiParameterLabelsTemp is available for debugging") # debug
-	  # gGinLongLabelsTemp<<- gGinLongLabels; print("gGinLongLabelsTemp is available for debugging") # debug
-	  # gGinShortLabelsTemp<<- gGinShortLabels; print("gGinShortLabelsTemp is available for debugging") # debug
-	  # gPIDLookUpTemp<<- gPIDLookUp; print("gPIDLookUpTemp is available for debugging") # debug
+  gRegressors<- ReadRegressionList(myFile) # overwrites legacy gRegression object
+
+  ## TOADD
+  # gSpeed (int)
+  #
+  gSpeed<- ReadInteger(myFile)
+  if(version > 23)
+  {
+    gEstimationAllMethods<- ReadIntegerList(myFile)
+  }
+
+    # debug
+    # gXsiParameterLabelsTemp<<- gXsiParameterLabels; print("gXsiParameterLabelsTemp is available for debugging") # debug
+    # gGinLongLabelsTemp<<- gGinLongLabels; print("gGinLongLabelsTemp is available for debugging") # debug
+    # gGinShortLabelsTemp<<- gGinShortLabels; print("gGinShortLabelsTemp is available for debugging") # debug
+    # gPIDLookUpTemp<<- gPIDLookUp; print("gPIDLookUpTemp is available for debugging") # debug
 
 
   # put all the stuff into a list
-  systemFile<-list(
+  systemFile <- list(
     Compressed = Compressed,
     builddate = builddate,
     writedate = writedate,
@@ -683,7 +713,7 @@ ReadSys<-function(myFile){
     gGeneraliseditemList_D = gGeneraliseditemList_D,
     gRegToCategorise = gRegToCategorise,
     gFitStatistics = gFitStatistics,
-    gRegressors = gRegressors,
+    # gRegressors = gRegressors, # not stored to keep order with CQ system file
     gDummies = gDummies,
     gHasDummies = gHasDummies,
     gItemGroups = gItemGroups,
@@ -711,29 +741,33 @@ ReadSys<-function(myFile){
     gResponseData = gResponseData,
     # check 12
     gMatrixList = gMatrixList,
-	  gXsiParameterLabels=gXsiParameterLabels,
-		gTauParameterLabels=gTauParameterLabels,
-		# check 14
-		gRegressorLabels=gRegressorLabels,
-		gGinLongLabels=gGinLongLabels,
-		gGinShortLabels=gGinShortLabels,
-		gPIDLookUp=gPIDLookUp,
-		# check 15
-	  gCommandHistory=gCommandHistory,
-		gBandDefines=gBandDefines,
-		gDIC = gDIC,
-		gPostiveScores = gPostiveScores,
-		gScoresMax = gScoresMax,
-		gRandomStructure = gRandomStructure,
-		gSConstraint=gSConstraint,
-		gBurn=gBurn,
-		gSkip=gSkip,
-		gXsiProposalVariance=gXsiProposalVariance,
-		gTauProposalVariance=gTauProposalVariance,
-		gThetaProposalVariance=gThetaProposalVariance,
-		gXsiIncMax=gXsiIncMax,
-		gFacOldXsi=gFacOldXsi,
-		gBlockBeta=gBlockBeta
+    gXsiParameterLabels = gXsiParameterLabels,
+    gTauParameterLabels = gTauParameterLabels,
+    # check 14
+    gRegressorLabels = gRegressorLabels,
+    gGinLongLabels = gGinLongLabels,
+    gGinShortLabels = gGinShortLabels,
+    gPIDLookUp = gPIDLookUp,
+    # check 15
+    gCommandHistory = gCommandHistory,
+    gBandDefines = gBandDefines,
+    gDIC = gDIC,
+    gPostiveScores = gPostiveScores,
+    gScoresMax = gScoresMax,
+    gRandomStructure = gRandomStructure,
+    gSConstraint = gSConstraint,
+    gBurn = gBurn,
+    gSkip = gSkip,
+    gXsiProposalVariance = gXsiProposalVariance,
+    gTauProposalVariance = gTauProposalVariance,
+    gThetaProposalVariance = gThetaProposalVariance,
+    gXsiIncMax = gXsiIncMax,
+    gFacOldXsi = gFacOldXsi,
+    gBlockBeta = gBlockBeta,
+    # check 16
+    gRegressors = gRegressors,
+    gSpeed = gSpeed,
+    if(version > 23) gEstimationAllMethods = gEstimationAllMethods
 
   )
 
@@ -744,11 +778,11 @@ ReadSys<-function(myFile){
 }
 
 #
-# castReadSysToDf<-function(ReadSysList){
+# castReadSysToDf <- function(ReadSysList){
 #
 #
 #   # cast PID lookup table to df
-#   gPIDLookUpDf<-data.frame(matrix(unlist(ReadSysList$gPIDLookUp), ncol = 1))
+#   gPIDLookUpDf <- data.frame(matrix(unlist(ReadSysList$gPIDLookUp), ncol = 1))
 #   names(gPIDLookUpDf)<- c("pid")
 #   gPIDLookUpDf$seqNum<- c(1:length(ReadSysList$gPIDLookUp))
 #
@@ -828,8 +862,8 @@ ReadSys<-function(myFile){
 #     # get user defined prefix
 #     myMatrixoutPrefix<- strsplit(grep("_raw|_fit", names(ReadSysList$gMatrixList), value = TRUE)[1], split = "_")[[1]][1]
 #
-#     matrixSampler_fit<- as.data.frame(eval(parse(text=paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_fit"))))
-#     matrixSampler_raw<- as.data.frame(eval(parse(text=paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_raw"))))
+#     matrixSampler_fit<- as.data.frame(eval(parse(text = paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_fit"))))
+#     matrixSampler_raw<- as.data.frame(eval(parse(text = paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_raw"))))
 #
 #     # add to system file
 #     systemFile[["matrixSampler_fit"]]<- matrixSampler_fit
@@ -842,7 +876,7 @@ ReadSys<-function(myFile){
 #     # get user defined prefix
 #     myMatrixoutPrefix<- strsplit(grep("_userfit", names(ReadSysList$gMatrixList), value = TRUE)[1], split = "_")[[1]][1]
 #
-#     matrix_userfit<- as.data.frame(eval(parse(text=paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_userfit"))))
+#     matrix_userfit<- as.data.frame(eval(parse(text = paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_userfit"))))
 #     matrix_userfit$gin<- c(1:ReadSysList$gNGins)
 #     # add to system file
 #     systemFile[["matrix_userfit"]]<- matrix_userfit

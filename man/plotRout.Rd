@@ -2,21 +2,29 @@
 % Please edit documentation in R/plotRout.R
 \name{plotRout}
 \alias{plotRout}
+\alias{plotRout.TestInfo}
 \alias{plotRout.InformationWithLatentDist}
 \alias{plotRout.ICC}
+\alias{plotRout.MCC}
 \alias{plotRout.default}
 \title{plotRout}
 \usage{
-plotRout(myRout)
+plotRout(myRout, ...)
 
-\method{plotRout}{InformationWithLatentDist}(myRout)
+\method{plotRout}{TestInfo}(myRout, ...)
 
-\method{plotRout}{ICC}(myRout)
+\method{plotRout}{InformationWithLatentDist}(myRout, ...)
 
-\method{plotRout}{default}(myRout)
+\method{plotRout}{ICC}(myRout, ...)
+
+\method{plotRout}{MCC}(myRout, ...)
+
+\method{plotRout}{default}(myRout, ...)
 }
 \arguments{
 \item{myRout}{an R object created by the `ConQuestRout` function.}
+
+\item{...}{additional arguments passed into plotting functions (e.g., `plotZero = TRUE` to control whether the 0 category is plotted in ICC and MCC).}
 }
 \value{
 A ggplot2 object.

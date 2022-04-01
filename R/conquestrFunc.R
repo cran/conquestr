@@ -1,9 +1,26 @@
-#' @include conquestr.R
-packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5.5.11")
-
 #
 # required helper functions
 #
+
+#' @title readCharSafe
+#'
+#' @description reads `n` bytes as raw from a binary connection.
+#'     Removes any embedded nuls, replacing them with `replace`.
+#'
+#' @param con A file connection - usually a binary file.
+#' @param n The number of bytes to read.
+#' @param replace a character to replace embedded nulls with.
+#'
+#' @return character vector.
+#' @keywords internal
+readCharSafe <- function(con, n, replace = " ") {
+    tS <- readBin(con = con, what = "raw", n = n)
+    if (any(tS == as.raw(0))) {
+        tS <- charToRaw(paste0(rep(replace, n), collapse = ""))
+    }
+    tS <- rawToChar(tS)
+    return(tS)
+}
 
 #' @title zapNulls
 #'
@@ -71,15 +88,20 @@ searchConQuestSys<- function(searchString, mySys, value = TRUE, ignore.case = TR
 
 #' @title transformPvs
 #'
-#' @description Helper function to Transform PVs onto a new metric (e.g., PISA Mean = 500, SD = 100). Uses the method described in the PISA 2012 technical manual.
+#' @description Helper function to Transform PVs onto a new metric
+#'     (e.g., PISA Mean = 500, SD = 100).
+#'     Uses the method described in the PISA 2012 technical manual.
 #'
 #' @param x A concatenated vector of varnames in data, PV1, PV2, ..., PVm.
 #' @param mT The desired mean of the PVs
 #' @param sdT The desired sd of the PVs
-#' @param weights The name of the weight variable in 'data' used to cauclate the mean and SD accross the PVs
+#' @param weights The name of the weight variable in 'data' used to
+#'     caulculate the mean and SD accross the PVs
 #' @param data The data frame that contains the PVs and weights.
-#' @param addToDf A Boolean, if TRUE, the transformed PVs are coerced into the DF, data, with name data$x_T (not yet implmented).
-#' @param debug A temporary flag to spit-out objects to global env for chekcing. Will be removed when pushed to CRAN
+#' @param addToDf A Boolean, if TRUE, the transformed PVs are coerced
+#'     into the DF, data, with name data$x_T (not yet implmented).
+#' @param debug A temporary flag to spit-out objects to global env for chekcing.
+#'     Will be removed when pushed to CRAN
 #' @return a List of transofrmed PVs with as many elements as PVs were listed in 'x'.
 transformPvs<- function(x, mT = 0, sdT = 1, weights, data, addToDf = FALSE, debug = TRUE){
   # setup
@@ -131,6 +153,68 @@ transformPvs<- function(x, mT = 0, sdT = 1, weights, data, addToDf = FALSE, debu
 
 }
 
+#' @title findConQuestExe
+#'
+#' @description Searches in common insall paths to find ConQuest executable.
+#' This is called by `ConQuestCall` when no executable is passed explicitly.
+#'
+#' @return Char with path to ConQuest executable.
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' findConQuestExe()
+#' }
+findConQuestExe<- function(){
+  message("no path to ConQuest Executable provided: searching common install locations.")
+  # FIRST we look for a folder (not recursive) that has the string ConQuest in it in commonInstallLocs
+  # then we loop through each and is we find a possible folder, we search recusrively for a file called ConQuest and see if it is an exe
+  if(Sys.info()["sysname"] == "Windows")
+  {
+    commonInstallLocs<- c(
+      file.path(Sys.getenv("PROGRAMFILES")),
+      file.path(Sys.getenv("ProgramFiles(x86)")),
+      file.path(Sys.getenv("APPDATA")),
+      # normalizePath(file.path(Sys.getenv("HOME"), "..", "Desktop")),
+      file.path(Sys.getenv("HOME"))
+    )
+
+  } else if(Sys.info()["sysname"] == "Darwin") {
+    commonInstallLocs<- c(
+        file.path("", "Applications"),
+        file.path("~", "Applications"),
+        file.path("~", "Desktop"),
+        file.path("~", "Downloads")
+    )
+
+  } else {
+    commonInstallLocs<- c("/") # placeholder for Linux
+  }
+  for(path1 in commonInstallLocs){
+    mytmp<- list.dirs(path1, recursive = FALSE)
+    mytmp<- mytmp[grep("conquest", mytmp, ignore.case = TRUE)]
+    if(length(mytmp) == 0){
+      message(paste0("searched in ", path1, ". No ConQuest directory found"))
+    } else {
+      for(dir in mytmp){
+        myFiles<- list.files(dir, recursive = TRUE, pattern = "ConQuest",  full.names=TRUE)
+        if(length(myFiles) == 0){
+          message(paste0("searched in ", dir, ". No ConQuest executable found"))
+          break
+        } else {
+          for(myFile in myFiles){
+            if(file.access(myFile, 1) == 0){ # file.access, mode = 1 (execute), 0 = TRUE, -1 FAIL
+              message(paste0("found executable ", normalizePath(myFile, mustWork = FALSE), ". This will be used to try to call ACER ConQuest"))
+              if(Sys.info()["sysname"] == "Windows") myFile<- normalizePath(myFile, winslash = "/", mustWork = TRUE)
+              return(myFile)
+            }
+          }
+          message(paste0("searched in", dir, ". No ConQuest executable found"))
+        }
+      }
+    }
+  }
+  stop("No executable found: you must specify where the ConQuest executable is. This error is fatal")
+}
 
 #' @title createConQuestProject
 #'
@@ -227,41 +311,169 @@ createConQuestProject<- function(prefix = getwd(), ...){
 #' \dontrun{
 #' getCqHist(ConQuestSys())
 #' }
-getCqHist<- function(myCqs){
+getCqHist <- function(myCqs){
 
-  IterHistTmp<- data.frame(
+  IterHistTmp <- data.frame(
+    RunNo = unlist(myCqs$gHistory$RunNo),
     Iter = unlist(myCqs$gHistory$Iter),
     Likelihood = unlist(myCqs$gHistory$Likelihood)
   )
 
+  IterHistTmp <- replaceInDataFrame(IterHistTmp, -1.797693e+308, NA)
 
-  ParamTypesTmp<- c("Beta", "Variance", "Xsi" , "Tau", "RanTermVariance")
+# todo - clear NA liklihoods for JML
 
-  for(paramType in ParamTypesTmp){
-    whichParam<- as.logical(match(names(myCqs$gHistory), paramType, nomatch = 0))
-    if(!all(is.na(unlist(myCqs$gHistory[whichParam])))){
-      tmpMat<- matrix(
-          unlist(myCqs$gHistory[whichParam]),
-          nrow = length(myCqs$gHistory[whichParam][[1]]),
+  ParamTypesTmp <- c("Beta", "Variance", "Xsi", "Tau", "RanTermVariance")
+  histList <- list()
+  history <- list()
+  history[["Liklihood"]] <- IterHistTmp
+
+  # iterate over each param type and unlist into a named list
+  for (paramType in ParamTypesTmp) {
+    # which lists in gHistory are we working with?
+    whichParam<- as.logical(match(names(myCqs$gHistory), paramType, nomatch = 0)) 
+    # Deal with "Xsi" , "Tau", "RanTermVariance"
+    # beta is special case, 1 row per dim, var is special case, 
+    # (1,1); (1,2), ... , (1,gNDim), ... , (2, 1), ... (gNDim, gNDim)
+    if(paramType != "Beta" & paramType != "Variance")
+    {
+      histList[[paramType]] <- unlist(myCqs$gHistory[whichParam])
+      history[[paramType]] <- as.data.frame(
+        matrix(
+          histList[[paramType]],
+          nrow = length(IterHistTmp$Iter),
           byrow = TRUE
         )
-
-      tmpDf<- as.data.frame(tmpMat)
-      names(tmpDf)<- paste0(paramType, 1:ncol(tmpDf))
-      IterHistTmp<- cbind(IterHistTmp, tmpDf)
+      )
+      names(history[[paramType]]) <- paste0(paramType, 1:ncol(history[[paramType]])) # add names based on param type
     }
+    # Deal with Betas
+    if (paramType == "Beta") # beta is special case, each entry has 1 row per dim
+    {
+      myIter <- length(IterHistTmp$Iter) # length because iters may recycle over RunNo
+      for (iter in seq(myIter))
+      {
+        myBetaIter <- unlist(myCqs$gHistory[[paramType]][[iter]])
+        myBetaVec <- vector()
+        for (i in seq(myCqs$gNDim))
+        {
+          for (j in seq(myCqs$gNReg))
+          {
+            myBetaVec <- c(myBetaVec, myBetaIter[i,j])
+          }
+        }
+        if (iter == 1)
+        {
+          myBetaMatrix <- myBetaVec
+        } else
+        {
+          myBetaMatrix <- rbind(myBetaMatrix, myBetaVec)
+        }
+      }
+      history[[paramType]] <- as.data.frame(myBetaMatrix)
+      # add names based on param type
+      names(history[[paramType]]) <- paste0(paramType, "_Est", 1:myCqs$gNReg, "_D", rep(1:myCqs$gNDim, each = myCqs$gNReg)) 
+    }
+    # Deal with Variance
+    # var is special case, (1,1); (1,2), ... , (1,gNDim), ... , (2, 1), ... (gNDim, gNDim)
+    if (paramType == "Variance")
+    {
+      myIter <- length(IterHistTmp$Iter) # length because iters may recycle over RunNo
+      for (iter in seq(myIter))
+      {
+        myVarIter <- unlist(myCqs$gHistory[[paramType]][[iter]])
+        # get Variances
+        myVariances <- diag(myVarIter)
+        # get covars (only use in length myCovars > 0)
+        myCovars <- myVarIter[lower.tri(myVarIter)]
+        myVarIter <- c(myVariances, myCovars)
+        if (iter == 1)
+        {
+          myVarMatrix <- myVarIter
+        } else
+        {
+          myVarMatrix <- rbind(myVarMatrix, myVarIter)
+        }
+      }
+      history[[paramType]] <- as.data.frame(myVarMatrix)
+      myVarNames <- paste0(paramType, "_D", 1:myCqs$gNDim)
+      if (length(myCovars) > 0)
+      {
+        # if there are covariances, lets use the indices of the var-covar matrix as names
+        tmpMat <- unlist(myCqs$gHistory[[paramType]][[1]]) # grab the first var-covar matrix
+        myCovarInd <- matrix(which(lower.tri(tmpMat), arr.ind=T), ncol = 2)
+        myCovarInd <- myCovarInd[order(myCovarInd[ , 1]) , ]
+        if (!is.null(nrow(myCovarInd))) # is there more than 1 covariance?
+        {
+          myCovarIndTxt <- apply(myCovarInd,1,paste,collapse="")
+        } else
+        {
+          myCovarIndTxt <- paste(myCovarInd,collapse="")
+        }
+        myCovarNames <- paste0("Co", tolower(paramType), myCovarIndTxt)
+        myVarNames <- c(myVarNames, myCovarNames)
+      }
+      names(history[[paramType]])<- myVarNames # add names based on param type
+    }
+    history[[paramType]] <- replaceInDataFrame(history[[paramType]], -1.797693e+308, NA)
   }
-  IterHistTmp<- replaceInDataFrame(IterHistTmp, -1.797693e+308, NA)
-  # manually remove RanTermVar if not used
-  if(
-    all(is.na(unlist(
-      IterHistTmp[ , grep("^Ran", names(IterHistTmp))]
-      )))
-  ) IterHistTmp<- IterHistTmp[ , -grep("^Ran", names(IterHistTmp))]
-  return(IterHistTmp)
-
+  # concat list into single DF
+  myHistoryDf <- Reduce(cbind, history)
+  row.names(myHistoryDf) <- NULL
+  return(myHistoryDf)
 }
 
+#' @title getCqChain
+#'
+#' @description creates a data frame representation of the estimation chain from an MCMC model.
+#' The burn is discarded and only the unskipped itterations in MCMC chain are retained.
+#'
+#' @param myCqs A system file.
+#' @return A data frame.
+#' @examples
+#' \dontrun{
+#' getCqChain(ConQuestSys())
+#' }
+getCqChain<- function(myCqs){
+  if(!myCqs$gIntegrationMethod %in% c(7:8)) stop("getCqHist is for models using MCMC integration only, try getCqHist instead")
+  tmpHist<- getCqHist(myCqs)
+  tmpBurn<- myCqs$gBurn
+  if(tmpBurn > 0)
+  {
+    # "myHist$Iter[1] == 0" checks that iter 1 is the first burn iteration,
+    # and that this function hasnt been called multiple times
+    tmpBurn<- tmpBurn+1 # note that gBurn is 1-offset, and iter is 0-offset
+    if(tmpHist$Iter[1] == 0) tmpHist<- tmpHist[ -c(1:tmpBurn), ]
+  }
+  tmpHist<- tmpHist[ , -c(grep("^Iter", names(tmpHist))) ]
+  return(tmpHist)
+}
+
+#' @title summariseCqChain
+#'
+#' @description takes a data frame created by getCqChain and returns a list reporting the mean and variaince for each parameter
+#'
+#' @param myChain A data frame returned from getCqChain.
+#' @return A list.
+#' @examples
+#' \dontrun{
+#' summariseCqChain(getCqChain(ConQuestSys()))
+#' }
+#' @importFrom stats var
+summariseCqChain<- function(myChain)
+{
+  mySummary<- list()
+
+  tmp<- as.data.frame(colMeans(myChain))
+  names(tmp)<- c("est")
+  mySummary[["mean"]]<- tmp
+
+  tmp<- as.data.frame(sapply(myChain, var)) # manual alg. (sum(myHist$Xsi1^2) - (sum(myHist$Xsi1)^2) / length(myHist$Xsi1)) / (length(myHist$Xsi1) - 1)
+  names(tmp)<- c("est")
+  mySummary[["var"]]<- tmp
+
+  return(mySummary)
+}
 
 #' @title getCqVars
 #'
@@ -331,9 +543,9 @@ getCqTerms<- function(myCqs){
 getCqParams<- function(myCqs){
 
   if(myCqs$gPairWise) stop("pairwise is not yet supported by getCqParams")
-  # will want to have, for each param, est, SE, unwFit, unw95CIlow, unw95CIhigh, unwY, wFit, nw95CIlow, w95CIhigh, wT,
+  # will want to have, for each param, est, SE, unwFit, unw95CIlow, unw95CIhigh, unwT, wFit, nw95CIlow, w95CIhigh, wT,
   # neeed to know, are the SE? are there fits
-  # myCqs$gIFit # bool
+  myFit<- myCqs$gIFit # bool
   mySe<- myCqs$gStdError < 3 # bool SE is calculated, 3 = none
 
   # at the moment, we simply get back a list of param nums, param types, signs and labels
@@ -561,4 +773,43 @@ getCqParams2<- function(myCqs){
   # to get the value of an anchored xsi, need to find out which Dim it is on, and calculate -1*(sum(Xsi_id)) (for d = d, and i = i in d)
 }
 
+#' @title isCqConverged
+#'
+#' @description returns true is the ConQuest model has converged normally (system file).
+#'
+#' @param myCqs A system file.
+#' @return A boolean.
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' isCqConverged(ConQuestSys())
+#' }
+isCqConverged <- function(myCqs){
+  if (!"conQuestSysFile" %in% class(myCqs))
+  {
+    stop("'mySys' must be a ConQuest system file object created by 'conquestr::ConQuestSys'")
+  }
 
+  modConverged <- FALSE
+  tmpHist <- getCqHist(myCqs)
+  lastIter <- length(tmpHist$Iter)
+  paramCriterion <- myCqs$gParameterConvCriterion
+  devCriterion <- myCqs$gDevianceConvCriterion
+
+  # Params
+  lastParams <- tmpHist[lastIter, grep("^Lik", names(tmpHist))]
+  lastParams <- lastParams[!is.na(lastParams)]
+  prevParams <- tmpHist[lastIter - 1, grep("^Lik", names(tmpHist))]
+  prevParams <- prevParams[!is.na(prevParams)]
+  paramsConv <- all(abs(lastParams - prevParams) < paramCriterion)
+  # Dev
+  lastDev <- tmpHist[lastIter, grep("^Lik", names(tmpHist))]
+  lastDev <- lastDev[!is.na(lastDev)]
+  prevDev <- tmpHist[lastIter - 1, grep("^Lik", names(tmpHist))]
+  prevDev <- prevDev[!is.na(prevDev)]
+  devConv <- all(abs(lastDev - prevDev) < devCriterion)
+
+  if (all(c(paramsConv, devConv))) modConverged <- TRUE
+
+  return(modConverged)
+}

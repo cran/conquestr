@@ -4,23 +4,26 @@
 \alias{ConQuestCall}
 \title{ConQuestCall}
 \usage{
-ConQuestCall(cqInstallLocation, cqc, stdout = "")
+ConQuestCall(cqc, cqExe, stdout = "")
 }
 \arguments{
-\item{cqInstallLocation}{The location of the 'ACER ConQuest' executable.}
+\item{cqc}{The location of the control file (syntax) to be run.}
 
-\item{cqc}{The locaiton of the control file to be run.}
+\item{cqExe}{The path to the 'ACER ConQuest' executable. Note, if this argument is missing, conquestr 
+will find a local installation of ACER ConQuest by first searching the default installtion locations
+(Program Files on Windows and Applications on Mac) then searching other local directories (Appdata 
+and the HOME path).}
 
-\item{stdout}{On Mac only, can be toggled to NULL (or a connection) to supress output to R console.}
+\item{stdout}{On Mac only, can be toggled to NULL (or a connection) to suppress output to R console.}
 }
 \value{
 prints 'ACER ConQuest' output to stdout.
 }
 \description{
-Call 'ACER ConQuest' and run a control file.
+Call an instance of 'ACER ConQuest' at the command line and run a control file (syntax).
 }
 \examples{
 \dontrun{
-ConQuestCall(cqInstallLocation = file.path("/Applications", "ConQuest BETA", "ConQuest"))
+ConQuestCall(cqExe = file.path("/Applications", "ConQuest BETA", "ConQuest"))
 }
 }

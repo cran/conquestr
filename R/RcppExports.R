@@ -21,7 +21,7 @@ replaceInVector <- function(v, r, x) {
 #'
 #' @param d A DataFrame.
 #' @param r A double - the value to be replaced if it is < -1e300.
-#' @param x A double - the value to repalce r with.
+#' @param x A double - the value to replace r with.
 replaceInDataFrame <- function(d, r, x) {
     .Call('_conquestr_replaceInDataFrame', PACKAGE = 'conquestr', d, r, x)
 }

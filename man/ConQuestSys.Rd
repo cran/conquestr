@@ -7,17 +7,18 @@
 ConQuestSys(myCqs)
 }
 \arguments{
-\item{myCqs}{The location of an uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest' > 4.30.2.}
+\item{myCqs}{The location of an uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest' > 4.30.2.}
 }
 \value{
 A list containing the data objects created by 'ACER ConQuest'.
 }
 \description{
-Read an ''ACER ConQuest'' system file created by a `put` command in 'ACER ConQuest'. The system file must not be compressed. Use the option `compressed=no`` in the put command within 'ACER ConQuest'.
+Read an ''ACER ConQuest'' system file created by a `put` command in 'ACER ConQuest'.
+The system file must not be compressed. Use the option `compressed=no`` in the put command within 'ACER ConQuest'.
 }
 \examples{
 mySysData<- ConQuestSys()
-myEx1SysData<- ConQuestSys(myCqs = system.file("extdata", "Ex1.cqs", package = "conquestr"))
+myEx1SysData<- ConQuestSys(myCqs = system.file("extdata", "mysysfile.cqs", package = "conquestr"))
 \dontrun{
 # if you run the above example this will return your original 'ACER ConQuest' syntax.
 cat(unlist(myEx1SysData$gCommandHistory))

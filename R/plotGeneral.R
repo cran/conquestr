@@ -2,6 +2,66 @@
 # these are plotting functions that do not use the Rout object. That is, these are plots in addition to the methods specified for the plotRout generic function
 #
 
+#' @title plotCqHist
+#'
+#' @description generates a plot from a history object. Use `getCqHist` to create a history object from an 'ACER ConQuest' system file.
+#'
+#' @param myHist an R object created by the `getCqHist` function.
+#' @param centre a Boolean representing whether the iteration history should be mean centred (within parameter).
+#'     This is helpful for plots that include all parameters to ensure the Y axis is sensible. Consider a plot with raw values of the Likelihood _and_ item parameters on it.
+#' @param params A vector of which params to plot. Must be one or more of "all", "Likelihood", "Beta", Variance", "Xsi", "Tau".
+#' @param legend Should a legend be plotted?.
+#' @return A ggplot2 object.
+#' @examples
+#' \dontrun{
+#' myHistPlot<- plotCqHist(getCqHist(ConQuestSys()))
+#' }
+#' @importFrom magrittr %>%
+#' @importFrom tidyr pivot_longer
+#' @importFrom dplyr mutate group_by matches
+plotCqHist<- function(myHist, centre = TRUE, params = c("all"), legend = FALSE){
+
+  if("all" %in% params){
+    myParams<- "Likelihood|Beta|Variance|Xsi|Tau"
+  } else {
+    myParams = params
+  }
+
+  if(!"Iter" %in% names(myHist)) myHist$Iter<- 1:length(myHist[ , 1]) # there is no iter column in object returned from getCqChain
+
+  myHist_L<- myHist %>%
+    pivot_longer(
+      cols = matches(myParams),
+      names_to = "param",
+      values_to = "estimate"
+    )
+
+  yAxisLabel<- "Estimate"
+  if(centre){
+    myHist_L<- myHist_L %>%
+      group_by(.data$param)  %>%
+      mutate(
+        estimate = scale(.data$estimate)
+    )
+
+    yAxisLabel<- "Mean-centred estimate"
+  }
+
+  if(legend){
+    LegendPos<- "right"
+  } else {
+    LegendPos<- "none"
+  }
+
+  myHistPlot<- ggplot2::ggplot(myHist_L, ggplot2::aes(x = .data$Iter, y = .data$estimate, colour = .data$param)) +
+    ggplot2::geom_line(size = 0.5) +
+    ggplot2::theme_bw() +
+    ggplot2::labs(x = "Iteration", y = yAxisLabel, colour = "Parameter") +
+    ggplot2::theme(legend.position=LegendPos)
+
+  return(myHistPlot)
+}
+
 #' @title plotDif
 #'
 #' @description Creates a plot (ggplot2 object) of item parameter estimates common to two system files (e.g., a DIF analysis).
@@ -143,16 +203,16 @@ sysToBMatrixDf<- function(mySys, applyLabels = TRUE){
   names(myTempDf)<- paste0(rep("D", mySys$gNDim), c(1:mySys$gNDim))
   if(isTRUE(applyLabels)){
     if(length(mySys$gLabels) == 0){
-      return(myTempDf)
+      #return(myTempDf)
     } else {
       for(i in seq_along(length(mySys$gLabels))){
         if(mySys$gLabels[[i]]$VarNum == 0 & mySys$gLabels[[i]]$VarType == 0){ # these are item labels
           # do something
           if(length(mySys$gLabels[[i]]$code) > length(unlist(mySys$gItemListByD))){ # too many labels!
-            return(myTempDf)
+            #return(myTempDf)
           }
         } else {
-          return(myTempDf)
+          #return(myTempDf)
         }
       }
     }
@@ -263,6 +323,7 @@ sysToItemLabels<- function(mySys, myWarn = TRUE){
 #' @param mySys An 'ACER ConQuest' system file object created using the conquestr::ConQuestSys function.
 #' @param myDims A string specifying which specific dimensions should be included. The default is "D1", Specific dimensions are specified by the label "D1" for dimensions 1 etc.
 #'     Alternatively, you can specify myDims = "all", though what this produces is not currenlty supported.
+#' @param abilityType What kind of person ability estimate should be used? Defaults to plausible values. Alternatievly WLE, MLE, EAP.
 #' @param ... Optional arguments, mostly for debugging, e.g., `setDebug = TRUE` will print temporary data frames.
 #' @return A ggplot2 object.
 #' @examples
@@ -272,7 +333,7 @@ sysToItemLabels<- function(mySys, myWarn = TRUE){
 #' # if you run the above example you will have the plot in the object `myItemMap`.
 #' plot(myItemMap)
 #' }
-plotItemMap<- function(mySys, myDims = "D1", ...){
+plotItemMap<- function(mySys, myDims = "D1", abilityType = "PV", ...){
   # for debug
   myDebug<- FALSE
   setDebug<- FALSE
@@ -281,7 +342,21 @@ plotItemMap<- function(mySys, myDims = "D1", ...){
     myDebug<- myArgs["setDebug"]
   }
 
-  if(!mySys$gPlausibleExist) stop("You must have generated PVs in ConQuest to plot, try, `estimate ! ...abilities = yes ...;`")
+  if(abilityType == "PV")
+  {
+    if(!mySys$gPlausibleExist) stop("You must have generated PVs in ConQuest to plot, try, `estimate ! ...abilities = yes ...;`")
+    abilityType<- paste0("PV1_", myDims) # we use this in call to ggplot2
+  }
+  if(abilityType == "EAP")
+  {
+    if(!mySys$gEAPExist) stop("You must have generated EAPs in ConQuest to plot, try, `estimate ! ...abilities = yes ...;`")
+    abilityType<- paste0("eap", substr(myDims,2,2))
+  }
+  if(abilityType == "WLE")
+  {
+    if(!mySys$gWLEExist) stop("You must have generated WLEs in ConQuest to plot, try, `estimate ! ...abilities = yes ...;`")
+    abilityType<- paste0("wle", substr(myDims,2,2))
+  }
   # get B matrix
   myTmpB<- sysToBMatrixDf(mySys)
   if(!(myDims == "all")){
@@ -311,9 +386,9 @@ plotItemMap<- function(mySys, myDims = "D1", ...){
   myTmpXsiDf<- myTmpXsiDf[!duplicated(myTmpXsiDf$ItemCode) ,]
   if(myDebug) print (myTmpXsiDf)
   # get abilities (prefer PV, then WLE, then none)
-  myTmpAbil<- createDfFromSys(mySys)
+  myTmpAbil<- getCqData(mySys)$Estimates
 
-  myPlot<- ggplot2::ggplot(myTmpAbil, ggplot2::aes(x = eval(parse(text = paste0(".data$PV1_", myDims))))) +
+  myPlot<- ggplot2::ggplot(myTmpAbil, ggplot2::aes(x = eval(parse(text = paste0(".data$", abilityType))))) +
     ggplot2::geom_density() +
     ggplot2::theme_bw() +
     ggplot2::geom_point(data = myTmpXsiDf, ggplot2::aes(x = .data$xsi, y = 0), fill = "red", shape = 21, alpha = 0.5, size = 3) +
@@ -327,7 +402,7 @@ plotItemMap<- function(mySys, myDims = "D1", ...){
     ) +
     ggplot2::labs(x = "", y = "") +
     ggplot2::scale_y_continuous(breaks = NULL) +
-    ggplot2::coord_flip(ylim = c(-0.2, 0.6)) + # use this instead of coord_cartesian - this is a wrapper for coord_cartesian and hence would overwrite the call to coord_cartesian
+    ggplot2::coord_flip(ylim = c(-0.2, NA)) + # use this instead of coord_cartesian - this is a wrapper for coord_cartesian and hence would overwrite the call to coord_cartesian
     #ggplot2::theme(axis.line.y = element_line(arrow = arrow(angle = 15, length = unit(0.25, "cm"), ends = "both", type = "closed"), size = 0.4, colour = "grey20")) +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
 
@@ -335,6 +410,44 @@ plotItemMap<- function(mySys, myDims = "D1", ...){
 }
 
 
+
+#' @title plotMCC
+#'
+#' @description Creates a plot of an item characteristic curve (by response category). For a dichotomous item, this will
+#'     yield a single curve, for polytomous items this will produce a curve for each response category.
+#'     Note this is not for use with `rout` files. See the generic function `plotRout` for plotting rout files.
+#'
+#' @param item Item parameters for a single item.
+#' @param data Two vectors of data in an _n_ by 2 matrix or data frame, where _n_ are the cases in your analysis.
+#'     The first vector should be item responses. the second vector should be estimated person abilities.
+#' @param range Lower and upper bounds to plot over (defaults to c(-6, 6) OR the minimum and maximum estimated ability, whichever is larger).
+#' @param e_linetype A string. Should the empirical lines be based on "bins", or "regression". Defaults to "bins"
+#' @param bins If _e\_linetype_ is "bins", how many bins should be used to chunk the empirical lines?
+#'     defaults to 6. Ignored otherwise.
+#' @return A ggplot2 object.
+#' @examples
+#' myRout <- ConQuestRout()
+#' myPlot<- plotRout(myRout)
+#' \dontrun{
+#' # if you run the above example you will have an ICC plot in the object `myPlot`.
+#' plot(myPlot)
+#' }
+plotMCC<- function(item, data, range = c(-6, 6), e_linetype = "bins", bins = 6){
+  # check inputs are okay
+
+  # update range if needed
+
+  # create data for model lines
+  myProbsL<- list()
+  range_s<- seq(range, by = 0.1)
+  for(i in seq(range_s)){
+    myProbsL[[i]]<- simplep(range_s[i], item)
+  }
+  myProbs<- (matrix(unlist(myProbsL), ncol = length(item[ , 1]), byrow = TRUE))
+
+
+
+}
 
 
 # testy123<- plotItemMap(ConQuestSys(), "all", setDebug = TRUE)

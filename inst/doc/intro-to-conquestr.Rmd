@@ -4,7 +4,7 @@ author: "Dan Cloney"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to ConQuestR}
+  %\VignetteIndexEntry{Introduction to conquestr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,100 +14,135 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+library("conquestr")
 ```
 
-_conquestr_ currently has two main features. It can can call 'ACER ConQuest' and run a syntax file, and it can read 'ACER ConQuest' system files (sometimes call a state file) to make all of the 'ACER ConQuest' data objects available in R. These features allows users to include 'ACER ConQuest' within their R workflow and to undertake secondary analysis and visualisation. This is particularly useful for users of the Mac version or command line version of 'ACER ConQuest' which does not support creating plots.
+_conquestr_ has three main functions: 
 
-This vignette demonstrates how to use the built-in demo files to:
+- ConQuestCall: calls 'ACER ConQuest' in a terminal and runs syntax
+- ConQuestSys: reads and returns 'ACER ConQuest' system files as an R object. For example, this provides access to parameter estimates, abilities, and raw data. 
+- ConQuestRout (and plotRout): reads 'ACER ConQuest' plot objects (see the command [plot](https://conquestmanual.acer.org/s4-00.html#plot)) and creates plots in R via generic functions and dispatch.
+
+These functions allows users to include 'ACER ConQuest' within their R workflow. This is particularly useful for users of the Mac OS X version (and Windows console) version of 'ACER ConQuest' which does not support ploting.
+
+This vignette demonstrates how to use the package built-in demonstration files to:
 
 - Call 'ACER ConQuest' and run a syntax file
 - Read in a system file and access data objects
 
 ## Call ConQuest and run a syntax file
 
-First, ensure you have the most current version of ConQuest. Version > 4.34.1 is required. If you are unsure, check the [ConQuest forums](https://conquest-forums.acer.edu.au/index.php), or contact [support](mailto:sales@acer.org)
+First, ensure you have the most current version of ConQuest. Version > 5.17.4 is required. If you are unsure, check [ConQuest on the ACER Shop](https://shop.acer.org/acer-conquest-5.html).
+You will also need to install the conquestr library:
 
 ```
 install.packages("conquestr")
 library("conquestr")
 ```
 
-conquestr has some in-built 'ACER ConQuest' syntax files. You can use these, or your own file. To call 'ACER ConQuest' you will need two pieces of information: the location of your syntax file and the location of the 'ACER ConQuest' executable.
+You must pass the `ConQuestCall` function at least two pieces of information: the install location of ConQuest and a valid syntax file.
+_conquestr_ has included syntax files that can be used to run a model and test other package functions. 
+A default syntax file will be called is you do not explicitly provide one. 
+_conquestr_ will search for a valid installation of 'ACER ConQuest' unless the executable is explicitly declared.
+The search locations are (in order): 
+
+- The default install location (Windows:`%ProgramFiles%\ACER ConQuest\ConQuestConsole.exe` and Mac OS X: `/Applications/ConQuest/ConQuest`).
+- The Program Files folder on Windows, and the Application folder on Mac OS X
+- The current user's Desktop
 
 ```
 # if you don't provide a syntax file, using the argumenmt `cqc=`, then the in-built demo syntax file will be run. 
-  # This simply sets up some default settings and runs the command `about;`.
-
-myConQuestExe<- file.path("/Applications", "ConQuest", "ConQuest") # update file path to your install location
-
-ConQuestCall(cqInstallLocation = myConQuestExe) 
+ConQuestCall() 
 
 ```
 
 ```
 # the following output is produced:
 
-ConQuest build: Sep 23 2019
-Professional Version
-This version expires 1 September 2020
-submit /Library/Frameworks/R.framework/Versions/3.6/Resources/library/conquestr/extdata/ConQuestAbout.cqc;
-=>set conquestr=yes;
+ConQuest build: Mar 10 2021
+<TYPE> Version
+This version expires <DATE>
+submit <PATH>conquestr/extdata/conquestabout.cqc;
 =>dir;
-/Users/<USER>/conquestr/conquestr
+<PATH>
 =>about;
 Developed by
     Australian Council for Educational Research
-    University of California, Berkeley
+    University of California,Berkeley
 
-Your key: acb-123-1234
-Expires: 1 September 2020
+Your key: <KEY>
+Expires: <DATE>
 
-Professional Build:  Sep 23 2019
-Version: 4.33.1
+<TYPE> Build:  <DATE>
+Version: 5.17.4
 
 Programmers
-    Ray Adams, Margaret Wu, Greg Macaskill, Sam Haldane, Xiao Xun Sun, Dan Cloney
+    Ray Adams,Margaret Wu,Greg Macaskill,Sam Haldane,Xiao Xun Sun,Dan Cloney
 End of Program
 
 ```
 
-When you use `ConQuestCall` to call 'ACER ConQuest' and run a syntax file, some options are set by default. The same options can be set within 'ACER ConQuest' by using the `set` command (`set progress = yes, exit_on_error = yes,  storecommands = yes, warnings = no;` which is syntactically the same as using the helper function `set conquestr = true;` ). **WARNING** - this will make it easy to overwrite output as you will not be prompted or warned. To turn off these settings your syntax file must explicitly change these using the `set` command. 
+When you use `ConQuestCall` to call 'ACER ConQuest' and run a syntax file, some options are set by default. The same options can be set within 'ACER ConQuest' by using the `set` command (`set progress = yes, exit_on_error = yes, storecommands = yes, warnings = no;` which is syntactically the same as using the helper function `set conquestr = true;`). **WARNING** - this will make it easy to overwrite output as you will not be prompted or warned. To turn off these settings your syntax file must explicitly change these using the `set` command. 
+For more information see [the set command](https://conquestmanual.acer.org/s4-00.html#set).
 
 When calling 'ACER ConQuest' from R, the ConQuest working directory will default to the current R working directory. This makes it easy to write portable syntax using relative paths. If you need 'ACER ConQuest' to use a different working directory, set it in your syntax file.
 
-The next example runs a small analysis and generates a system file in your current working directory.
+The next example runs a small analysis and creates a system file that is read into the R object `myExSys`.
 
-```
-ConQuestCall(cqc = system.file("extdata", "ConQuestTest.cqc", package = "conquestr"), cqInstallLocation = myConQuestExe) # update file path to your install location
+```{r}
+# set up
+oldWd<- getwd()
+myTmpDir<- tempdir()
+setwd(myTmpDir)
+file.copy(from = c(
+  system.file("extdata", "ex1.cqc", package = "conquestr"),
+  system.file("extdata", "ex1.dat", package = "conquestr"),
+  system.file("extdata", "mysysfile.cqs", package = "conquestr")
+  ), to = myTmpDir)
+
+# run ConQuest
+# ConQuestCall is not run here, as it requires a local install of ConQuest 
+# ConQuestCall(cqc = file.path(myTmpDir, "ex1.cqc"), stdout = NULL) # searches for valid install of CQ
+myExSys<- ConQuestSys(myCqs = file.path(myTmpDir, "mysysfile.cqs"))
+
+# see the content of the sysfile
+str(myExSys)
+
+# tidy up
+file.remove(
+  list.files(myTmpDir, all.files = TRUE, full.names = TRUE, pattern = "^myi|^myS|ex1"),
+  recursive=TRUE
+)
+setwd(oldWd)
 ```
 
 ## Read in a ConQuest system file
 
-The above example created a system file, in the current working directory. Alternatively, there is an inbuilt example of a system file.
+The above example created a system file. Alternatively, there is an inbuilt example of a system file.
 
-conquestr can read in a system file, using the `ConQuestSys` function. This function returns a list that includes the response data, parameter estimates, and other data objects created by 'ACER ConQuest'. These lists can be optionally coerced into R data frames.
+_conquestr_ can read in a system file, using the `ConQuestSys` function. This function returns a list that includes the response data, parameter estimates, and other data objects created by 'ACER ConQuest'. These lists can be optionally coerced into R data frames.
 
-```
+```{r}
 # if no argument is provided to ConQuestSys, the example system file is read in by default.
 myCqs<- ConQuestSys()
 ```
 
 You can see the data objects available within the object (e.g., `str(myCqs)`), and some useful objects will be:
 
-- `gResponseData` this is the 'ACER ConQuest' object gResponseData - the raw response data including information about the raw and key value for each item.
-- `gYData` this is the 'ACER ConQuest' object gYData - the regressor data included in the estimation.
-- `gAllCaseEstimates` this is the 'ACER ConQuest' object gAllCaseEstimates - the estimates (e.g., PVs, WLEs) on the latent traits from the estimation
-- if you have used the command `matrixsampler` and the option `matrixout`, see also `matrixSampler_fit`, `matrixSampler_raw`, `matrix_userfit` for the simulated data.
-- data from `itanal`, when using the option `matrixout`, is found in `gMatrixList` which is a list of matrices, e.g. `*_counts`, `*_itemtotrestcor`, `*_ptbis`, `*_pvmeansd` where "*" is a user defined prefix declared in the  option `matrixout`.
-
-**Note** - to get some 'ACER ConQuest' objects, including itanal objects, you must use the option `matrixout = x` (where x is a prefix used in naming the matrix objects) in the relevant command in 'ACER ConQuest'. These matrix  objects are not created, and therefore saved in the system file, by default.
+- `gResponseData` - The raw response data including information about the raw and key response to each item.
+- `gYData` - The regression data included in the estimation.
+- `gAllCaseEstimates` - the latent ability estimates (e.g., PVs, WLEs).
+- The option `matrixout` is available for several commands and will ensure data objects are saved to the system file - these can be found in `gMatrixList`. For example:
+    - The command `matrixsampler` and the option `matrixout` creates the objects `matrixSampler_fit`, `matrixSampler_raw`, `matrix_userfit` (the simulated data) in `gMatrixList`.
+    - The command `itanal`, and the option `matrixout` creates the objects `*_counts`, `*_itemtotrestcor`, `*_ptbis`, `*_pvmeansd` (where "*" is a user defined prefix declared in the  option `matrixout`) in `gMatrixList` .
+    - The command `estimate` and the option `matrixout`... for more information see the [manual](https://conquestmanual.acer.org/s4-00.html#s4-08)
 
 Users can search the names of objects in the system file using the helper function `searchConQuestSys`:
 
-```
+```{r}
 # search for objects named history in myCqs
 searchConQuestSys("history", myCqs)
-# not run: > [1] "gHistoryFileName" "gHistory"         "gCommandHistory" 
 ```
 
 

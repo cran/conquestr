@@ -7,7 +7,7 @@
 ReadGroupsOneCase(myFile, GroupVariables, AllVariables, CaseNum)
 }
 \arguments{
-\item{myFile}{An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
+\item{myFile}{An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
 
 \item{GroupVariables}{A list of group variables for this case.}
 

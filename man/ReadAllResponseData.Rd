@@ -2,12 +2,12 @@
 % Please edit documentation in R/ReadConQuestLibrary.R
 \name{ReadAllResponseData}
 \alias{ReadAllResponseData}
-\title{ReadIntegerList}
+\title{ReadAllResponseData}
 \usage{
 ReadAllResponseData(myFile, N)
 }
 \arguments{
-\item{myFile}{An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
+\item{myFile}{An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
 
 \item{N}{An integer representation of 'ACER ConQuest' object gNCases.}
 }
@@ -15,6 +15,6 @@ ReadAllResponseData(myFile, N)
 A list
 }
 \description{
-ReadIntegerList
+ReadAllResponseData
 }
 \keyword{internal}

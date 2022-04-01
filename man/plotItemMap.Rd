@@ -4,13 +4,15 @@
 \alias{plotItemMap}
 \title{plotItemMap}
 \usage{
-plotItemMap(mySys, myDims = "D1", ...)
+plotItemMap(mySys, myDims = "D1", abilityType = "PV", ...)
 }
 \arguments{
 \item{mySys}{An 'ACER ConQuest' system file object created using the conquestr::ConQuestSys function.}
 
 \item{myDims}{A string specifying which specific dimensions should be included. The default is "D1", Specific dimensions are specified by the label "D1" for dimensions 1 etc.
 Alternatively, you can specify myDims = "all", though what this produces is not currenlty supported.}
+
+\item{abilityType}{What kind of person ability estimate should be used? Defaults to plausible values. Alternatievly WLE, MLE, EAP.}
 
 \item{...}{Optional arguments, mostly for debugging, e.g., `setDebug = TRUE` will print temporary data frames.}
 }

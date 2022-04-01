@@ -5,65 +5,63 @@ NULL
 #' @rawNamespace exportPattern("^[[:alpha:]]+") # this exports all functions that start with an alphanumeric charachter so that every function in the package is visible (otherwise need to manually add exports to NAMESPACE)
 #' @rawNamespace if (.Platform$OS.type=="windows") importFrom(utils,shortPathName)
 
-#' @include conquestrFunc.R
+packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5.19.5")
 
-
-# for vignette or default we can access files like this: system.file("extdata", "ConQuestTest.cqc", package = "conquestr")
-
-# defaults for cqc is ConQuestTest.cqc, default for cqInstallLocation is defaultCqLoc
+# for vignette or default we can access files like this: system.file("extdata", "ex1.cqc", package = "conquestr")
 # consider using this in the future https://www.tidyverse.org/blog/2018/09/processx-3.2.0/
 
 #' @title ConQuestCall
 #'
-#' @description Call 'ACER ConQuest' and run a control file.
+#' @description Call an instance of 'ACER ConQuest' at the command line and run a control file (syntax).
 #'
-#' @param cqInstallLocation The location of the 'ACER ConQuest' executable.
-#' @param cqc The locaiton of the control file to be run.
-#' @param stdout On Mac only, can be toggled to NULL (or a connection) to supress output to R console.
+#' @param cqc The location of the control file (syntax) to be run.
+#' @param cqExe The path to the 'ACER ConQuest' executable. Note, if this argument is missing, conquestr 
+#'    will find a local installation of ACER ConQuest by first searching the default installtion locations
+#'    (Program Files on Windows and Applications on Mac) then searching other local directories (Appdata 
+#'    and the HOME path).
+#' @param stdout On Mac only, can be toggled to NULL (or a connection) to suppress output to R console.
 #' @return prints 'ACER ConQuest' output to stdout.
 #' @examples
 #' \dontrun{
-#' ConQuestCall(cqInstallLocation = file.path("/Applications", "ConQuest BETA", "ConQuest"))
+#' ConQuestCall(cqExe = file.path("/Applications", "ConQuest BETA", "ConQuest"))
 #' }
-ConQuestCall<- function(cqInstallLocation, cqc, stdout = ""){ # note cqc must not use illegal ConQuest chars - e.g., ~ in relative paths
+ConQuestCall <- function(cqc, cqExe, stdout = "") { 
 
-  if(missing(cqInstallLocation)){
-
-    stop("you must specify where the ConQuest executable is")
-
+  if (missing(cqExe)) {
+    cqExe <- findConQuestExe()
   }
 
-  if(missing(cqc)){
-
-    cqc<- system.file("extdata", "ConQuestAbout.cqc", package = "conquestr")
-
+  if (missing(cqc)) {
+    cqc <- system.file("extdata", "conquestabout.cqc", package = "conquestr")
   }
 
   ##_______________________ CALL CONQUEST!
 
-  # WIN: when installed by the MSI the exe is "ConQuest4Console.exe", when built from source it is ConQuestx64console.exe
-
-  if(Sys.info()["sysname"] == "Windows")
+  if (Sys.info()["sysname"] == "Windows")
   {
-    #cqInstallLocationPath<- strsplit(cqInstallLocation, "[/|\\]*\\w+\\.+exe")
-    #cqInstallLocationExe<- regmatches(cqInstallLocation, regexpr("(\\w+\\.+exe)", cqInstallLocation))
-    shell(
-      paste(
-        shortPathName(cqInstallLocation),
-        paste('"', cqc, '"', sep = ""),  # just in case the file.path has spaces in it, this wraps it in quotes
-        "true"
-      )
+    system2(
+      "cmd.exe",
+      input = paste0(
+        shQuote(cqExe, type = "cmd"),
+        paste0(" "),
+        paste0("\"", cqc, "\""),  # just in case the file.path has spaces in it, this wraps it in quotes
+        " true"),
+      # this should also work but i'm a bit scared to change it given the above has been working on win for a while
+      # command = cqExe,
+      # args = c(paste0('"', cqc, '"'), "true"),
+      stdout = stdout
     )
-  } else if(Sys.info()["sysname"] == "Darwin") {
+  } else if (Sys.info()["sysname"] == "Darwin") {
 
     system2(
-        cqInstallLocation,
-        paste0('"', cqc, '"', ' true'),
-        stdout = stdout, stderr = ""
+        command = cqExe,
+        args = c(paste0('"', cqc, '"'), "true"),
+        stdout = stdout,
+        stderr = ""
     )
 
   } else {
-    stop("your operating system is not currenbtly supported. ConQuest is available on Windows and Mac OS")
+    stop("your operating system is not currently supported. ConQuest is available on Windows and Mac OS")
   }
 
 }
@@ -71,43 +69,55 @@ ConQuestCall<- function(cqInstallLocation, cqc, stdout = ""){ # note cqc must no
 
 #' @title ConQuestSys
 #'
-#' @description Read an ''ACER ConQuest'' system file created by a `put` command in 'ACER ConQuest'. The system file must not be compressed. Use the option `compressed=no`` in the put command within 'ACER ConQuest'.
+#' @description Read an ''ACER ConQuest'' system file created by a `put` command in 'ACER ConQuest'.
+#' The system file must not be compressed. Use the option `compressed=no`` in the put command within 'ACER ConQuest'.
 #'
-#' @param myCqs The location of an uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest' > 4.30.2.
+#' @param myCqs The location of an uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest' > 4.30.2.
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #' @examples
 #' mySysData<- ConQuestSys()
-#' myEx1SysData<- ConQuestSys(myCqs = system.file("extdata", "Ex1.cqs", package = "conquestr"))
+#' myEx1SysData<- ConQuestSys(myCqs = system.file("extdata", "mysysfile.cqs", package = "conquestr"))
 #' \dontrun{
 #' # if you run the above example this will return your original 'ACER ConQuest' syntax.
 #' cat(unlist(myEx1SysData$gCommandHistory))
 #' }
-ConQuestSys<- function(myCqs){
+ConQuestSys <- function(myCqs) {
 
-  if(missing(myCqs)){
-
-    message("no system file provide, loading the example system file instead")
-    systemFile<- list()
-    myFile<- file(system.file("extdata", "mySysFile.cqs", package = "conquestr"), "rb")
-    r<-invisible(ReadSys(myFile))
-    on.exit(
-      close(myFile)
+  if (missing(myCqs))
+  {
+    message("no system file provided, loading the example system file instead")
+    # anon function to get cqs - this is due to wierd behaviour on Fedora
+    myCqsGet <- function() system.file("extdata", "mysysfile.cqs", package = "conquestr")
+    myCqs <- tryCatch(
+      {
+        tmp <- myCqsGet()
+        if (tmp == "") warning("failed to read from extdata folder")
+        myCqsGet()
+      },
+      error = function(e) {
+        print(tmp)
+        e$message <- paste0(e$message, " (in ", myCqs, ")")
+        stop(e)
+      }
     )
+  }
 
-    } else {
-
-    # create required lists
-    systemFile<- list()
-
-    myFile<- file(myCqs, "rb")
-    r<-invisible(ReadSys(myFile))
-    on.exit(
+  myMode <- "rb"
+  #if (Sys.info()["sysname"] == "Linux") myMode <- "w+b"
+  myFile <- file(myCqs, myMode)
+  #r<-invisible(ReadSys(myFile)) 
+  r <- tryCatch(
+    {
+      invisible(conquestr::ReadSys(myFile))
+    },
+    error = function(e) {
       close(myFile)
-    )
-
-
+      e$message <- paste0(e$message, " (in ", myCqs, ")")
+      stop(e)
     }
-
+  )
+  # tidy up by closing the connection to sysfile on exit
+  on.exit(close(myFile), add = TRUE)
   return(r)
 
 }
@@ -130,10 +140,10 @@ ConQuestRout<- function(myRout){
 
   if(missing(myRout)){
 
-    message("no rout file provide, loading the example rout file instead")
-    routFile<- list()
-    myFile<- file(system.file("extdata", "myIcc.rout", package = "conquestr"), "rb")
-    r<-invisible(ReadGraph(myFile))
+    message("no rout file provided, loading the example rout file instead")
+    routFile <- list()
+    myFile <- file(system.file("extdata", "myicc.rout", package = "conquestr"), "rb")
+    r <- invisible(ReadGraph(myFile))
     on.exit(
       close(myFile)
     )
@@ -151,9 +161,9 @@ ConQuestRout<- function(myRout){
 
   }
 
-  # append class to r (used later for dispaching)
+  # append class to r (used later for dispatching)
   myRoutType<- routType(r)
-  # append class so we can do dispaching
+  # append class so we can do dispatching
   class(r)<- append(class(r), myRoutType)
   return(r)
 

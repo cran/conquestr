@@ -13,17 +13,22 @@ transformPvs(x, mT = 0, sdT = 1, weights, data, addToDf = FALSE, debug = TRUE)
 
 \item{sdT}{The desired sd of the PVs}
 
-\item{weights}{The name of the weight variable in 'data' used to cauclate the mean and SD accross the PVs}
+\item{weights}{The name of the weight variable in 'data' used to
+caulculate the mean and SD accross the PVs}
 
 \item{data}{The data frame that contains the PVs and weights.}
 
-\item{addToDf}{A Boolean, if TRUE, the transformed PVs are coerced into the DF, data, with name data$x_T (not yet implmented).}
+\item{addToDf}{A Boolean, if TRUE, the transformed PVs are coerced
+into the DF, data, with name data$x_T (not yet implmented).}
 
-\item{debug}{A temporary flag to spit-out objects to global env for chekcing. Will be removed when pushed to CRAN}
+\item{debug}{A temporary flag to spit-out objects to global env for chekcing.
+Will be removed when pushed to CRAN}
 }
 \value{
 a List of transofrmed PVs with as many elements as PVs were listed in 'x'.
 }
 \description{
-Helper function to Transform PVs onto a new metric (e.g., PISA Mean = 500, SD = 100). Uses the method described in the PISA 2012 technical manual.
+Helper function to Transform PVs onto a new metric
+    (e.g., PISA Mean = 500, SD = 100).
+    Uses the method described in the PISA 2012 technical manual.
 }

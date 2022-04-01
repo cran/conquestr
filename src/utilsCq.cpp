@@ -44,11 +44,11 @@ NumericVector replaceInVector(NumericVector v, double r, double x) {
 //'
 //' @param d A DataFrame.
 //' @param r A double - the value to be replaced if it is < -1e300.
-//' @param x A double - the value to repalce r with.
+//' @param x A double - the value to replace r with.
 // [[Rcpp::export]]
 DataFrame replaceInDataFrame(DataFrame d, double r, double x) {
   int n1 = d.length(); // number of cols in df
-  DataFrame d1 = clone(d); //deep copy d so that this function is not destructive (shallow copy will recult in d being edited by the code that follows)
+  DataFrame d1 = clone(d); //deep copy d so that this function is not destructive (shallow copy will result in d being edited by the code that follows)
 
   //for(DataFrame::iterator i = d1.begin(); i != d1.end(); ++i) {
   for(int i = 0; i < n1; ++i) {
@@ -71,6 +71,6 @@ DataFrame replaceInDataFrame(DataFrame d, double r, double x) {
 // run after the compilation.
 //
 
-/*** R
-timesTwo(42)
-*/
+///*** R
+//timesTwo(42)
+//*/

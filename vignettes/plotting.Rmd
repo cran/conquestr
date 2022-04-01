@@ -1,0 +1,44 @@
+---
+title: "Plotting in conquestr"
+author: "Dan Cloney"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Plotting in conquestr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+
+conquestr has two main types of plots.
+The first is plots based on the `plot` command in [ACER ConQuest](https://conquestmanual.acer.org/s4-00.html#plot).
+These plots are done using the generic function `conquestr::plotRout`
+The second is more general plots, usually of the inputs or outputs of IRT estimate.
+
+# Example
+
+## plotRout
+
+```{r plotRout}
+library(conquestr)
+myRout<- ConQuestRout()
+plotRout(myRout)   
+```
+
+## General Plots
+
+You can plot an arbitrary information function against a distribution of students - a so called information Wright map. 
+
+```{r infoWrightMap}
+myItems<- runif(10, -1, 1)
+myPersons<- rnorm(500, 1, 1)
+informationWrightMap(myItems = myItems, myAbilities = myPersons, minTheta = -6, maxTheta = 6)
+```

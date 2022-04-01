@@ -1,78 +1,56 @@
-#' @title createDfFromSys
+# todo: getCqGroupData; add group to getCqData/Df; give cqYData sensible column labs (currently Y1:YgNReg)
+
+
+#' @title getCqDataDf
 #'
-#' @description Read an R object of class ConQuestSys and create neat R data frame object.
+#' @description Takes a list object returned by `conquestr::getCqData` and coerces it to a wide data frame.
+#'     This can sometimes cause issues in complex data, for example where there are multiple response
+#'     vectors for each case (for example a many-facets model). This is because it is assumed that the data
+#'     can be reduced to a matrix of _gNCases x m variables_ (where _m_ is the number of id, item, estimate and
+#'     regression variables in the analysis). For more complex data, the user should use the outputs of
+#'     `conquestr::getCqData` to manually merge together a data frame.
 #'
-#' @param mySys An R object of class ConQuestSys, returned by the function conquestr::ConQuestSys
+#' @param cqData An R object of class list, returned by the function conquestr::getCqData
 #' @return A data frame containing R data frames based on the list objects in the ConQuest system file that has been read in.
 #' @seealso conquestr::ConQuestSys()
-#' @importFrom stats reshape
-createDfFromSys<-function(mySys){
-
-  # insert code to check that this list is also of class ConQuestSys
-  # if(!(#pseudocde#ConQuestSys))
-  #   stop("you must pass this funtion a valid ConQuestSys object")
-
-  # cast PID lookup table to df
-  # NOTE IF PID in not used in CQ format statemement then gPIDLookUp is empty
-  if(!length(mySys$gPIDLookUp) == 0){
-    gPIDLookUpDf<- data.frame(matrix(unlist(mySys$gPIDLookUp), ncol = 1), stringsAsFactors = FALSE)
-    names(gPIDLookUpDf)<- c("pid")
-    gPIDLookUpDf$seqNum<- c(1:length(mySys$gPIDLookUp))
-    # gPIDLookUpDfGlobal<<- gPIDLookUpDf ## debug
-  } else {
-    # PID was not used in CQ datafile/format statement
-    gPIDLookUpDf<-data.frame(pid = c(1:mySys$gNCases), seqNum = c(1:mySys$gNCases))
+#' @seealso conquestr::getCqData
+#' @examples
+#' mySys <- ConQuestSys()
+#' myData <- getCqData(mySys)
+#' myDataDf <- getCqDataDf(myData)
+getCqDataDf<-function(cqData){
+  if(!"cqData" %in% class(cqData))
+  {
+    stop("'cqData' must be a list created by 'conquestr::getCqData'")
   }
 
-  # cast response data to df
-  ncolgResponseData<- length(names(unlist(mySys$gResponseData[1])))
-  tempNames_gResponseData<- names(unlist(mySys$gResponseData[1]))
-  gResponseDataDf<- data.frame(matrix(unlist(mySys$gResponseData), ncol = ncolgResponseData, byrow = TRUE), stringsAsFactors = FALSE)
-  names(gResponseDataDf)<- tempNames_gResponseData
-  # sort gResponseDataDf to get items in order when we cast to wide
-  gResponseDataDf<- gResponseDataDf[order(gResponseDataDf$Item), ]
-  # ensure where response flag is 0, response is NA
-  gResponseDataDf$Rsp[gResponseDataDf$RspFlag == 0]<- NA
-  # cast gResponseDataDf from long to wide
-  # this is my clumsy way of spitting a meaningful warning when there are dupe PIDs and there are not unqiue combos of PID and GIN in the long data
-  gResponseDataDf<- tryCatch(
+  tmpRespData<- cqData[["Responses"]]
+
+  tmpRespData<- tryCatch(
     #try this
-    reshape(gResponseDataDf, timevar = "Item", idvar = "Pid", direction = "wide"),
-    # if there's a wanring, handle it like this
+    reshape(tmpRespData, timevar = "Item", idvar = "Pid", direction = "wide"),
+    # if there's a warning, handle it like this
     warning = function(w) {
-      print("converting gResponseData from long to wide format has thrown a warning. This is usually caused by duplicate PIDs in the response data.")
-      (reshape(gResponseDataDf, timevar = "Item", idvar = "Pid", direction = "wide"))
+      print(
+        "converting gResponseData from long to wide has thrown a warning.
+        This is usually caused by duplicate PIDs in the response data.
+        Some data loss may have occured"
+      )
+      (reshape(tmpRespData, timevar = "Item", idvar = "Pid", direction = "wide"))
     },
     # finally, do this
-    finally = { } # dont need anything here as reshape will always return the gResponseDataDf object in the earlier steps
+    finally = { } # don't need anything here as reshape will always return the result from reshape
   )
-  # cast gAllCaseEstimates to df
-  # can use gNDim and gNPlausibles to make the naming work (e.g., there will be gNDim*gNPlausibles PV columns to add)
-  ncolgAllCaseEstimates<- length(names(unlist(mySys$gAllCaseEstimates[1])))
-  tempNames_gAllCaseEstimatesDf<- names(unlist(mySys$gAllCaseEstimates[1]))
-  # rename PVs
-  tempNames_gAllCaseEstimatesDf[grep("pv", tempNames_gAllCaseEstimatesDf)]<- paste0(rep("PV", mySys$gNDim*mySys$gNPlausibles), rep(1:mySys$gNPlausibles, each = mySys$gNDim), "_D", rep(1:mySys$gNDim, mySys$gNPlausibles))
-  # rename other vars
-  #TODO, read in names for mle wle etc var covar
-  gAllCaseEstimatesDf<- data.frame(matrix(unlist(mySys$gAllCaseEstimates), ncol = ncolgAllCaseEstimates, byrow = TRUE), stringsAsFactors = FALSE)
-  names(gAllCaseEstimatesDf)<- tempNames_gAllCaseEstimatesDf
 
-  myConQuestData<- gPIDLookUpDf
-  myConQuestData<- merge(myConQuestData, gResponseDataDf, by.x = "seqNum", by.y ="Pid", all.x = TRUE) # merge response data on PID lookup, this gives us the right link between seqNum and PID
+  myConQuestData<- cqData[["PID"]]
+  # merge response data on PID lookup, this gives us the right link between seqNum and PID
+  myConQuestData<- merge(myConQuestData, tmpRespData, by.x = "seqNum", by.y ="Pid", all.x = TRUE)
   # myConQuestData<- merge(myConQuestData, gGroupDataDf, by.x = "seqNum", by.y ="CaseNum", all.x = TRUE) # merge group data on response data, there will always be at least 1 vector of group vars (can be all NA)
-  # cant currently gYDataDf - see Issue 3 - gYData does not contain either pid or seqnum
-  myConQuestData<- merge(myConQuestData, gAllCaseEstimatesDf, by.x = "seqNum", by.y ="pid", all.x = TRUE) # merge estimates on response data (note some cases could be missing from gAllCaseEstimatesDf IF they are missing all repsonse data and are missing regressor data - e.g., missing regressors result in deletion)
-  myConQuestData<- replaceInDataFrame(myConQuestData, -1.797693e+308, NA)
+  # merge gYData
+  myConQuestData<- merge(myConQuestData, cqData[["Regression"]], by.x = "seqNum", by.y ="seqNum", all.x = TRUE)
+  # merge estimates  (note some cases could be missing from gAllCaseEstimatesDf IF they are missing all response data and are missing regression data - e.g., missing regressors result in deletion)
+  myConQuestData<- merge(myConQuestData, cqData[["Estimates"]], by.x = "seqNum", by.y ="pid", all.x = TRUE)
 
-
-  # # put all the stuff into a list
-  # systemFileDf<-list(
-  #   #...
-  #   # check 9
-  #   # gYDataDf = gYDataDf
-  # )
-
-  # return the list with all the stuff in it
   return(myConQuestData)
 
 }
@@ -109,3 +87,165 @@ createDfFromSys<-function(mySys){
 #   return(systemFile)
 #
 # }
+
+#' @title getCqData
+#'
+#' @description Get data objects from an R object of class ConQuestSys.
+#'     This function returns person IDs, response data, case estimates, regression and weight data.
+#'     Each data type is stored as a data frame, and each data frame is a named element of a list.
+#'     1. PID, 2. Responses, 3. Estimates, 4. Regression.
+#'
+#' @param mySys An R object of class ConQuestSys, returned by the function conquestr::ConQuestSys
+#' @return A List of data frames.
+#' @seealso conquestr::ConQuestSys()
+#' @examples
+#' mySys <- ConQuestSys()
+#' myData <- getCqData(mySys)
+getCqData <- function(mySys) {
+  if (!"conQuestSysFile" %in% class(mySys))
+  {
+    stop("'mySys' must be a ConQuest system file object created by 'conquestr::ConQuestSys'")
+  }
+  tmpList <- list()
+
+  # get person IDs
+  gPIDLookUpDf <- getCqPid(mySys)
+  # get responses
+  gResponseDataDf <- getCqResp(mySys)
+  # get case ests
+  gAllCaseEstimatesDf <- getCqEsts(mySys)
+  # get weight and regression vars
+  gYDataDf <- getCqYData(mySys)
+
+  tmpList[["PID"]] <- gPIDLookUpDf
+  tmpList[["Responses"]] <- gResponseDataDf
+  tmpList[["Estimates"]] <- gAllCaseEstimatesDf
+  tmpList[["Regression"]] <- gYDataDf
+
+  class(tmpList) <- append(class(tmpList), "cqData")
+  return(tmpList)
+}
+
+#' @title getCqPid
+#'
+#' @description Return PID as a data frame.
+#'
+#' @param mySys An R object of class conQuestSysFile, returned by the function conquestr::ConQuestSys
+#' @return A data frame containing sequence number and PID (if no PID is declared, this is the sequence number).
+#' @keywords internal
+getCqPid <- function(mySys) {
+  # if no PID is declared in datafile/format, gPIDLookUp is empty
+  tmpSeq <- c(seq(mySys$gNCases))
+  if (!length(mySys$gPIDLookUp) == 0){
+    # note PID can be string
+    tmpPid <- as.character(unlist(mySys$gPIDLookUp))
+    gPidDf <- data.frame(
+      pid = tmpPid,
+      seqNum = tmpSeq
+    )
+  } else
+  {
+    gPidDf <- data.frame(
+      pid = as.character(tmpSeq),
+      seqNum = tmpSeq
+    )
+  }
+  gPidDf <- replaceInDataFrame(gPidDf, -1.797693e+308, NA)
+  return(gPidDf)
+}
+
+#' @title getCqResp
+#'
+#' @description Return item responses as a data frame.
+#'
+#' @param mySys An R object of class conQuestSysFile, returned by the function conquestr::ConQuestSys
+#' @return A data frame containing raw item responses (pre key) and scored item response (post key).
+#' @importFrom stats reshape
+#' @keywords internal
+getCqResp <- function(mySys){
+
+  # note: "pid" is really seqNum
+  tmpColNames <- names(mySys$gResponseData[[1]])
+  tmpNCol <- length(tmpColNames)
+  tmpRespData <- matrix(
+    unlist(mySys$gResponseData),
+    ncol = tmpNCol, byrow = TRUE
+  )
+  tmpRespData <- as.data.frame(tmpRespData)
+  names(tmpRespData) <- tmpColNames
+
+  # get preKey lookup table
+  tmpKeys <- unlist(mySys$gPreKeyLookUp[[2]])
+  preKeyLU <- data.frame(
+    lookup = 0:(length(tmpKeys) - 1),
+    PreKeyRsp_char = tmpKeys # should always be char
+  )
+  tmpRespData <- merge(tmpRespData, preKeyLU, by.x = "PreKeyRsp", by.y = "lookup", all.x = TRUE)
+  # order by PID and item
+  tmpRespData <- tmpRespData[order(tmpRespData$Pid, tmpRespData$Item), ]
+
+  tmpRespData <- replaceInDataFrame(tmpRespData, -1.797693e+308, NA)
+
+  return(tmpRespData)
+}
+
+
+#' @title getCqEsts
+#'
+#' @description Return ability estimates as a data frame.
+#'
+#' @param mySys An R object of class conQuestSysFile, returned by the function conquestr::ConQuestSys
+#' @return A data frame containing ability estimates (missing if not estimated).
+#' @keywords internal
+getCqEsts <- function(mySys) {
+  tmpNames <- names(unlist(mySys$gAllCaseEstimates[[1]]))
+  tmpNCol <- length(tmpNames)
+  # rename PVs - dimensions cycle faster than PVs
+  tmpNames[grep("^pvs", tmpNames)] <- paste0(
+    rep("PV", mySys$gNDim * mySys$gNPlausibles),
+    rep(1:mySys$gNPlausibles, each = mySys$gNDim),
+    "_D",
+    rep(1:mySys$gNDim, mySys$gNPlausibles)
+  )
+  gAllCaseEstimatesDf <- matrix(
+    unlist(mySys$gAllCaseEstimates),
+    ncol = tmpNCol, byrow = TRUE
+  )
+  gAllCaseEstimatesDf <- as.data.frame(gAllCaseEstimatesDf)
+  gAllCaseEstimatesDf <- replaceInDataFrame(gAllCaseEstimatesDf, -1.797693e+308, NA)
+  names(gAllCaseEstimatesDf) <- tmpNames
+
+  return(gAllCaseEstimatesDf)
+}
+
+
+#' @title getCqYData
+#'
+#' @description Return weight and regression data as a data frame.
+#'
+#' @param mySys An R object of class conQuestSysFile, returned by the function conquestr::ConQuestSys
+#' @return A data frame containing weight and regression data.
+#' @keywords internal
+getCqYData<- function(mySys){
+  tmpNCol<- length(unlist(mySys$gYData[[1]]))
+  if(tmpNCol > 2)
+  {
+    tmpNames<- c("Weight", "Constant", paste0("Y", 1:(tmpNCol-2)))
+  } else
+  {
+    tmpNames<- c("Weight", "Constant")
+  }
+  # tmpNames<- c("Weight", unlist(mySys$gRegressorLabels)) # doesnt work with multidim - gRegressorLabels is a list PER dim
+
+  gYDataDf<- matrix(
+    unlist(mySys$gYData),
+    ncol = tmpNCol, byrow = TRUE
+  )
+  gYDataDf<- as.data.frame(gYDataDf)
+  names(gYDataDf)<- tmpNames
+  gYDataDf$seqNum<- 1:mySys$gNCases
+
+  gYDataDf<- replaceInDataFrame(gYDataDf, -1.797693e+308, NA)
+
+  return(gYDataDf)
+}

@@ -11,7 +11,7 @@ replaceInDataFrame(d, r, x)
 
 \item{r}{A double - the value to be replaced if it is < -1e300.}
 
-\item{x}{A double - the value to repalce r with.}
+\item{x}{A double - the value to replace r with.}
 }
 \description{
 iterate through a data frame and use replaceInVector
