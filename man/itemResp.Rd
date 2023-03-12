@@ -9,16 +9,20 @@ itemResp(myAblty, myItem)
 \arguments{
 \item{myAblty}{A numeric ability.}
 
-\item{myItem}{A single item (a matrix k categories by three (categor score, delta dot, tau).}
+\item{myItem}{A single item (a matrix k categories by four
+(category score, delta dot, tau, discrimination).}
 }
 \value{
-A numeric score, usually an integer in the range 0, 1, 2, ..., k-1.
+A numeric score, usually an integer in the range
+0, 1, 2, ..., k-1. This is taken from the first column of the matrix of
+item parameters so may also contain a numeric score.
 }
 \description{
-Returns a probabilistic item response, given one ability and one item (a matrix k categories by three (categor score, delta dot, tau).
+Returns a probabilistic item response, given one ability and one
+set of item parameters.
 }
 \examples{
-myItem<- matrix(c(0, 0, 0, 1, 1, 0), ncol = 3, byrow = TRUE)
+myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
 itemResp(0, myItem)
 }
 \keyword{internal}

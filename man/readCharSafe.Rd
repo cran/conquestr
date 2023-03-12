@@ -17,7 +17,7 @@ readCharSafe(con, n, replace = " ")
 character vector.
 }
 \description{
-reads `n` bytes as raw from a binary connection.
-    Removes any embedded nuls, replacing them with `replace`.
+reads \code{n} bytes as raw from a binary connection.
+Removes any embedded nuls, replacing them with \code{replace}.
 }
 \keyword{internal}

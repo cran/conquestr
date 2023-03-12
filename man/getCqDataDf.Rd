@@ -10,20 +10,21 @@ getCqDataDf(cqData)
 \item{cqData}{An R object of class list, returned by the function conquestr::getCqData}
 }
 \value{
-A data frame containing R data frames based on the list objects in the ConQuest system file that has been read in.
+A data frame containing R data frames based on the list objects in
+the ConQuest system file that has been read in.
 }
 \description{
-Takes a list object returned by `conquestr::getCqData` and coerces it to a wide data frame.
-    This can sometimes cause issues in complex data, for example where there are multiple response
-    vectors for each case (for example a many-facets model). This is because it is assumed that the data
-    can be reduced to a matrix of _gNCases x m variables_ (where _m_ is the number of id, item, estimate and
-    regression variables in the analysis). For more complex data, the user should use the outputs of
-    `conquestr::getCqData` to manually merge together a data frame.
+Takes a list object returned by \code{conquestr::getCqData} and coerces it to a wide data frame.
+This can sometimes cause issues in complex data, for example where there are multiple response
+vectors for each case (for example a many-facets model). This is because it is assumed that the data
+can be reduced to a matrix of \emph{gNCases x m variables} (where \emph{m} is the number of id, item, estimate and
+regression variables in the analysis). For more complex data, the user should use the outputs of
+\code{conquestr::getCqData} to manually merge together a data frame.
 }
 \examples{
-mySys <- ConQuestSys()
-myData <- getCqData(mySys)
-myDataDf <- getCqDataDf(myData)
+  mySys <- ConQuestSys()
+  myData <- getCqData(mySys)
+  myDataDf <- getCqDataDf(myData)
 }
 \seealso{
 conquestr::ConQuestSys()

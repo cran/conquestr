@@ -1,7 +1,7 @@
 # call conquest to create rout object the default is an ICC
-myRoutTest<- conquestr::ConQuestRout()
-myRoutDfTest<- conquestr::routPointsToDf(myRoutTest)
-myRoutPlot<- conquestr::plotRout(myRoutTest)
+myRoutTest <- conquestr::ConQuestRout()
+myRoutDfTest <- conquestr::routPointsToDf(myRoutTest)
+myRoutPlot <- conquestr::plotRout(myRoutTest)
 
 # Rout tests
 test_that("Rout file is of correct type", {

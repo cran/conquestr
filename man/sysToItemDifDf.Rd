@@ -9,7 +9,7 @@ sysToItemDifDf(listOfSysFiles, mySuffixes, myDims = "all")
 \arguments{
 \item{listOfSysFiles}{A list of system files returned from conquestr::ConQuestSys}
 
-\item{mySuffixes}{a vector of strings specifying the names for the two groups being analysed, e.g., if the two system files are an analysis of boys and girls, the vector may be `c(_male", "_female")`.}
+\item{mySuffixes}{a vector of strings specifying the names for the two groups being analysed, e.g., if the two system files are an analysis of boys and girls, the vector may be \verb{c(_male", "_female")}.}
 
 \item{myDims}{A string specifying if all or specific dimensions should be included. The default is "all", Specific dimensions are specified by the label "D1" for dimensions 1 etc.}
 }
@@ -20,5 +20,5 @@ A data frame object.
 Creates a data frame that includes the common item parameter estimates from two (or more) system files (e.g., a DIF analysis).
 }
 \seealso{
-conquestr::plotDif()
+conquestr::plotDif ()
 }

@@ -29,6 +29,6 @@ a List of transofrmed PVs with as many elements as PVs were listed in 'x'.
 }
 \description{
 Helper function to Transform PVs onto a new metric
-    (e.g., PISA Mean = 500, SD = 100).
-    Uses the method described in the PISA 2012 technical manual.
+(e.g., PISA Mean = 500, SD = 100).
+Uses the method described in the PISA 2012 technical manual.
 }

@@ -13,12 +13,12 @@ ConQuestSys(myCqs)
 A list containing the data objects created by 'ACER ConQuest'.
 }
 \description{
-Read an ''ACER ConQuest'' system file created by a `put` command in 'ACER ConQuest'.
+Read an ''ACER ConQuest'' system file created by a \code{put} command in 'ACER ConQuest'.
 The system file must not be compressed. Use the option `compressed=no`` in the put command within 'ACER ConQuest'.
 }
 \examples{
-mySysData<- ConQuestSys()
-myEx1SysData<- ConQuestSys(myCqs = system.file("extdata", "mysysfile.cqs", package = "conquestr"))
+mySysData <- ConQuestSys()
+myEx1SysData <- ConQuestSys(myCqs = system.file("extdata", "mysysfile.cqs", package = "conquestr"))
 \dontrun{
 # if you run the above example this will return your original 'ACER ConQuest' syntax.
 cat(unlist(myEx1SysData$gCommandHistory))

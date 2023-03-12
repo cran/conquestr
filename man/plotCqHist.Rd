@@ -7,10 +7,10 @@
 plotCqHist(myHist, centre = TRUE, params = c("all"), legend = FALSE)
 }
 \arguments{
-\item{myHist}{an R object created by the `getCqHist` function.}
+\item{myHist}{an R object created by the \code{getCqHist} function.}
 
 \item{centre}{a Boolean representing whether the iteration history should be mean centred (within parameter).
-This is helpful for plots that include all parameters to ensure the Y axis is sensible. Consider a plot with raw values of the Likelihood _and_ item parameters on it.}
+This is helpful for plots that include all parameters to ensure the Y axis is sensible. Consider a plot with raw values of the Likelihood \emph{and} item parameters on it.}
 
 \item{params}{A vector of which params to plot. Must be one or more of "all", "Likelihood", "Beta", Variance", "Xsi", "Tau".}
 
@@ -20,10 +20,10 @@ This is helpful for plots that include all parameters to ensure the Y axis is se
 A ggplot2 object.
 }
 \description{
-generates a plot from a history object. Use `getCqHist` to create a history object from an 'ACER ConQuest' system file.
+generates a plot from a history object. Use \code{getCqHist} to create a history object from an 'ACER ConQuest' system file.
 }
 \examples{
 \dontrun{
-myHistPlot<- plotCqHist(getCqHist(ConQuestSys()))
+myHistPlot <- plotCqHist(getCqHist(ConQuestSys()))
 }
 }

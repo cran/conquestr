@@ -13,7 +13,7 @@ fmtCqItanal(
 )
 }
 \arguments{
-\item{cqItanal}{An ACER ConQuest itanal list object returned by function `getCqItanal`.}
+\item{cqItanal}{An ACER ConQuest itanal list object returned by function \code{getCqItanal}.}
 
 \item{itemNumber}{a vector of generalised item numbers to format.}
 

@@ -10,17 +10,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// timesTwo
-NumericVector timesTwo(NumericVector x);
-RcppExport SEXP _conquestr_timesTwo(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(timesTwo(x));
-    return rcpp_result_gen;
-END_RCPP
-}
 // replaceInVector
 NumericVector replaceInVector(NumericVector v, double r, double x);
 RcppExport SEXP _conquestr_replaceInVector(SEXP vSEXP, SEXP rSEXP, SEXP xSEXP) {
@@ -49,7 +38,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_conquestr_timesTwo", (DL_FUNC) &_conquestr_timesTwo, 1},
     {"_conquestr_replaceInVector", (DL_FUNC) &_conquestr_replaceInVector, 3},
     {"_conquestr_replaceInDataFrame", (DL_FUNC) &_conquestr_replaceInDataFrame, 3},
     {NULL, NULL, 0}

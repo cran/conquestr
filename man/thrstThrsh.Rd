@@ -7,7 +7,8 @@
 thrstThrsh(myItem, threshP = 0.5, minTheta = -20, maxTheta = 20, convC = 1e-05)
 }
 \arguments{
-\item{myItem}{A matrix of parameters for a single item of the structure used in `simplef` (a matrix of k categories by three (category score, delta dot, tau)).}
+\item{myItem}{A matrix of parameters for a single item of the structure used in \code{simplef}
+(a matrix of k categories by four (category score, delta dot, tau, discrimination)).}
 
 \item{threshP}{The probability at which the threshold is calculated (defaults to the usual value of 0.5)}
 
@@ -15,26 +16,32 @@ thrstThrsh(myItem, threshP = 0.5, minTheta = -20, maxTheta = 20, convC = 1e-05)
 
 \item{maxTheta}{The upper-bound starting value of the split-half search used to find the threshold for the category.}
 
-\item{convC}{The convergence criteria used to determine when the threshold has been found. The difference between `threshP` and the cumulative probability of the category and any higher category at the current value of theta (the current threshold being tested).}
+\item{convC}{The convergence criteria used to determine when the threshold has been found. The difference between
+\code{threshP} and the cumulative probability of the category and any higher category at the current value of theta
+(the current threshold being tested).}
 }
 \value{
-A k-1 by 1 matrix with Thurstonian thresholds for this item. Values are NA when the threshold cannot be calculated.
+A k-1 by 1 matrix with Thurstonian thresholds for this item.
+Values are NA when the threshold cannot be calculated.
 }
 \description{
-Generates Thurstonian Thresholds (sometimes called _gammas_) to an item.
-  Thurstonian thresholds are the location on the trait/scale at which the cumulative probability of being in category k, or any higher category equals some probability (usually 0.5, the default).
-  Thurstonian thresholds are considered a way of describing the difficulty of polytomously scored items and are usually the value used in visualisations like Wright maps.
-  Thurstonian thresholds can only be calculated for items where response categories are scored such that each category can be placed in an order increasing scores (e.g., no ties as per the Ordered Partition model)
+Generates Thurstonian Thresholds (sometimes called \emph{gammas}) to an item.
+Thurstonian thresholds are the location on the trait/scale at which the cumulative probability
+of being in category k, or any higher category equals some probability (usually 0.5, the default).
+Thurstonian thresholds are considered a way of describing the difficulty of polytomously scored
+items and are usually the value used in visualisations like Wright maps.
+Thurstonian thresholds can only be calculated for items where response categories are scored such
+that each category can be placed in an order increasing scores (e.g., no ties as per the Ordered Partition model)
 }
 \examples{
-myItem<- matrix(
+myItem <- matrix(
   c(
-    0, -0.58    ,  0,     # delta+tau   thurst thresh (gamma)
-    1, -0.58    ,  0.776, # 0.196       -1.14
-    2, -0.58    , -0.697, # -1.277      -0.93
-    3, -0.58    , -0.629, # -1.209      -0.64
-    4, -0.58    ,  0.55   # -0.03        0.25
-    ), ncol =3, byrow=TRUE
+    0, -0.58    ,  0     , 1,  # delta+tau   thurst thresh (gamma)
+    1, -0.58    ,  0.776 , 1,  # 0.196       -1.14
+    2, -0.58    , -0.697 , 1,  # -1.277      -0.93
+    3, -0.58    , -0.629 , 1,  # -1.209      -0.64
+    4, -0.58    ,  0.55  , 1   # -0.03        0.25
+    ), ncol =4, byrow=TRUE
  )
 thrstThrsh(myItem)
 }

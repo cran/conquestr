@@ -7,19 +7,24 @@
 itemInfoOverTheta(myItem, minTheta = -6, maxTheta = 6, stepTheta = 0.1)
 }
 \arguments{
-\item{myItem}{A matrix of item parameters of the structure used in `simplef`}
+\item{myItem}{A matrix of item parameters of the structure used in \code{simplef}}
 
-\item{minTheta}{The smallest value of ability PDF to plot.}
+\item{minTheta}{The smallest value of ability PDF to calculate info and to plot.
+Defaults to -6.}
 
-\item{maxTheta}{The largest value of ability PDF to plot.}
+\item{maxTheta}{The largest value of ability PDF to calculate info and to plot.
+Defaults to 6.}
 
 \item{stepTheta}{The increment to iterate over the ability PDF. Defaults to 0.01.}
 }
 \description{
 Calculates item information over a rage of theta given a set of item parameters.
-   Returns a data frame with item information at a discrete set of values of theta - useful for plotting item information functions.
+Returns a data frame with item information at a discrete set of values of theta. This is
+useful for plotting item information functions.
+
+Note this function is redundant - use testInfoOverTheta and pass a single item as a list.
 }
 \examples{
-anItem<-  matrix(c(0,0,0,1,1,0), nrow = 2, byrow = TRUE)
+anItem <- matrix(c(0,0,0,1,1,1,0,1), nrow = 2, byrow = TRUE)
 itemInfoOverTheta(anItem)
 }

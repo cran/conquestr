@@ -5,15 +5,14 @@
 #' @param varNames Vector of valid variable names.
 #' @return A list.
 #' @keywords internal
-checkVarsExist <- function(data, varNames){
+checkVarsExist <- function(data, varNames) {
   #create return object
   tmpList <- list()
   # validation of inputs
   if (!is.data.frame(data)) stop("Data must be a data frame")
   if (!is.character(varNames)) stop("varNames must be a vector of variable names")
   tmpDataNames <- names(data)
-  if (!all(varNames %in% tmpDataNames))
-  {
+  if (!all(varNames %in% tmpDataNames)) {
     tmpList[[1]] <- varNames[!varNames %in% tmpDataNames]
   }
   return(tmpList)
@@ -27,20 +26,18 @@ checkVarsExist <- function(data, varNames){
 #' @param except A vector of variable names to be excluded form the check. 
 #' @return A list.
 #' @keywords internal
-checkNoExtraVars <- function(data, varNames, except=NULL){
+checkNoExtraVars <- function(data, varNames, except=NULL) {
   #create return object
   tmpList <- list()
   # validation of inputs
   if (!is.data.frame(data)) stop("Data must be a data frame")
   if (!is.character(varNames)) stop("varNames must be a vector of variable names")
-  if (!is.null(except))
-  {
+  if (!is.null(except)) {
     if (!is.character(except)) stop("Except must be a vector of variable names")
   }
   tmpDataNames <- names(data)
   if (length(except > 0)) varNames <- c(varNames, except)
-  if (!all(tmpDataNames %in% varNames))
-  {
+  if (!all(tmpDataNames %in% varNames)) {
     tmpList[[1]] <- tmpDataNames[!tmpDataNames %in% varNames]
   }
   return(tmpList)
@@ -78,91 +75,91 @@ checkVars <- function(data, varNames, except=NULL) {
 #'     (1) the case ids and invalid responses for the item, (2) the valid codes not observed in the data set, and 
 #'     (3) the valid codes observed fewer than 10 times in the data.
 #'     NOTE: a wanring is thrown if the validMap$varLabel is not found in the data. 
-checkItemRespValid<- function(data, caseID, validMap, varLabel, validLabel){
+checkItemRespValid <- function(data, caseID, validMap, varLabel, validLabel) {
   #create return object
-  tmpList<- list()
+  tmpList <- list()
   # Validation of inputs
-  if(!is.data.frame(data)) stop("Data must be a data frame")
-  if(any(class(data) %in% c("tbl_df", "tbl")))
+  if (!is.data.frame(data)) stop("Data must be a data frame")
+  if (any(class(data) %in% c("tbl_df", "tbl")))
   {
-    data<- as.data.frame(data)
+    data <- as.data.frame(data)
   }
-  if(!is.character(caseID)) stop("caseID must be a case ID")
-  if(!is.data.frame(validMap)) stop("validResps must be a data frame")
-  if(any(class(validMap) %in% c("tbl_df", "tbl")))
+  if (!is.character(caseID)) stop("caseID must be a case ID")
+  if (!is.data.frame(validMap)) stop("validResps must be a data frame")
+  if (any(class(validMap) %in% c("tbl_df", "tbl")))
   {
-    validMap<- as.data.frame(validMap)
+    validMap <- as.data.frame(validMap)
   }
-  if(!is.character(varLabel)) stop("varLabel must be the name of the vector which contains the variable names")
-  if(!is.character(validLabel)) stop("validLabel must be the name of the vector which contains the valid responses")
-  tmpUniqueVar<- unique(validMap[ , grep(paste0("^",varLabel,"$"), names(validMap))])
+  if (!is.character(varLabel)) stop("varLabel must be the name of the vector which contains the variable names")
+  if (!is.character(validLabel)) stop("validLabel must be the name of the vector which contains the valid responses")
+  tmpUniqueVar <- unique(validMap[ , grep(paste0("^",varLabel,"$"), names(validMap))])
   # is the list of vars valid?
-  if(any(duplicated(tmpUniqueVar))) stop("variable names to be validated are not unique")
+  if (any(duplicated(tmpUniqueVar))) stop("variable names to be validated are not unique")
   # loop over variables to validate
-  for(i in seq(length(tmpUniqueVar)))
+  for (i in seq(length(tmpUniqueVar)))
   {
-    thisItem<- tmpUniqueVar[i]
-    tmpList[[thisItem]]<- list()
-    tC<- 1
+    thisItem <- tmpUniqueVar[i]
+    tmpList[[thisItem]] <- list()
+    tC <- 1
     # is this variable in the data?
-    if(!tmpUniqueVar[i] %in% names(data))
+    if (!tmpUniqueVar[i] %in% names(data))
     {
       warning(paste0("variable: ", tmpUniqueVar[i], " not found in the data!"))
       next
     }
     # set up the indexes of item variable and caseID for data
-    varIndex<- grep(paste0("^",tmpUniqueVar[i],"$"), names(data))
-    idIndex<- grep(paste0("^",caseID,"$"), names(data))
+    varIndex <- grep(paste0("^",tmpUniqueVar[i],"$"), names(data))
+    idIndex <- grep(paste0("^",caseID,"$"), names(data))
     # set up the indexes of item variable and response values for valid mapping data frame
-    validItemIndex<- grep(paste0("^",varLabel,"$"), names(validMap))
-    validCodeIndex<- grep(paste0("^",validLabel,"$"), names(validMap))
+    validItemIndex <- grep(paste0("^",varLabel,"$"), names(validMap))
+    validCodeIndex <- grep(paste0("^",validLabel,"$"), names(validMap))
     # get all the responses
-    tmpResps<- data[ , varIndex]
+    tmpResps <- data[ , varIndex]
     # get the valid responses
-    tmpValidRows<- grep(paste0("^",tmpUniqueVar[i],"$"), validMap[,validItemIndex])
-    tmpValid<- validMap[tmpValidRows, grep(paste0("^",validLabel,"$"), names(validMap))]
+    tmpValidRows <- grep(paste0("^",tmpUniqueVar[i],"$"), validMap[,validItemIndex])
+    tmpValid <- validMap[tmpValidRows, grep(paste0("^",validLabel,"$"), names(validMap))]
     # are there any invalid responses?
-    if(any(!tmpResps %in% tmpValid))
+    if (any(!tmpResps %in% tmpValid))
     {
       # get the smallest practical subset
-      tmpDf<- data[!tmpResps %in% tmpValid , c(idIndex, varIndex)]
+      tmpDf <- data[!tmpResps %in% tmpValid , c(idIndex, varIndex)]
       # (tmpDf)
-      tmpList[[thisItem]][[tC]]<- tmpDf
+      tmpList[[thisItem]][[tC]] <- tmpDf
     } else
     {
-      tmpList[[thisItem]][[tC]]<- data.frame()
+      tmpList[[thisItem]][[tC]] <- data.frame()
     }
-    tC<- tC + 1
+    tC <- tC + 1
     #are there any valid responses that don't appear in the dataset?
-    if(any(!tmpValid %in% tmpResps))
+    if (any(!tmpValid %in% tmpResps))
     {
       # get the smallest practical subset
-      tmpDf<- validMap[validMap[,validItemIndex] %in% tmpUniqueVar[i], ]
-      tmpDf<- tmpDf[!tmpValid %in% tmpResps , c(validItemIndex, validCodeIndex)]
+      tmpDf <- validMap[validMap[,validItemIndex] %in% tmpUniqueVar[i], ]
+      tmpDf <- tmpDf[!tmpValid %in% tmpResps , c(validItemIndex, validCodeIndex)]
       # print(tmpDf)
-      tmpList[[thisItem]][[tC]]<- tmpDf
+      tmpList[[thisItem]][[tC]] <- tmpDf
     } else
     {
-      tmpList[[thisItem]][[tC]]<- data.frame()
+      tmpList[[thisItem]][[tC]] <- data.frame()
     }
-    tC<- tC + 1
+    tC <- tC + 1
     # are there any valid responses that appear less than 10 times?
-    tmpTable<- as.data.frame(table(tmpResps))
+    tmpTable <- as.data.frame(table(tmpResps))
     # remove invalid resps from table
     # subset table by those less than 10
     # work with that new table for if statement using dimNames
-    if(any(tmpValid %in% unique(Filter(function (elem) length(which(tmpResps == elem)) < 10, tmpResps))))
+    if (any(tmpValid %in% unique(Filter(function (elem) length(which(tmpResps == elem)) < 10, tmpResps))))
     {
-      tmpDf<- validMap[validMap[,validItemIndex] %in% tmpUniqueVar[i], ]
-      tmpDf<- tmpDf[tmpValid %in% unique(Filter(function (elem) length(which(tmpResps == elem)) < 10, tmpResps)), c(validItemIndex, validCodeIndex)]
+      tmpDf <- validMap[validMap[,validItemIndex] %in% tmpUniqueVar[i], ]
+      tmpDf <- tmpDf[tmpValid %in% unique(Filter(function (elem) length(which(tmpResps == elem)) < 10, tmpResps)), c(validItemIndex, validCodeIndex)]
       # print(tmpDf)
-      tmpList[[thisItem]][[tC]]<- tmpDf
+      tmpList[[thisItem]][[tC]] <- tmpDf
 
     } else
     {
-      tmpList[[thisItem]][[tC]]<- data.frame()
+      tmpList[[thisItem]][[tC]] <- data.frame()
     }
-    tC<- tC + 1
+    tC <- tC + 1
   }
   return(tmpList)
 }
@@ -177,64 +174,64 @@ checkItemRespValid<- function(data, caseID, validMap, varLabel, validLabel){
 #' @param rawLabel A variable name in recodeMap that identifies the raw item responses to be recoded.
 #' @param recodeLabel A variable name in recodeMap that idenitfies the new values to recode to.
 #' @return a data frame with raw data recoded according to recodeMap.
-recodeResps<- function(data, recodeMap, varLabel, rawLabel, recodeLabel){
+recodeResps <- function(data, recodeMap, varLabel, rawLabel, recodeLabel) {
   # Validation of inputs
-  if(!is.data.frame(data)) stop("Data must be a data frame")
-  if(any(class(data) %in% c("tbl_df", "tbl")))
+  if (!is.data.frame(data)) stop("Data must be a data frame")
+  if (any(class(data) %in% c("tbl_df", "tbl")))
   {
-    data<- as.data.frame(data)
+    data <- as.data.frame(data)
   }
-  if(!is.data.frame(recodeMap)) stop("validResps must be a data frame")
-  if(any(class(recodeMap) %in% c("tbl_df", "tbl")))
+  if (!is.data.frame(recodeMap)) stop("validResps must be a data frame")
+  if (any(class(recodeMap) %in% c("tbl_df", "tbl")))
   {
-    recodeMap<- as.data.frame(recodeMap)
+    recodeMap <- as.data.frame(recodeMap)
   }
-  if(!is.character(varLabel)) stop("varLabel must be the name of the vector which contains the variable names")
-  if(!is.character(rawLabel)) stop("rawLabel must be the name of the vector which contains the raw responses")
-  if(!is.character(recodeLabel)) stop("recodeLabel must be the name of the vector which contains the corresponding recoded responses")
-  if(!is.numeric(recodeMap[ , grep(paste0("^",recodeLabel,"$"), names(recodeMap))])) stop("vector which contains the corresponding recoded responses must be numeric")
-  tmpUniqueVar<- unique(recodeMap[ , grep(paste0("^",varLabel,"$"), names(recodeMap))])
+  if (!is.character(varLabel)) stop("varLabel must be the name of the vector which contains the variable names")
+  if (!is.character(rawLabel)) stop("rawLabel must be the name of the vector which contains the raw responses")
+  if (!is.character(recodeLabel)) stop("recodeLabel must be the name of the vector which contains the corresponding recoded responses")
+  if (!is.numeric(recodeMap[ , grep(paste0("^",recodeLabel,"$"), names(recodeMap))])) stop("vector which contains the corresponding recoded responses must be numeric")
+  tmpUniqueVar <- unique(recodeMap[ , grep(paste0("^",varLabel,"$"), names(recodeMap))])
   # is the list of vars valid?
-  if(any(duplicated(tmpUniqueVar))) stop("variable names to be validated are not unique")
+  if (any(duplicated(tmpUniqueVar))) stop("variable names to be validated are not unique")
   # loop over variables to validate
-  for(i in seq(length(tmpUniqueVar)))
+  for (i in seq(length(tmpUniqueVar)))
   {
     # is this variable in the data?
-    if(!tmpUniqueVar[i] %in% names(data))
+    if (!tmpUniqueVar[i] %in% names(data))
     {
       warning(paste0("variable: ", tmpUniqueVar[i], " not found in the data!"))
       next
     }
     # what is index of this variable in the data?
-    varIndex<- grep(paste0("^",tmpUniqueVar[i],"$"), names(data))
+    varIndex <- grep(paste0("^",tmpUniqueVar[i],"$"), names(data))
     # set up the indexes of item variable, raw responses and recode responses for recodeMap
-    validItemIndex<- grep(paste0("^",varLabel,"$"), names(recodeMap))
-    rawIndex<- grep(paste0("^",rawLabel,"$"), names(recodeMap))
-    recodeIndex<- grep(paste0("^",recodeLabel,"$"), names(recodeMap))
+    validItemIndex <- grep(paste0("^",varLabel,"$"), names(recodeMap))
+    rawIndex <- grep(paste0("^",rawLabel,"$"), names(recodeMap))
+    recodeIndex <- grep(paste0("^",recodeLabel,"$"), names(recodeMap))
     # subset data by item
-    dataTmp<- data[ , varIndex]
+    dataTmp <- data[ , varIndex]
     # subset recode mapping
-    tmpMap<- subset(recodeMap, rawLabel!=recodeLabel | is.na(recodeLabel))
+    tmpMap <- subset(recodeMap, rawLabel!=recodeLabel | is.na(recodeLabel))
     # set up the index of item variable for tmpMap
-    tmpMapItemIndex<- grep(paste0("^",varLabel,"$"), names(tmpMap))
+    tmpMapItemIndex <- grep(paste0("^",varLabel,"$"), names(tmpMap))
     # subset rows of tmpMap by item
-    tmpMap<- tmpMap[grep(paste0("^",tmpUniqueVar[i],"$"), tmpMap[,tmpMapItemIndex]) , ]
+    tmpMap <- tmpMap[grep(paste0("^",tmpUniqueVar[i],"$"), tmpMap[,tmpMapItemIndex]) , ]
     # set up the indexes of raw responses and recode responses for tmpMap
-    tmpMapRawIndex<- grep(paste0("^",rawLabel,"$"), names(tmpMap))
-    tmpMapRecodeIndex<- grep(paste0("^",recodeLabel,"$"), names(tmpMap))
+    tmpMapRawIndex <- grep(paste0("^",rawLabel,"$"), names(tmpMap))
+    tmpMapRecodeIndex <- grep(paste0("^",recodeLabel,"$"), names(tmpMap))
     #handle NA
-    tmpNa<- max(tmpMap[, tmpMapRecodeIndex]+100, na.rm=TRUE)
-    tmpMap[is.na(tmpMap[, tmpMapRecodeIndex]) , tmpMapRecodeIndex]<- tmpNa
-    for(val in tmpMap[ , tmpMapRawIndex])
+    tmpNa <- max(tmpMap[, tmpMapRecodeIndex]+100, na.rm=TRUE)
+    tmpMap[is.na(tmpMap[, tmpMapRecodeIndex]) , tmpMapRecodeIndex] <- tmpNa
+    for (val in tmpMap[ , tmpMapRawIndex])
     {
       # replacement values
-      replaceW<- tmpMap[tmpMap[ , tmpMapRawIndex] == val, tmpMapRecodeIndex]
+      replaceW <- tmpMap[tmpMap[ , tmpMapRawIndex] == val, tmpMapRecodeIndex]
       # replace values in data
-      dataTmp<- replace(dataTmp, data[, varIndex] %in% val, replaceW)
+      dataTmp <- replace(dataTmp, data[, varIndex] %in% val, replaceW)
     }
     # handle NA
-    dataTmp[dataTmp == tmpNa]<- NA
-    data[ , varIndex]<- dataTmp
+    dataTmp[dataTmp == tmpNa] <- NA
+    data[ , varIndex] <- dataTmp
   }
   return(data)
 }

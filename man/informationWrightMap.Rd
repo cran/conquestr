@@ -11,16 +11,17 @@ informationWrightMap(
   minTheta = NA,
   maxTheta = NA,
   stepTheta = NA,
-  scaleInfo = 1
+  scaleInfo = 1,
+  plotItemPoints = "deltadots"
 )
 }
 \arguments{
-\item{myItems}{A vector of item deltas.}
+\item{myItems}{A list of matricies describing item parameters.}
 
-\item{myAbilities}{A vector of person abilities.}
+\item{myAbilities}{A vector of person abilities on one dimension.}
 
-\item{type}{A character String.
-Should the test information be calculated empirically ("empirical" - default) or analytically using moments of distribution ("approx").}
+\item{type}{A character String. Should the test information be calculated empirically ("empirical" - default) or
+analytically using moments of distribution ("approx").}
 
 \item{minTheta}{The smallest value of ability PDF to plot.}
 
@@ -28,8 +29,13 @@ Should the test information be calculated empirically ("empirical" - default) or
 
 \item{stepTheta}{The increment to iterate over the ability PDF. Defaults to 0.01.}
 
-\item{scaleInfo}{A scaling factor to apply to the plot of tesr information.
-Because ability distribution is a PDF with area one, and a test information function has area L, this can make the plot more interpretable. Defaults to 1.}
+\item{scaleInfo}{A scaling factor to apply to the plot of tesr information. Because ability distribution is a
+PDF with area one, and a test information function has area L, this can make the plot more interpretable.
+Defaults to 1.}
+
+\item{plotItemPoints}{A character string indicating what item points should be plotted along the x-axis.
+similar to the histogram of item locations plotted on a Wrightmap.
+Can be "none", "deltadots", "thresholds".}
 }
 \value{
 A ggplot2 object.
@@ -38,5 +44,17 @@ A ggplot2 object.
 Plots test information function, relative to ability density, and item locations.
 }
 \examples{
-myInfoPlot<- informationWrightMap(runif(10, -2, 3), rnorm(1000, 0, 1), minTheta=-10, maxTheta=10)
+myDeltaDots <- data.frame(
+  id = c(1:10),
+  itemid = paste0("item", 1:10),
+  delta = rnorm(10)
+)
+MyTaus <- data.frame(
+  id = c(2L, 10L),
+  itemId = NA,
+  step = c(1L, 1L),
+  tau = rnorm(2)
+)
+myItemList <- makeItemList(deltaDot = myDeltaDots, tau = MyTaus)
+myInfoPlot <- informationWrightMap(myItemList, rnorm(1000, 0, 1), minTheta=-5, maxTheta=5)
 }

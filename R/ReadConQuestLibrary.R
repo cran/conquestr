@@ -1,5 +1,5 @@
 #' @title ReadDouble
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadDouble <- function(myFile)
@@ -7,8 +7,23 @@ ReadDouble <- function(myFile)
     readBin(myFile, double(), endian = "little", size = 8, n = 1)
 }
 
+#' @title ReadDoubleList
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @return A list
+#' @keywords internal
+ReadDoubleList <- function(myFile)
+{
+    N <- ReadInteger(myFile)
+    Value <- list()
+    for (i in seq_len(N))
+    {
+      Value[[i]] <- ReadDouble(myFile)
+    }
+    return(Value)
+}
+
 #' @title ReadInteger
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadInteger <- function(myFile)
@@ -17,7 +32,7 @@ ReadInteger <- function(myFile)
 }
 
 #' @title ReadBoolean
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadBoolean <- function(myFile)
@@ -26,7 +41,7 @@ ReadBoolean <- function(myFile)
 }
 
 #' @title ReadString
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadString <- function(myFile)
@@ -66,9 +81,9 @@ ReadIntegerListList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadIntegerList(myFile)
+            Value[[i]] <-ReadIntegerList(myFile)
     }
     return(Value)
 }
@@ -81,27 +96,26 @@ ReadBooleanList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadBoolean(myFile)
+            Value[[i]] <- ReadBoolean(myFile)
     }
     return(Value)
 }
 
 #' @title ReadStringList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadStringList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
-    {
-            Value[[i]]<-ReadString(myFile)
-    }
-
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadString(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadBitSet
@@ -110,118 +124,84 @@ ReadStringList <- function(myFile)
 #' @keywords internal
 ReadBitSet <- function(myFile)
 {
-    String <- matrix()
-    Items <- ReadInteger(myFile)
-    Columns <- ReadInteger(myFile)
-    Size <- ReadInteger(myFile)
-    if(Size>0){
-      for(i in 1:Size){
-        tmpString<- readBin(myFile, what = "raw")
-      tmpLogical<- as.logical(rawToBits(tmpString))
-        if(i == 1){
-          String<- tmpLogical
+  String <- matrix()
+  Items <- ReadInteger(myFile)
+  Columns <- ReadInteger(myFile)
+  Size <- ReadInteger(myFile)
+  if (Size>0) {
+    for (i in 1:Size) {
+      tmpString <- readBin(myFile, what = "raw")
+      tmpLogical <- as.logical(rawToBits(tmpString))
+      if (i == 1) {
+          String <- tmpLogical
         } else {
-          String<- c(String, tmpLogical)
+          String <- c(String, tmpLogical)
         }
       }
-      String<- matrix(String[1:(Items*Columns)], nrow = Items, ncol = Columns, byrow = TRUE) # subset String as it is likely too big!
+      # subset String as it is likely too big!
+      String <- matrix(String[1:(Items*Columns)], nrow = Items, ncol = Columns, byrow = TRUE)
     }
-    V <- list(String,Items,Columns,Size)
-    names(V)<-c("String","Items","Columns","Size")
-    return (V)
+    V <- list(String, Items, Columns, Size)
+    names(V)<-c("String", "Items", "Columns", "Size")
+    return(V)
 }
 
 #' @title ReadMatrix
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadMatrix <- function(myFile)
 {
-    Rows <- ReadInteger(myFile)
-    Columns <- ReadInteger(myFile)
-    Empty <- ReadBoolean(myFile)
-    Title <- ReadString(myFile)
-  Labels <- list()
   A <- matrix()
-  if(Rows==0 || Columns==0)return(A)
-    for(i in 1:Columns)
-    {
-            Labels[[i]]<-ReadString(myFile)
-    }
-  A <- matrix(1:Rows*Columns,nrow = Rows,ncol = Columns)
-    for(r in 1:Rows)
-    {
-        for(c in 1:Columns)
-        {
-                A[r,c]<-ReadDouble(myFile)
-        }
-    }
-    colnames(A, do.NULL = TRUE, prefix = "")
-  colnames(A) <- Labels
-  return (A)
-}
-
-#' @title ReadMatrix_C
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
-#' @return A list
-#' @keywords internal
-ReadMatrix_C <- function(myFile) # debug i create this to see if the issue was that the cmatrix didint have a title
-{
   Rows <- ReadInteger(myFile)
   Columns <- ReadInteger(myFile)
   Empty <- ReadBoolean(myFile)
-  # Title <- ReadString(myFile)
-  Labels <- list()
-  A <- matrix()
-  if(Rows==0 | Columns==0)return(A)
-  for(i in 1:Columns)
-  {
-    Labels[[i]]<-ReadString(myFile)
-  }
-  A <- matrix(1:Rows*Columns,nrow = Rows,ncol = Columns)
-  for(r in 1:Rows)
-  {
-    for(c in 1:Columns)
-    {
-      A[r,c]<-ReadDouble(myFile)
+  Title <- ReadString(myFile)
+  cLabels <- ReadStringList(myFile)
+  rLabels <- ReadStringList(myFile)
+  if (Rows == 0 || Columns == 0) return(A)
+  # resize A
+  A <- matrix(1:Rows * Columns, nrow = Rows, ncol = Columns)
+  for (r in seq_len(Rows)) {
+    for (c in seq_len(Columns)) {
+      A[r, c] <- ReadDouble(myFile)
     }
   }
-  colnames(A, do.NULL = TRUE, prefix = "")
-  colnames(A) <- Labels
-  return (A)
+  colnames(A) <- unlist(cLabels)
+  rownames(A) <- unlist(rLabels)
+  return(A)
 }
 
 #' @title ReadMatrixList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadMatrixList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
-    {
-            Value[[i]]<-ReadMatrix(myFile)
-    }
-    return (Value)
+  for (i in seq_len(N)) {
+    Value[[i]] <-ReadMatrix(myFile)
+  }
+  return (Value)
 }
 
 #' @title ReadImplicitVar
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadImplicitVar <- function(myFile)
 {
     L <- ReadInteger(myFile)
   Name <- list()
-    for(i in seq_len(L))
+    for (i in seq_len(L))
     {
-            Name[[i]]<-ReadString(myFile)
+            Name[[i]] <-ReadString(myFile)
     }
   Levels <- list()
-    for(i in seq_len(L))
+    for (i in seq_len(L))
     {
-            Levels[[i]]<-ReadInteger(myFile)
+            Levels[[i]] <-ReadInteger(myFile)
     }
   V <- list(Name,Levels)
   names(V)<-c("Name","Levels")
@@ -229,30 +209,30 @@ ReadImplicitVar <- function(myFile)
 }
 
 #' @title ReadVarList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadVarList <- function(myFile)
 {
     LX <- ReadInteger(myFile)
   XV <- list()
-    for(i in seq_len(LX))
+    for (i in seq_len(LX))
     {
-            XV[[i]]<-ReadInteger(myFile)
+            XV[[i]] <-ReadInteger(myFile)
     }
     LI <- ReadInteger(myFile)
   IV <- list()
-  for(i in seq_len(LI))
+  for (i in seq_len(LI))
   {
-        IV[[i]]<-ReadInteger(myFile)
+        IV[[i]] <-ReadInteger(myFile)
   }
   V <- list(XV,IV)
-  names(V)<-c("XV","IV")
-  return (V)
+  names(V) <- c("XV","IV")
+  return(V)
 }
 
 #' @title ReadLookUp
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadLookUp <- function(myFile)
@@ -260,9 +240,9 @@ ReadLookUp <- function(myFile)
     VarNumber <- ReadInteger(myFile)
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadString(myFile)
+            Value[[i]] <-ReadString(myFile)
     }
   V <- list(VarNumber,Value)
   names(V)<-c("VarNumber","Value")
@@ -270,22 +250,22 @@ ReadLookUp <- function(myFile)
 }
 
 #' @title ReadLookUpList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadLookUpList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadLookUp(myFile)
+            Value[[i]] <-ReadLookUp(myFile)
     }
     return(Value)
 }
 
 #' @title ReadBandDefine
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadBandDefine <- function(myFile)
@@ -293,37 +273,37 @@ ReadBandDefine <- function(myFile)
   Dimension <- ReadInteger(myFile)
   UpperBound <- ReadDouble(myFile)
   LowerBound <- ReadDouble(myFile)
-  BandLabel<- ReadString(myFile)
+  BandLabel <- ReadString(myFile)
   V <- list(Dimension, UpperBound, LowerBound, BandLabel)
   names(V)<-c("Dimension", "Upper Bound", "Lower Bound", "Band Label")
   return(V)
 }
 
 #' @title ReadBandDefinesList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadBandDefinesList <- function(myFile)
 {
   N <- ReadInteger(myFile)
   Value <- list()
-  for(i in seq_len(N))
+  for (i in seq_len(N))
   {
-    Value[[i]]<-ReadBandDefine(myFile)
+    Value[[i]] <-ReadBandDefine(myFile)
   }
   return(Value)
 }
 
 
 #' @title ReadAnchor
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadAnchor <- function(myFile)
 {
     Type <- ReadInteger(myFile)
-    I1<-ReadInteger(myFile)
-    I2<-ReadInteger(myFile)
+    I1 <-ReadInteger(myFile)
+    I2 <-ReadInteger(myFile)
     Value <- ReadDouble(myFile)
   V <- list(Type,I1,I2,Value)
   names(V)<-c("Type","I1","I2","Value")
@@ -331,22 +311,22 @@ ReadAnchor <- function(myFile)
 }
 
 #' @title ReadAnchorList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadAnchorList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadAnchor(myFile)
+            Value[[i]] <-ReadAnchor(myFile)
     }
     return(Value)
 }
 
 #' @title ReadVariable
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadVariable <- function(myFile)
@@ -356,42 +336,42 @@ ReadVariable <- function(myFile)
   Begin <- list()
   End <- list()
   Record <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-        Begin[[i]]<-ReadInteger(myFile)
+        Begin[[i]] <-ReadInteger(myFile)
     }
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-        End[[i]]<-ReadInteger(myFile)
+        End[[i]] <-ReadInteger(myFile)
     }
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-        Record[[i]]<-ReadInteger(myFile)
+        Record[[i]] <-ReadInteger(myFile)
     }
     Level <- ReadInteger(myFile)
     NMissing <- ReadInteger(myFile)
   MissingList <- list()
-    for(i in seq_len(NMissing))
+    for (i in seq_len(NMissing))
     {
-        MissingList[[i]]<-ReadString(myFile)
+        MissingList[[i]] <-ReadString(myFile)
     }
     NMissingMatchMethod <- ReadInteger(myFile)
     MissingMatchMethod <- list()
-    for(i in seq_len(NMissingMatchMethod))
+    for (i in seq_len(NMissingMatchMethod))
     {
-        MissingMatchMethod[[i]]<-ReadInteger(myFile)
+        MissingMatchMethod[[i]] <-ReadInteger(myFile)
     }
     NDropKeepList <- ReadInteger(myFile)
     DropKeepList <- list()
-    for(i in seq_len(NDropKeepList))
+    for (i in seq_len(NDropKeepList))
     {
-        DropKeepList[[i]]<-ReadString(myFile)
+        DropKeepList[[i]] <-ReadString(myFile)
     }
     NDropKeepMatchMethod <- ReadInteger(myFile)
     DropKeepMatchMethod <- list()
-  for(i in seq_len(NDropKeepMatchMethod))
+  for (i in seq_len(NDropKeepMatchMethod))
   {
-        DropKeepMatchMethod[[i]]<-ReadInteger(myFile)
+        DropKeepMatchMethod[[i]] <-ReadInteger(myFile)
   }
     DropKeepType <- ReadInteger(myFile)
     Categorical <- ReadBoolean(myFile)
@@ -404,22 +384,22 @@ ReadVariable <- function(myFile)
 }
 
 #' @title ReadVariableList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadVariableList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadVariable(myFile)
+            Value[[i]] <-ReadVariable(myFile)
     }
     return(Value)
 }
 
 #' @title ReadResponse
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadResponse <- function(myFile)
@@ -427,13 +407,13 @@ ReadResponse <- function(myFile)
     N <- ReadInteger(myFile)
   Col <- list()
   Rec <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Col[[i]]<-ReadInteger(myFile)
+            Col[[i]] <-ReadInteger(myFile)
     }
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Rec[[i]]<-ReadInteger(myFile)
+            Rec[[i]] <-ReadInteger(myFile)
     }
     Width <- ReadInteger(myFile)
   V <- list(Col,Rec,Width)
@@ -442,16 +422,16 @@ ReadResponse <- function(myFile)
 }
 
 #' @title ReadResponseList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadResponseList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadResponse(myFile)
+            Value[[i]] <-ReadResponse(myFile)
     }
     return(Value)
 }
@@ -462,9 +442,9 @@ ReadKey <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Key <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Key[[i]]<-ReadString(myFile)
+            Key[[i]] <-ReadString(myFile)
     }
   Score <- ReadString(myFile)
   V <- list(Key,Score)
@@ -473,22 +453,22 @@ ReadKey <- function(myFile)
 }
 
 #' @title ReadKeyList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadKeyList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadKey(myFile)
+            Value[[i]] <-ReadKey(myFile)
     }
     return(Value)
 }
 
 #' @title ReadLabel
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadLabel <- function(myFile)
@@ -497,14 +477,14 @@ ReadLabel <- function(myFile)
     VarType <- ReadInteger(myFile) #IMPLICIT=0, EXPLICIT=1, DIMENSION=2, PARAMETER=3, FIT=4
     N <- ReadInteger(myFile)
   Code <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Code[[i]]<-ReadString(myFile)
+            Code[[i]] <-ReadString(myFile)
     }
   Label <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Label[[i]]<-ReadString(myFile)
+            Label[[i]] <-ReadString(myFile)
     }
   V <- list(VarNum,VarType,Code,Label)
   names(V)<-c("VarNum","VarType","Code","Label")
@@ -512,47 +492,46 @@ ReadLabel <- function(myFile)
 }
 
 #' @title ReadLabelList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadLabelList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadLabel(myFile)
+            Value[[i]] <-ReadLabel(myFile)
     }
     return(Value)
 }
 
 #' @title ReadTerms
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
-ReadTerms <- function(myFile)
-{
+ReadTerms <- function(myFile) {
     N <- ReadInteger(myFile)
     NP <- ReadInteger(myFile)
   VariableNumber <- list()
   VariableType <- list()
   ParamNumber <- list()
   ParamType <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            VariableNumber[[i]]<-ReadInteger(myFile) # MAYBE: sequential count of terms in model
+            VariableNumber[[i]] <- ReadInteger(myFile) # MAYBE: sequential count of terms in model
     }
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            VariableType[[i]]<-ReadInteger(myFile) # 0 if implicit, 1 if explicit
+            VariableType[[i]] <- ReadInteger(myFile) # 0 if implicit, 1 if explicit
     }
-    for(i in seq_len(NP))
+    for (i in seq_len(NP))
     {
-            ParamNumber[[i]]<-ReadInteger(myFile) # param number in the model (0 offset)
+            ParamNumber[[i]] <- ReadInteger(myFile) # param number in the model (0 offset)
     }
-    for(i in seq_len(NP))
+    for (i in seq_len(NP))
     {
-            ParamType[[i]]<-ReadInteger(myFile) # 0 if estimated, 1 if constrained
+            ParamType[[i]] <- ReadInteger(myFile) # 0 if estimated, 1 if constrained
     }
     Sign <- readChar(myFile, 1)
     Label <- ReadString(myFile)
@@ -562,22 +541,22 @@ ReadTerms <- function(myFile)
 }
 
 #' @title ReadTermsList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadTermsList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadTerms(myFile)
+            Value[[i]] <-ReadTerms(myFile)
     }
     return(Value)
 }
 
 #' @title ReadVarInfo
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadVarInfo <- function(myFile)
@@ -590,7 +569,7 @@ ReadVarInfo <- function(myFile)
 }
 
 #' @title ReadCodeList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadCodeList <- function(myFile)
@@ -603,7 +582,7 @@ ReadCodeList <- function(myFile)
 }
 
 #' @title ReadIRecode
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadIRecode <- function(myFile)
@@ -611,15 +590,15 @@ ReadIRecode <- function(myFile)
     Before <- ReadStringList(myFile)
     NAfter <- ReadInteger(myFile)
   AfterList <- list()
-    for(i in seq_len(NAfter))
+    for (i in seq_len(NAfter))
     {
-            AfterList[[i]]<-ReadStringList(myFile)
+            AfterList[[i]] <-ReadStringList(myFile)
     }
     NList <- ReadInteger(myFile)
   CList <- list()
-    for(i in seq_len(NList))
+    for (i in seq_len(NList))
     {
-            CList[[i]]<-ReadCodeList(myFile)
+            CList[[i]] <-ReadCodeList(myFile)
     }
   V <- list(Before,AfterList,CList)
   names(V)<-c("Before","AfterList","CList")
@@ -627,22 +606,22 @@ ReadIRecode <- function(myFile)
 }
 
 #' @title ReadIRecodeList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadIRecodeList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadIRecode(myFile)
+            Value[[i]] <-ReadIRecode(myFile)
     }
     return(Value)
 }
 
 #' @title ReadParameters
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadParameters <- function(myFile)
@@ -656,58 +635,59 @@ ReadParameters <- function(myFile)
 }
 
 #' @title ReadParametersList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadParametersList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadParameters(myFile)
+            Value[[i]] <-ReadParameters(myFile)
     }
     return(Value)
 }
 
 #' @title ReadCategorise
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadCategorise <- function(myFile)
 {
-    Type <- ReadInteger(myFile)
-    Varnum <- ReadInteger(myFile)
-    ValueList <- ReadStringList(myFile)
-  V <- list(Type,Varnum,ValueList)
-  names(V)<-c("Type","Varnum","ValueList")
-  return (V)
+  Type <- ReadInteger(myFile)
+  Varnum <- ReadInteger(myFile)
+  ValueList <- ReadStringList(myFile)
+  MatchType <- ReadIntegerList(myFile)
+  V <- list(Type, Varnum, ValueList, MatchType)
+  names(V) <- c("Type", "Varnum", "ValueList", "MatchType")
+  return(V)
 }
 
 #' @title ReadCategoriseList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadCategoriseList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
-    {
-            Value[[i]]<-ReadCategorise(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadCategorise(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadFit
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadFit <- function(myFile)
 {
     UnWeightedMNSQ <- ReadDouble(myFile)
     UnWeightedtfit <- ReadDouble(myFile)
-  WeightedCW2<-ReadDouble(myFile)
+  WeightedCW2 <-ReadDouble(myFile)
     WeightedMNSQ <- ReadDouble(myFile)
     Weightedtfit <- ReadDouble(myFile)
     WeightedNumerator <- ReadDouble(myFile)
@@ -723,7 +703,7 @@ ReadFit <- function(myFile)
 }
 
 #' @title ReadFitList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadFitList <- function(myFile)
@@ -733,10 +713,10 @@ ReadFitList <- function(myFile)
   Value <- list()
   V <- list(Names,Value)
   names(V)<-c("Names","Value")
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-           Names[[i]]<-ReadString(myFile)
-            Value[[i]]<-ReadFit(myFile)
+           Names[[i]] <-ReadString(myFile)
+            Value[[i]] <-ReadFit(myFile)
     }
   V <- list(Names,Value)
   names(V)<-c("Names","Value")
@@ -744,7 +724,7 @@ ReadFitList <- function(myFile)
 }
 
 #' @title ReadRegression
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadRegression <- function(myFile)
@@ -757,41 +737,41 @@ ReadRegression <- function(myFile)
 }
 
 #' @title ReadRegressionListLeg
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadRegressionListLeg <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadRegression(myFile)
+            Value[[i]] <-ReadRegression(myFile)
     }
     return(Value)
 }
 
 #' @title ReadRegressionList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadRegressionList <- function(myFile)
 {
   N <- ReadInteger(myFile)
   Value <- list()
-  for(i in seq_len(N))
+  for (i in seq_len(N))
   {
-    Value[[i]]<-ReadRegression(myFile)
+    Value[[i]] <-ReadRegression(myFile)
   }
-  tmpRandGroupName<- ReadString(myFile)
-  tmpRandGroupExists<- ReadBoolean(myFile)
-  Result<- list(Value, tmpRandGroupName, tmpRandGroupExists)
+  tmpRandGroupName <- ReadString(myFile)
+  tmpRandGroupExists <- ReadBoolean(myFile)
+  Result <- list(Value, tmpRandGroupName, tmpRandGroupExists)
   names(Result)<- c("RegVars", "RandGroupName", "RandGroupExists")
   return(Result)
 }
 
 #' @title ReadItemSet
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadItemSet <- function(myFile)
@@ -804,16 +784,16 @@ ReadItemSet <- function(myFile)
 }
 
 #' @title ReadItemSetList
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadItemSetList <- function(myFile)
 {
     N <- ReadInteger(myFile)
   Value <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
-            Value[[i]]<-ReadItemSet(myFile)
+            Value[[i]] <-ReadItemSet(myFile)
     }
     return(Value)
 }
@@ -833,19 +813,19 @@ ReadHistory <- function(myFile)
   Xsi <- list()
   Tau <- list()
   RanTermVariance <- list()
-  BetweenVariance<- list()
-  for(i in seq_len(N))
+  BetweenVariance <- list()
+  for (i in seq_len(N))
     {
-    myTmpInt<- ReadInteger(myFile)
-    RunNo[[i]]<- myTmpInt
-    Iter[[i]]<- ReadInteger(myFile)
-        Likelihood[[i]]<-ReadDouble(myFile)
-       Beta[[i]]<-ReadMatrix(myFile)
-       WithinVariance[[i]]<-ReadMatrix(myFile)
-    Xsi[[i]]<-ReadMatrix(myFile)
-    Tau[[i]]<-ReadMatrix(myFile)
-    RanTermVariance[[i]]<-ReadMatrix(myFile)
-    BetweenVariance[[i]]<-ReadMatrix(myFile)
+    myTmpInt <- ReadInteger(myFile)
+    RunNo[[i]] <- myTmpInt
+    Iter[[i]] <- ReadInteger(myFile)
+        Likelihood[[i]] <-ReadDouble(myFile)
+       Beta[[i]] <-ReadMatrix(myFile)
+       WithinVariance[[i]] <-ReadMatrix(myFile)
+    Xsi[[i]] <-ReadMatrix(myFile)
+    Tau[[i]] <-ReadMatrix(myFile)
+    RanTermVariance[[i]] <-ReadMatrix(myFile)
+    BetweenVariance[[i]] <-ReadMatrix(myFile)
   }
   V <- list(RunNo, Iter,Likelihood,Beta,WithinVariance,Xsi,Tau,RanTermVariance,BetweenVariance)
   names(V)<-c("RunNo", "Iter","Likelihood","Beta","Variance","Xsi","Tau","RanTermVariance","BetweenVariance")
@@ -853,7 +833,7 @@ ReadHistory <- function(myFile)
 }
 
 #' @title ReadEstimatesRecord
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @param Dimensions An integer representation of 'ACER ConQuest' object gNDim.
 #' @param NPlausibles An integer representation of 'ACER ConQuest' object gNPlausibles.
 #' @param n An integer representation of 'ACER ConQuest' object gNCases.
@@ -900,18 +880,18 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
   }
   for (i in seq_len(Dimensions))
   {
-    wle[i]<-ReadDouble(myFile)
+    wle[i] <-ReadDouble(myFile)
   }
   for (r in seq_len(Dimensions))
   {
-    for(c in seq_len(Dimensions))
+    for (c in seq_len(Dimensions))
     {
-      wleerr[r,c]<-ReadDouble(myFile)
+      wleerr[r,c] <-ReadDouble(myFile)
     }
   }
   for (r in seq_len(Dimensions))
   {
-    for(c in seq_len(NPlausibles))
+    for (c in seq_len(NPlausibles))
     {
       pvs[r,c] <- ReadDouble(myFile)
     }
@@ -929,11 +909,11 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
   }
   for (i in seq_len(Dimensions))
   {
-    scores[i]<-ReadDouble(myFile)
+    scores[i] <-ReadDouble(myFile)
   }
-  for(i in seq_len(Dimensions))
+  for (i in seq_len(Dimensions))
   {
-    maxscores[i]<-ReadDouble(myFile)
+    maxscores[i] <-ReadDouble(myFile)
   }
   fit <- ReadDouble(myFile)
   weight <- ReadDouble(myFile)
@@ -959,10 +939,10 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
 ReadAllCaseEstimates <- function(myFile,Dimensions,N,NPlausibles)
 {
     V <- list()
-    chainLen<- ReadInteger(myFile) # the chain length can be updated by subsequent calls to estimate, gNPlausibles is not the number of PVs in the last run
-    for(i in seq_len(N))
+    chainLen <- ReadInteger(myFile) # the chain length can be updated by subsequent calls to estimate, gNPlausibles is not the number of PVs in the last run
+    for (i in seq_len(N))
     {
-        V[[i]]<-ReadEstimatesRecord(
+        V[[i]] <-ReadEstimatesRecord(
             myFile = myFile,
             Dimensions = Dimensions,
             NPlausibles = chainLen,
@@ -996,7 +976,7 @@ ReadDataRecord <- function(myFile)
 ReadAllResponseData <- function(myFile,N)
 {
     V <- list()
-    for(i in seq_len(N))
+    for (i in seq_len(N))
     {
         V[[i]]=ReadDataRecord(myFile)
     }
@@ -1004,7 +984,7 @@ ReadAllResponseData <- function(myFile,N)
 }
 
 #' @title ReadADesignMatrices
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @param Columns An integer representation of 'ACER ConQuest' object gNParameters.
 #' @param Items An integer representation of 'ACER ConQuest' object gNGins.
 #' @param ItemSteps An integer representation of 'ACER ConQuest' object gItemSteps.
@@ -1014,17 +994,17 @@ ReadAllResponseData <- function(myFile,N)
 ReadADesignMatrices <- function(myFile,Columns,Items,ItemSteps)
 {
     V <- list()      # this is a list of matrices, for review
-    if(Columns == 0) return(V)
-    for(i in seq_len(Items))
+    if (Columns == 0) return(V)
+    for (i in seq_len(Items))
     {
-      if(ItemSteps[[i]]>0)
+      if (ItemSteps[[i]]>0)
       {
-            V[[i]]<-matrix(1:ItemSteps[[i]]*Columns,nrow = ItemSteps[[i]],ncol = Columns)
+            V[[i]] <-matrix(1:ItemSteps[[i]]*Columns,nrow = ItemSteps[[i]],ncol = Columns)
             for (r in seq_len(ItemSteps[[i]]))
             {
                 for (c in seq_len(Columns))
                 {
-                   V[[i]][r,c]<-ReadDouble(myFile);
+                   V[[i]][r,c] <-ReadDouble(myFile);
                 }
             }
         }
@@ -1037,7 +1017,7 @@ ReadADesignMatrices <- function(myFile,Columns,Items,ItemSteps)
 }
 
 #' @title ReadBDesignMatrices
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @param Items An integer representation of 'ACER ConQuest' object gNGins.
 #' @param ItemSteps An integer representation of 'ACER ConQuest' object gItemSteps.
 #' @return A list
@@ -1046,21 +1026,21 @@ ReadADesignMatrices <- function(myFile,Columns,Items,ItemSteps)
 ReadBDesignMatrices <- function(myFile,ItemSteps,Items)
 {
     V <- list()      # this will be a 2D list of matrices, for review
-    for(i in seq_len(Items))
+    for (i in seq_len(Items))
     {
-        V[[i]]<-list()
-        TempIndex<- ItemSteps[[i]]
-        if(TempIndex==0)TempIndex<- 1
+        V[[i]] <-list()
+        TempIndex <- ItemSteps[[i]]
+        if (TempIndex==0)TempIndex <- 1
         for (j in seq_len(TempIndex))
         {
-                 V[[i]][[j]]<-ReadMatrix(myFile);
+                 V[[i]][[j]] <-ReadMatrix(myFile);
         }
     }
     return(V)
 }
 
 #' @title ReadCDesignMatrices
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @param Dimensions An integer representation of 'ACER ConQuest' object gNDim.
 #' @param Items An integer representation of 'ACER ConQuest' object gNGins.
 #' @param ItemSteps An integer representation of 'ACER ConQuest' object gItemSteps.
@@ -1074,22 +1054,22 @@ ReadCDesignMatrices <- function(myFile,Dimensions,ItemSteps,Items)
   #print(paste(Items, " : printing Items - gNGins")); # debug
 
   V <- list()
-    for(d in seq_len(Dimensions))
+    for (d in seq_len(Dimensions))
     {
       # print(d); print("d in seq_len(Dimensions)") # debug
-      V[[d]]<-list()
+      V[[d]] <-list()
         for (i in seq_len(Items))
         {
           #print(paste(i, ": item. from call: (i in seq_len(Items))")) # debug
-          V[[d]][[i]]<-list()
-          TempIndex<- ItemSteps[[i]]
+          V[[d]][[i]] <-list()
+          TempIndex <- ItemSteps[[i]]
           #print(paste(ItemSteps[[i]], ": item steps for item i, from call: ItemSteps[[i]]")) # debug
-      if(TempIndex==0)TempIndex<- 1
-          #print(paste(TempIndex, ": TempIndex from call: TempIndex<- ItemSteps[[i]]")) # debug
+      if (TempIndex==0)TempIndex <- 1
+          #print(paste(TempIndex, ": TempIndex from call: TempIndex <- ItemSteps[[i]]")) # debug
       for (k in seq_len(TempIndex))
       {
         #print(paste(k, ": kth item step from call, seq_len(ItemSteps[[i]])")) # debug
-              V[[d]][[i]][[k]]<-ReadMatrix(myFile);
+              V[[d]][[i]][[k]] <-ReadMatrix(myFile);
       }
     }
     }
@@ -1097,7 +1077,7 @@ ReadCDesignMatrices <- function(myFile,Dimensions,ItemSteps,Items)
 }
 
 #' @title ReadYOneCase
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @param NReg An integer representing the number of regressors in the model, a representation of 'ACER ConQuest' object gNReg.
 #' @return A list
 #' @keywords internal
@@ -1107,7 +1087,7 @@ ReadYOneCase <- function(myFile,NReg)
     Weight <- ReadDouble(myFile)
     for (i in seq_len(NReg))
     {
-        Y[i]<-ReadDouble(myFile)
+        Y[i] <-ReadDouble(myFile)
     }
     V <- list(Weight,Y)
   names(V)<-c("Weight","Y")
@@ -1124,7 +1104,7 @@ ReadAllY <- function(myFile,N,NReg)
     V <- list()
     for (n in seq_len(N))
     {
-        V[[n]]<-ReadYOneCase(myFile,NReg = NReg)
+        V[[n]] <-ReadYOneCase(myFile,NReg = NReg)
     }
     return(V)
 }
@@ -1141,8 +1121,8 @@ ReadGroupsOneCase <- function(myFile, GroupVariables, AllVariables, CaseNum)
   Dummy <- readChar(myFile,1)
     NGvars <- length(GroupVariables$XV)
     GData <- vector()
-    V<- list()
-    if(NGvars==0)return (V)
+    V <- list()
+    if (NGvars==0)return (V)
     GData <- vector(mode="character",NGvars)
     for (k in seq_len(NGvars))
     {
@@ -1153,16 +1133,16 @@ ReadGroupsOneCase <- function(myFile, GroupVariables, AllVariables, CaseNum)
         # sys file encodes embedded nuls
         # this is a safe work around
         # tS <- readBin(myFile, "raw", L)
-        # if(any(tS == as.raw(0))) {
+        # if (any(tS == as.raw(0))) {
         #   tS <- charToRaw(paste0(rep(" ", L), collapse = ""))
         # }
-        GData[k]<- readCharSafe(myFile, L)
-        #if(nchar(GData[k]) != L){
+        GData[k] <- readCharSafe(myFile, L)
+        #if (nchar(GData[k]) != L) {
         #  warning("Group data contained missing value - file may not be read correctly")
         #  print(paste0("CaseNum: ", CaseNum))
         #  seek(con = myFile, where = (-1*L)) # rewind file
         #  readBin(myFile, "raw", L) # re-read raw - safe if some embedded nulls
-        #  GData[k]<- paste0(rep(" ", L), collapse = "") # empty value
+        #  GData[k] <- paste0(rep(" ", L), collapse = "") # empty value
         #}
     }
     V <- list(CaseNum, GData)
@@ -1172,7 +1152,7 @@ ReadGroupsOneCase <- function(myFile, GroupVariables, AllVariables, CaseNum)
 }
 
 #' @title ReadAllGroupsData
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @param N An integer representation of 'ACER ConQuest' object gNCases.
 #' @param GroupVariables A list of group variables.
 #' @param AllVariables A list of variables.
@@ -1196,25 +1176,25 @@ ReadAllGroupsData <- function(myFile,N,GroupVariables,AllVariables)
 }
 
 #' @title ReadMatrixVars
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
-ReadMatrixVars<- function(myFile)
+ReadMatrixVars <- function(myFile)
 {
   # intitate lists
-  m<- list()
+  m <- list()
   # read length of list of matrix objects
-  nMatricies<- ReadInteger(myFile)
-  for(n in seq_len(nMatricies))
+  nMatricies <- ReadInteger(myFile)
+  for (n in seq_len(nMatricies))
     {
-      myTempName<- ReadString(myFile)
-      m[[myTempName]]<- ReadMatrix(myFile)
+      myTempName <- ReadString(myFile)
+      m[[myTempName]] <- ReadMatrix(myFile)
     }
   return(m)
 }
 
 #' @title ReadPoint
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadPoint <- function(myFile)
@@ -1229,7 +1209,7 @@ ReadPoint <- function(myFile)
 }
 
 #' @title ReadSeries
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadSeries <- function(myFile)
@@ -1239,7 +1219,7 @@ ReadSeries <- function(myFile)
     PointCount <- ReadInteger(myFile)
     # print(PointCount)
     Points <- list()
-    for(i in seq_len(PointCount))
+    for (i in seq_len(PointCount))
     {
             # print(p("point number ",i))
             Points[[i]]=ReadPoint(myFile)
@@ -1284,7 +1264,7 @@ ReadSeries <- function(myFile)
 }
 
 #' @title ReadGraph
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadGraph <- function(myFile)
@@ -1294,10 +1274,10 @@ ReadGraph <- function(myFile)
     NSeries <- ReadInteger(myFile)
     #print(NSeries)
     Series <- list()
-    for(i in seq_len(NSeries))
+    for (i in seq_len(NSeries))
     {
         #print("Series ",i)
-        Series[[i]]<- ReadSeries(myFile)
+        Series[[i]] <- ReadSeries(myFile)
     }
     MinX <- ReadDouble(myFile)
     MaxX <- ReadDouble(myFile)
@@ -1317,7 +1297,7 @@ ReadGraph <- function(myFile)
     NStrings <- L-6;
     Strings <- list()
     # print(p("other strings ",NStrings))
-    for(i in seq_len(NStrings))
+    for (i in seq_len(NStrings))
     {
         Strings[[i]]=ReadPoint(myFile)
     }
@@ -1345,19 +1325,49 @@ ReadGraph <- function(myFile)
     }
 
 #' @title ReadRandomStructure
-#' @param myFile An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
 ReadRandomStructure <- function(myFile)
 {
-  randomStructureList<- list()
-  termName<- ReadString(myFile)
-  termNumber<- ReadInteger(myFile)
-  randomL<- ReadBooleanList(myFile)
-  randomV<- ReadMatrix(myFile)
-  randomStructureList[["termName"]]<- termName
-  randomStructureList[["termNumber"]]<- termNumber
-  randomStructureList[["randomL"]]<- randomL
-  randomStructureList[["randomV"]]<- randomV
+  randomStructureList <- list()
+  termName <- ReadString(myFile)
+  termNumber <- ReadInteger(myFile)
+  randomL <- ReadBooleanList(myFile)
+  randomV <- ReadMatrix(myFile)
+  randomStructureList[["termName"]] <- termName
+  randomStructureList[["termNumber"]] <- termNumber
+  randomStructureList[["randomL"]] <- randomL
+  randomStructureList[["randomV"]] <- randomV
   return(randomStructureList)
+}
+
+#' @title ReadGExportOptions
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @return A list of a single ExportOption (e.g., used in ExportXsi())
+#' @keywords internal
+ReadGExportOptions <- function(myFile)
+{
+  FileFormat <- ReadInteger(myFile)
+  Sort <- ReadInteger(myFile)
+  DataType <- ReadInteger(myFile)
+  FileName <- ReadString(myFile)
+  V <- list(FileFormat, Sort, DataType, FileName)
+  names(V) <- c("File Format", "Sort", "Data Type", "File Name")
+  return(V)
+}
+
+#' @title ReadGExportOptionsList
+#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @return A list of ExportOptions
+#' @keywords internal
+ReadGExportOptionsList <- function(myFile)
+{
+  N <- ReadInteger(myFile)
+  Value <- list()
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadGExportOptions(myFile)
+  }
+  return(Value)
 }

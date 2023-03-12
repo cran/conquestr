@@ -16,17 +16,17 @@ This data frame shoudl be in long format, with each valis response * item conbin
 
 \item{varLabel}{A string indicating the name of the variable in validMap that identidies the valis items names/lables.}
 
-\item{validLabel}{A string indicating the name of the variable in validMap that contains the 
+\item{validLabel}{A string indicating the name of the variable in validMap that contains the
 valid codes/responses for each item. This shoudl include missing values (e.g., "99")}
 }
 \value{
-A list of lists: one list per item in validMap$varLabel. Within each list, there can be up to three dfs: 
-    (1) the case ids and invalid responses for the item, (2) the valid codes not observed in the data set, and 
-    (3) the valid codes observed fewer than 10 times in the data.
-    NOTE: a wanring is thrown if the validMap$varLabel is not found in the data.
+A list of lists: one list per item in validMap$varLabel. Within each list, there can be up to three dfs:
+(1) the case ids and invalid responses for the item, (2) the valid codes not observed in the data set, and
+(3) the valid codes observed fewer than 10 times in the data.
+NOTE: a wanring is thrown if the validMap$varLabel is not found in the data.
 }
 \description{
 Check that the item responses in raw data are: (1) valid, (2) each valid response mapped to an
-  item appears at least once, and (3) each valid reponse mapped to an item has sufficently many responses
-  (defaults to a minimum of 10 observations for each response category)
+item appears at least once, and (3) each valid reponse mapped to an item has sufficently many responses
+(defaults to a minimum of 10 observations for each response category)
 }

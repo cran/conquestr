@@ -7,9 +7,11 @@
 rawScore(x, itemParams, perfAdjust = 0.3)
 }
 \arguments{
-\item{x}{a vector of scored item responses. Order of item responses is the same as the order of `itemParams`, missing item responses are scored NA.}
+\item{x}{a vector of scored item responses. Order of item responses is the same as the order of \code{itemParams},
+missing item responses are scored NA.}
 
-\item{itemParams}{A list of item params of the structure used in `simplef` (a matrix of k categories by three (category score, delta dot, tau)). See conquestr::makeItemList for a helper to generate this list.}
+\item{itemParams}{A list of item params of the structure used in \code{simplef} (a matrix of k categories by three
+(category score, delta dot, tau)). See conquestr::makeItemList for a helper to generate this list.}
 
 \item{perfAdjust}{the correction factor for zeros and perfects to be add/subtracted from the raw score.}
 }

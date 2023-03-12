@@ -9,7 +9,7 @@ mleCalc(responses, itemParams, ...)
 \arguments{
 \item{responses}{a data frame made up of rows of vectors of item responses, one for each case.}
 
-\item{itemParams}{a list of item designs (each used in a call to `simplef`). Must be of same length as `responses`.}
+\item{itemParams}{a list of item designs (each used in a call to \code{simplef}). Must be of same length as \code{responses}.}
 
 \item{...}{optional arguments, e.g., perfAdj.}
 }
@@ -17,8 +17,8 @@ mleCalc(responses, itemParams, ...)
 a data frame.
 }
 \description{
-returns the MLE for each case and asymptotic variance given a _fixed_ set of item parameters.
-   This is done by finding the root of the distance between the observed and expected score at theta.
-   That is, the location where O-E = 0.
+returns the MLE for each case and asymptotic variance given a \emph{fixed} set of item parameters.
+This is done by finding the root of the distance between the observed and expected score at theta.
+That is, the location where O-E = 0.
 }
 \keyword{internal}

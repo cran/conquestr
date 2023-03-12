@@ -4,28 +4,37 @@
 \alias{plotItemMap}
 \title{plotItemMap}
 \usage{
-plotItemMap(mySys, myDims = "D1", abilityType = "PV", ...)
+plotItemMap(mySys, myDims = "D1", ginLabs = "short", abilityType = "PV", ...)
 }
 \arguments{
-\item{mySys}{An 'ACER ConQuest' system file object created using the conquestr::ConQuestSys function.}
+\item{mySys}{An 'ACER ConQuest' system file object created using
+the conquestr::ConQuestSys function.}
 
-\item{myDims}{A string specifying which specific dimensions should be included. The default is "D1", Specific dimensions are specified by the label "D1" for dimensions 1 etc.
-Alternatively, you can specify myDims = "all", though what this produces is not currenlty supported.}
+\item{myDims}{A string specifying which specific dimensions should be
+included. The default is "D1", Specific dimensions are specified by
+the label "D1" for dimensions 1 etc.}
 
-\item{abilityType}{What kind of person ability estimate should be used? Defaults to plausible values. Alternatievly WLE, MLE, EAP.}
+\item{ginLabs}{A string specifying whether short or long gin labels should
+be used. Default to "short".}
 
-\item{...}{Optional arguments, mostly for debugging, e.g., `setDebug = TRUE` will print temporary data frames.}
+\item{abilityType}{What kind of person ability estimate should be used?
+Defaults to plausible values. Alternatively WLE, MLE, EAP.}
+
+\item{...}{Optional arguments, mostly for debugging, e.g., \code{setDebug = TRUE}
+will print temporary data frames.}
 }
 \value{
 A ggplot2 object.
 }
 \description{
-Creates a plot (ggplot2 object) of item parameter estimates and abilities on latent trait.
-    Note this is not for use with `rout` files. See the method method plotRout.itemMap to the generic function `plotRout`
+Creates a plot (ggplot2 object) of item parameter
+estimates and abilities on latent trait. Note this is not for
+use with \code{rout} files. See the method method plotRout.itemMap
+to the generic function \code{plotRout}
 }
 \examples{
-mySys1<- ConQuestSys()
-myItemMap<- plotItemMap(mySys1, myDims = "all")
+mySys1 <- ConQuestSys()
+myItemMap <- plotItemMap(mySys1)
 \dontrun{
 # if you run the above example you will have the plot in the object `myItemMap`.
 plot(myItemMap)

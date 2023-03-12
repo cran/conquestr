@@ -49,21 +49,6 @@ SumStat %>%
 plot(iter_hist_plot)
 
 
-## ---- results summary---------------------------------------------------------
-with(
-  mySys_itanal[[1]]$table, 
-  cat(
-    sprintf(
-      "%i students selected response category %s. This response category was scored %s. The point-biserial was %.2f. The students responding in this category had an average ability of  %.2f.",
-      Count[1], 
-      Category[1],
-      Score[1],
-      `Pt Bis`[1], 
-      `Ability mean (D1)`[1]
-    )
-  )
-)
-
 ## ----item_1_stats-------------------------------------------------------------
 #Item 1 name only
 mySys_itanal[[1]]$name %>%

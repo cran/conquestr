@@ -11,14 +11,6 @@ using namespace Rcpp;
 //   http://gallery.rcpp.org/
 //
 
-//' Multiply a number by two
-//'
-//' @param x A single integer.
-// [[Rcpp::export]]
-NumericVector timesTwo(NumericVector x) {
-  return x * 2;
-}
-
 
 //' replace a very large neagtive number with something - usually NA_REAL
 //'
@@ -28,10 +20,10 @@ NumericVector timesTwo(NumericVector x) {
 // [[Rcpp::export]]
 NumericVector replaceInVector(NumericVector v, double r, double x) {
   int n = v.length();
-  NumericVector v1 = clone(v); //deep copy v so that this function is not destructive (shallow copy will recult in v being edited by the code that follows)
+  NumericVector v1 = clone(v); //deep copy v so that this function is not destructive (shallow copy will result in v being edited by the code that follows)
 
   for (int i = 0; i < n; ++i) {
-    if(v1[i] < -1e300 ){
+    if (v1[i] < -1e300 ) {
       v1[i] = x;
       //Rcout << "The value of r : " << r << " was changed to x : " << x << " \n"; //debug
     }
@@ -50,8 +42,8 @@ DataFrame replaceInDataFrame(DataFrame d, double r, double x) {
   int n1 = d.length(); // number of cols in df
   DataFrame d1 = clone(d); //deep copy d so that this function is not destructive (shallow copy will result in d being edited by the code that follows)
 
-  //for(DataFrame::iterator i = d1.begin(); i != d1.end(); ++i) {
-  for(int i = 0; i < n1; ++i) {
+  //for (DataFrame::iterator i = d1.begin(); i != d1.end(); ++i) {
+  for (int i = 0; i < n1; ++i) {
     switch( TYPEOF(d1[i]) ) {
       case REALSXP: {
         NumericVector tmp = replaceInVector(d1[i], r, x);
@@ -69,8 +61,3 @@ DataFrame replaceInDataFrame(DataFrame d, double r, double x) {
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically
 // run after the compilation.
-//
-
-///*** R
-//timesTwo(42)
-//*/

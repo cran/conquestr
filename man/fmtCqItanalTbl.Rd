@@ -20,7 +20,7 @@ A data frame.
 }
 \description{
 internal function to produce formatted itanal category statistics tables for a generalised item.
-Note that this function is called by `fmtCqItanal` and would not usually be called by the user.
+Note that this function is called by \code{fmtCqItanal} and would not usually be called by the user.
 The returned table uses the library kable and will be formatted
 based on the users settings.
 }

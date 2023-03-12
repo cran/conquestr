@@ -1,35 +1,42 @@
 #' @title ReadSys
 #'
-#' @description Internal function to read an 'ACER ConQuest' system file. Called by conquestr::ConQuestSys.
-#'
-#' @param myFile An 'ACER ConQuest' system file created by the `put` command in 'ACER ConQuest'. The put command must use the option `compressed = no`.
+#' @description Internal function to read an 'ACER ConQuest' system file.
+#'     Called by conquestr::ConQuestSys.
+#' @param myFile An 'ACER ConQuest' system file created by the `put` command in 'ACER ConQuest'.
+#'     The put command must use the option `compressed = no`.
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #' @seealso conquestr::ConQuestSys()
-ReadSys <- function(myFile){
-  myDebug<- FALSE
+ReadSys <- function(myFile) {
+  myDebug <- FALSE
   # requires functions in R/ReadConQuestLibrary.R
 
-  Compressed <- ReadString(myFile);
-  if(myDebug) print(paste0("Compressed: ", Compressed))
+  Compressed <- ReadString(myFile)
+  if (myDebug) print(paste0("Compressed: ", Compressed))
   # insert code to check that Compressed="uncompressed" if not we can't proceed
-  if(!(Compressed == "uncompressed"))
-  {
+  if (!(Compressed == "uncompressed")) {
     close(myFile)
-    stop("This system file is compressed and I dont know how to handle it, use option '! compress = no' in ACER ConQuest")
+    stop(
+      "This system file is compressed and I dont know how to handle it, 
+      use option '! compress = no' in ACER ConQuest"
+    )
   }
 
   builddate <- ReadString(myFile)           # conquest build date
   writedate <- ReadString(myFile)           # file write date
   version <- ReadInteger(myFile)            # system file version
-  if(myDebug) print(paste0("version: ", version))
-  if(!(version >= 23))
+  if (myDebug) print(paste0("version: ", version))
+  if (!(version >= 23))
   {
     close(myFile)
-    stop("This system file is from a version of ACER ConQuest before version 5.17.4 and cannot be read. Either recreate your system file in a newer release of ACER ConQuest or install a legacy version of conquestr")
+    stop(
+      "This system file is from an old version of ACER ConQuest 
+      and cannot be read. Either recreate your system file in a newer release of 
+      ACER ConQuest or install a legacy version of conquestr"
+    )
   }
 
-  gNCases <- ReadInteger(myFile)
-  if(myDebug) print(paste0("gNCases: ", gNCases))
+  gNCases <- ReadIntegerList(myFile)
+  if (myDebug) print(paste0("gNCases: ", gNCases))
   gNDim <- ReadInteger(myFile)
   gNGins <- ReadInteger(myFile)
   gNPlausiblesEstimate <- ReadInteger(myFile)
@@ -39,7 +46,7 @@ ReadSys <- function(myFile){
   gPlausibleExist <- ReadBoolean(myFile)
   gSystemMissing <- ReadDouble(myFile)
   gApplyFilter <- ReadBoolean(myFile)
-  if(myDebug) print(paste0("gApplyFilter: ", gApplyFilter))
+  if (myDebug) print(paste0("gApplyFilter: ", gApplyFilter))
 
     # debugging block - creates objects in global env in case this function fails before it creates the system file object at the end
     # gNCasesTemp<<- gNCases; print("gNCasesTemp is available for debugging") # debug
@@ -54,11 +61,11 @@ ReadSys <- function(myFile){
     # gApplyFilterTemp<<- gApplyFilter; print("gApplyFilterTemp is available for debugging") # debug
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 1
+  if (myDebug) print(paste0("check: ", check)) # check 1
 
   gFilter <- ReadBitSet(myFile)
-  if(myDebug) print(paste0("gFilter: ", names(gFilter))) #
-  if(myDebug) print(paste0("gFilter: ", gFilter))
+  if (myDebug) print(paste0("gFilter: ", names(gFilter)))
+  if (myDebug) print(paste0("gFilter: ", gFilter))
   gBeta <- ReadMatrix(myFile)
   gOldBeta <- ReadMatrix(myFile)
   gBestBeta <- ReadMatrix(myFile)
@@ -108,9 +115,9 @@ ReadSys <- function(myFile){
     # gYBetaTemp<<- gYBeta; print("gYBetaTemp is available for debugging") # debug
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 2
+  if (myDebug) print(paste0("check: ", check)) # check 2
 
-  gWeightFactor <- ReadDouble(myFile)
+  gWtFactor <- ReadDoubleList(myFile)
   gSuffXsi <- ReadMatrix(myFile)
   gSuffTau <- ReadMatrix(myFile)
   gModelText <- ReadString(myFile)
@@ -124,14 +131,18 @@ ReadSys <- function(myFile){
   gFullSums <- ReadMatrix(myFile)
   gMinAlpha <- ReadDouble(myFile)
   gModelEstimated <- ReadBoolean(myFile)
-  gIntegrationMethod <- ReadInteger(myFile) # 1 Bock Aitkin, 2 Monte Carlo, 3 gauss-hermite quadrature, 4 joint maximum likelihood, 5 estimation method has not been requested, 6 sparse gauss-hermite quadrature (KPN), 7 markov chain montecarlo
-    # create text version of gIntegrationMethod
-    if(!(is.null(gIntegrationMethod))) {
-
-      gIntegrationMethodLookUp<- data.frame(gIntegrationMethod = c(1:7), gIntegrationMethodText = c("Bock Aitkin", "Monte Carlo", "Gauss-Hermite Quadrature", "Joint Maximum Likelihood", "estimation method has not been requested", "sparse Gauss-Hermite Quadrature (KPN)", "Markov Chain Montecarlo"))
-      gIntegrationMethodText<- as.character(gIntegrationMethodLookUp$gIntegrationMethodText[gIntegrationMethod])
-
-    }
+  gIntegrationMethod <- ReadInteger(myFile)
+  if (!(is.null(gIntegrationMethod))) {
+    gIntegrationMethodLookUp <- data.frame(
+      gIntegrationMethod = c(1:7),
+      gIntegrationMethodText = c(
+        "Bock Aitkin", "Monte Carlo", "Gauss-Hermite Quadrature",
+        "Joint Maximum Likelihood", "estimation method has not been requested",
+        "sparse Gauss-Hermite Quadrature (KPN)", "Markov Chain Montecarlo"
+      )
+    )
+  }
+  gIntegrationMethod <- gIntegrationMethodLookUp
   gPopulation <- ReadInteger(myFile)
   gSeeds <- ReadInteger(myFile)
   gMaxSinceBests <- ReadInteger(myFile)
@@ -176,7 +187,7 @@ ReadSys <- function(myFile){
     # gRespMissTemp<<- gRespMiss; print("gRespMissTemp is available for debugging") # debug
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 3
+  if (myDebug) print(paste0("check: ", check)) # check 3
 
   gDatafileName <- ReadString(myFile)
   gDatafileFormats <- ReadInteger(myFile)
@@ -199,20 +210,12 @@ ReadSys <- function(myFile){
   gFileRebuildNeeded <- ReadBoolean(myFile)
   gAMatrixImportFileName <- ReadString(myFile)
   gCMatrixImportFileName <- ReadString(myFile)
-  gExportXsiFile <- ReadString(myFile)
-  gExportTauFile <- ReadString(myFile)
-  gExportScoredDataFile <- ReadString(myFile)
-  gAMatrixExportFileName <- ReadString(myFile)
-  gCMatrixExportFileName <- ReadString(myFile)
-  gExportBetaFile <- ReadString(myFile)
-  gExportSigmaFile <- ReadString(myFile)
-  gExportScoredDataFile <- ReadString(myFile)
   gHistoryFileName <- ReadString(myFile)
   gTitle <- ReadString(myFile)
   gStoreInRAM <- ReadBoolean(myFile)
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 4
+  if (myDebug) print(paste0("check: ", check)) # check 4
 
   gSubmitMode <- ReadBoolean(myFile)
   gMaxCats <- ReadInteger(myFile)
@@ -244,7 +247,7 @@ ReadSys <- function(myFile){
   gNReg <- ReadInteger(myFile)
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 5
+  if (myDebug) print(paste0("check: ", check)) # check 5
 
   gDeriv2nd <- ReadMatrix(myFile)
   gMLEReliability <- ReadMatrix(myFile)
@@ -259,8 +262,8 @@ ReadSys <- function(myFile){
   gBetaAnchors <- ReadMatrix(myFile)
   gVarianceInverse <- ReadMatrix(myFile)
   gOriginalNParameters <- ReadInteger(myFile)
-  gNParameters <- ReadInteger(myFile)
-  gNParameters_C <- ReadInteger(myFile)
+  gNParameters <- ReadInteger(myFile) # count of _item_ params
+  gNParameters_C <- ReadInteger(myFile) # count of constrained _item_ params
   gNTau <- ReadInteger(myFile)
   gImportParameters <- ReadAnchorList(myFile)
   gKeyDefault <- ReadString(myFile)
@@ -273,7 +276,7 @@ ReadSys <- function(myFile){
   gVarList <- ReadStringList(myFile)
   gNTauAnchors <- ReadInteger(myFile)
   gVarNoDim <- ReadInteger(myFile)
-  gAnchor <- ReadBooleanList(myFile)
+  gXsiAnchor <- ReadBooleanList(myFile)
   gTauAnchors <- ReadBooleanList(myFile)
   gYYinv <- ReadMatrixList(myFile)
   gVar <- ReadVariableList(myFile)
@@ -327,7 +330,7 @@ ReadSys <- function(myFile){
     # gVarListTemp<<- gVarList; print("gVarListTemp is available for debugging") # debug
     # gNTauAnchorsTemp<<- gNTauAnchors; print("gNTauAnchorsTemp is available for debugging") # debug
     # gVarNoDimTemp<<- gVarNoDim; print("gVarNoDimTemp is available for debugging") # debug
-    # gAnchorTemp<<- gAnchor; print("gAnchorTemp is available for debugging") # debug
+    # gXsiAnchorTemp<<- gXsiAnchor; print("gXsiAnchorTemp is available for debugging") # debug
     # gTauAnchorsTemp<<- gTauAnchors; print("gTauAnchorsTemp is available for debugging") # debug
     # gYYinvTemp<<- gYYinv; print("gYYinvTemp is available for debugging") # debug
     # gVarTemp<<- gVar; print("gVarTemp is available for debugging") # debug
@@ -352,7 +355,7 @@ ReadSys <- function(myFile){
     # gProblemGinsTemp<<- gProblemGins; print("gProblemGinsTemp is available for debugging") # debug
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 6
+  if (myDebug) print(paste0("check: ", check)) # check 6
 
   gItemListByD <- ReadIntegerListList(myFile)
   gGeneraliseditemList_D <- ReadIntegerListList(myFile)
@@ -362,7 +365,7 @@ ReadSys <- function(myFile){
   gDummies <- ReadMatrixList(myFile)
   gHasDummies <- ReadBooleanList(myFile)
   gItemGroups <- ReadItemSetList(myFile)
-  if(myDebug) print(paste0("gHasDummies: ", gHasDummies)) #
+  if (myDebug) print(paste0("gHasDummies: ", gHasDummies)) #
   gHistory <- ReadHistory(myFile)
     # print(str(gHistory)); # debug
     # print(names(gHistory)); # debug
@@ -377,11 +380,10 @@ ReadSys <- function(myFile){
   if (myDebug) print(paste0("check: ", check)) # check 7
 
   if (!gPairWise) {
-    
     gAllCaseEstimates <- ReadAllCaseEstimates(
       myFile = myFile,
       Dimensions = gNDim,
-      N = gNCases,
+      N = gNCases[[1]],
       NPlausibles = gNPlausiblesEstimate
     )
 
@@ -411,7 +413,7 @@ ReadSys <- function(myFile){
 
 
     check <- ReadInteger(myFile)
-    if(myDebug) print(paste0("check: ", check)) # check 200
+    if (myDebug) print(paste0("check: ", check)) # check 200
 
     gBMatrices <- ReadBDesignMatrices(myFile = myFile,
                                     ItemSteps = gItemSteps,
@@ -422,9 +424,9 @@ ReadSys <- function(myFile){
       # gBmatricesTemp<<- gBMatrices; print("object `gBmatricesTemp` is available for debugging"); # debug
 
     check <- ReadInteger(myFile)
-    if(myDebug) print(paste0("check: ", check)) # check 300
+    if (myDebug) print(paste0("check: ", check)) # check 300
 
-    if(gScore)
+    if (gScore)
     {
       gCmatrices <- ReadCDesignMatrices(myFile,
                                       Dimensions = gNDim,
@@ -440,24 +442,24 @@ ReadSys <- function(myFile){
     # print("printing names(gCmatrices)"); print(names(gCmatrices)); # debug
     # gCmatricesTemp<<- gCmatrices; print("object `gCmatricesTemp` is available for debugging"); # debug
   } else {
-    gAllCaseEstimates<- list()
+    gAllCaseEstimates <- list()
     gAMatrices <- list()
     gACMatrices <- list()
     gBMatrices <- list()
     gCmatrices <- list()
   }
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 9
+  if (myDebug) print(paste0("check: ", check)) # check 9
 
-  gYData <- ReadAllY(myFile = myFile,N = gNCases,NReg = gNReg)
+  gYData <- ReadAllY(myFile = myFile, N = gNCases[[1]], NReg = gNReg)
   # gYDataTemp<<- gYData; print("object `gYDataTemp` is available for debugging"); # debug
 
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 10
+  if (myDebug) print(paste0("check: ", check)) # check 10
 
   gGroupData <- ReadAllGroupsData(myFile = myFile,
-                                N = gNCases,
+                                N = gNCases[[1]],
                                 GroupVariables = gGroupVariables,
                                 AllVariables = gVar)
 
@@ -469,18 +471,18 @@ ReadSys <- function(myFile){
   gResponseData <- ReadAllResponseData(myFile,N = gNDataRecords)
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 12
+  if (myDebug) print(paste0("check: ", check)) # check 12
 
-  gMatrixList<- ReadMatrixVars(myFile)
+  gMatrixList <- ReadMatrixVars(myFile)
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 13
+  if (myDebug) print(paste0("check: ", check)) # check 13
 
   gXsiParameterLabels <- ReadStringList(myFile)
   gTauParameterLabels <- ReadStringList(myFile)
 
   check <- ReadInteger(myFile)
-  if(myDebug) print(paste0("check: ", check)) # check 14
+  if (myDebug) print(paste0("check: ", check)) # check 14
 
   gRegressorLabels <- ReadStringList(myFile)
   gGinLongLabels <- ReadStringList(myFile)
@@ -488,14 +490,14 @@ ReadSys <- function(myFile){
   gPIDLookUp <- ReadStringList(myFile)
 
   check <- ReadInteger(myFile)
-  #print(check) # check 15
+  if (myDebug) print(paste0("check: ", check)) # check 15
 
-  gCommandHistory<- ReadStringList(myFile)
-  gBandDefines<- ReadBandDefinesList(myFile)
-  gDIC<- ReadDouble(myFile)
-  gPostiveScores<- ReadBoolean(myFile)
-  gScoresMax<- ReadDouble(myFile)
-  gRandomStructure<- ReadRandomStructure(myFile)
+  gCommandHistory <- ReadStringList(myFile)
+  gBandDefines <- ReadBandDefinesList(myFile)
+  gDIC <- ReadDouble(myFile)
+  gPostiveScores <- ReadBoolean(myFile)
+  gScoresMax <- ReadDouble(myFile)
+  gRandomStructure <- ReadRandomStructure(myFile)
   gSConstraint <- ReadInteger(myFile)
   gBurn <- ReadInteger(myFile)
   gSkip <- ReadInteger(myFile)
@@ -506,19 +508,14 @@ ReadSys <- function(myFile){
   gFacOldXsi <- ReadDouble(myFile)
   gBlockBeta <- ReadInteger(myFile)
 
-  check<- ReadInteger(myFile)
-  #print(check) # check 16
+  check <- ReadInteger(myFile)
+  if (myDebug) print(paste0("check: ", check)) # check 16
 
-  gRegressors<- ReadRegressionList(myFile) # overwrites legacy gRegression object
+  gRegressors <- ReadRegressionList(myFile) # overwrites legacy gRegression object
 
-  ## TOADD
-  # gSpeed (int)
-  #
-  gSpeed<- ReadInteger(myFile)
-  if(version > 23)
-  {
-    gEstimationAllMethods<- ReadIntegerList(myFile)
-  }
+  gSpeed <- ReadInteger(myFile)
+  gEstimationAllMethods <- ReadIntegerList(myFile)
+  gExportOptions <- ReadGExportOptionsList(myFile)
 
     # debug
     # gXsiParameterLabelsTemp<<- gXsiParameterLabels; print("gXsiParameterLabelsTemp is available for debugging") # debug
@@ -568,7 +565,7 @@ ReadSys <- function(myFile){
     gBestHisto = gBestHisto,
     gYBeta = gYBeta,
     # check 2
-    gWeightFactor = gWeightFactor,
+    gWtFactor = gWtFactor,
     gSuffXsi = gSuffXsi,
     gSuffTau = gSuffTau,
     gModelText = gModelText,
@@ -617,14 +614,6 @@ ReadSys <- function(myFile){
     gFileRebuildNeeded = gFileRebuildNeeded,
     gAMatrixImportFileName = gAMatrixImportFileName,
     gCMatrixImportFileName = gCMatrixImportFileName,
-    gExportXsiFile = gExportXsiFile,
-    gExportTauFile = gExportTauFile,
-    gExportScoredDataFile = gExportScoredDataFile,
-    gAMatrixExportFileName = gAMatrixExportFileName,
-    gCMatrixExportFileName = gCMatrixExportFileName,
-    gExportBetaFile = gExportBetaFile,
-    gExportSigmaFile = gExportSigmaFile,
-    gExportScoredDataFile = gExportScoredDataFile,
     gHistoryFileName = gHistoryFileName,
     gTitle = gTitle,
     gStoreInRAM = gStoreInRAM,
@@ -685,7 +674,7 @@ ReadSys <- function(myFile){
     gVarList = gVarList,
     gNTauAnchors = gNTauAnchors,
     gVarNoDim = gVarNoDim,
-    gAnchor = gAnchor,
+    gXsiAnchor = gXsiAnchor,
     gTauAnchors = gTauAnchors,
     gYYinv = gYYinv,
     gVar = gVar,
@@ -767,121 +756,13 @@ ReadSys <- function(myFile){
     # check 16
     gRegressors = gRegressors,
     gSpeed = gSpeed,
-    if(version > 23) gEstimationAllMethods = gEstimationAllMethods
+    gEstimationAllMethods = gEstimationAllMethods,
+    gExportOptions = gExportOptions
 
   )
 
   # return the list with all the stuff in it
-  class(systemFile)<- append(class(systemFile), "conQuestSysFile")
+  class(systemFile) <- append(class(systemFile), "conQuestSysFile")
   return(systemFile)
 
 }
-
-#
-# castReadSysToDf <- function(ReadSysList){
-#
-#
-#   # cast PID lookup table to df
-#   gPIDLookUpDf <- data.frame(matrix(unlist(ReadSysList$gPIDLookUp), ncol = 1))
-#   names(gPIDLookUpDf)<- c("pid")
-#   gPIDLookUpDf$seqNum<- c(1:length(ReadSysList$gPIDLookUp))
-#
-#   # cast response data to df
-#   ncolgResponseData<- length(names(unlist(ReadSysList$gResponseData[1])))
-#   tempNames_gResponseData<- names(unlist(ReadSysList$gResponseData[1]))
-#   gResponseDataDf<- data.frame(matrix(unlist(ReadSysList$gResponseData), ncol = ncolgResponseData, byrow = TRUE))
-#   names(gResponseDataDf)<- tempNames_gResponseData
-#   # sort gResponseDataDf to get items in order when we cast to wide
-#   gResponseDataDf<- gResponseDataDf[order(gResponseDataDf$Item), ]
-#   # cast gResponseDataDf from long to wide
-#     # this is my clumsy way of spitting a meaningful warning when there are dupe PIDs and there are not unqiue combos of PID and GIN in the long data
-#   gResponseDataDf<- tryCatch(
-#                               #try this
-#                               reshape(gResponseDataDf, timevar = "Item", idvar = "Pid", direction = "wide"),
-#                               # if there's a wanring, handle it like this
-#                               warning = function(w) {
-#                                 print("converting gResponseData from long to wide format has thrown a wanring. This is usually caused by duplicate PIDs in the response data.")
-#                                 (reshape(gResponseDataDf, timevar = "Item", idvar = "Pid", direction = "wide"))
-#                               },
-#                               # finally, do this
-#                               finally = { } # dont need anything here as reshape will always return the gResponseDataDf object in the earlier steps
-#                              )
-#
-#
-#   # cast gAllCaseEstimates to df
-#   # can use gNDim and gNPlausibles to make the naming work work (e.g., there will be gNDim*gNPlausibles PV columns to add)
-#   ncolgAllCaseEstimates<- length(names(unlist(ReadSysList$gAllCaseEstimates[1])))
-#   tempNames_gAllCaseEstimatesDf<- names(unlist(ReadSysList$gAllCaseEstimates[1]))
-#   gAllCaseEstimatesDf<- data.frame(matrix(unlist(ReadSysList$gAllCaseEstimates), ncol = ncolgAllCaseEstimates, byrow = TRUE))
-#   names(gAllCaseEstimatesDf)<- tempNames_gAllCaseEstimatesDf
-#
-#   # cast gGroupData to df
-#   # hmm this NULL when no group is in the model - need to wrap this in a function to skip/or insert as NA if NULL
-#   if(length(ReadSysList$gGroupData[[1]]) == 0)
-#   {
-#     gGroupDataDf<- data.frame(CaseNum = gAllCaseEstimatesDf$pid, GData = NA)
-#     #gGroupDataDf$CaseNum<- gAllCaseEstimatesDf$pid
-#   }
-#   else
-#   {
-#     ncolgGroupData<- length(names(unlist(ReadSysList$gGroupData[1])))
-#     tempNames_gGroupDataDf<- names(unlist(ReadSysList$gGroupData[1]))
-#     gGroupDataDf<- data.frame(matrix(unlist(ReadSysList$gGroupData), ncol = ncolgGroupData, byrow = TRUE))
-#     names(gGroupDataDf)<- tempNames_gGroupDataDf
-#   }
-#
-#   # cast gYData to df
-#   # gRegressorLabels has text labels of each regressor
-#   ncolgYData<- length(names(unlist(ReadSysList$gYData[1]))) # min shoudl be 2 (weight + intercept)
-#   tempNames_gYDataDf<- c("Weight", unlist(ReadSysList$gRegressorLabels))  # previously names(unlist(ReadSysList$gYData[1])), which min should be  "Weight" "Y"
-#   gYDataDf<- data.frame(matrix(unlist(ReadSysList$gYData), ncol = ncolgYData, byrow = TRUE))
-#   names(gYDataDf)<- tempNames_gYDataDf
-#
-#   # todo: merge these together, add repsonse data? remove eap, score, PVs, fit where
-#   # join gAllCaseEstimatesDf gGroupDataDf gYDataDf and delete these objects below (not needed)
-#
-#   myConQuestData<- gPIDLookUpDf
-#   myConQuestData<- merge(myConQuestData, gResponseDataDf, by.x = "seqNum", by.y ="Pid", all.x = TRUE) # merge response data on PID lookup, this gives us the right link between seqNum and PID
-#   myConQuestData<- merge(myConQuestData, gGroupDataDf, by.x = "seqNum", by.y ="CaseNum", all.x = TRUE) # merge group data on response data, there will always be at least 1 vector of group vars (can be all NA)
-#   # cant currently gYDataDf - see Issue 3 - gYData does not contain either pid or seqnum
-#   myConQuestData<- merge(myConQuestData, gAllCaseEstimatesDf, by.x = "seqNum", by.y ="pid", all.x = TRUE) # merge estimates on response data (note some cases could be missing from gAllCaseEstimatesDf IF they are missing all repsonse data and are missing regressor data - e.g., missing regressors result in deletion)
-#   myConQuestData<- zapSystemMissing(myConQuestData)
-#
-#   # add objects to system file
-#   systemFile[["gPIDLookUpDf"]]<-        gPIDLookUpDf
-#   systemFile[["gResponseDataDf"]]<-     gResponseDataDf
-#   systemFile[["gAllCaseEstimatesDf"]]<- gAllCaseEstimatesDf
-#   systemFile[["gGroupDataDf"]]<-        gGroupDataDf
-#   systemFile[["gYDataDf"]]<-            gYDataDf
-#   systemFile[["myConQuestData"]]<-      myConQuestData
-#
-#
-#   # make nice DF out of matrix sampler  matricies iF they exist
-#   if(any(grep("_raw|_fit", names(ReadSysList$gMatrixList))))
-#   {
-#     # get user defined prefix
-#     myMatrixoutPrefix<- strsplit(grep("_raw|_fit", names(ReadSysList$gMatrixList), value = TRUE)[1], split = "_")[[1]][1]
-#
-#     matrixSampler_fit<- as.data.frame(eval(parse(text = paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_fit"))))
-#     matrixSampler_raw<- as.data.frame(eval(parse(text = paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_raw"))))
-#
-#     # add to system file
-#     systemFile[["matrixSampler_fit"]]<- matrixSampler_fit
-#     systemFile[["matrixSampler_raw"]]<- matrixSampler_raw
-#   }
-#
-#   # make nice DF out of item fit to use with matrix sampler matricies iF they exist
-#   if(any(grep("_userfit", names(ReadSysList$gMatrixList))))
-#   {
-#     # get user defined prefix
-#     myMatrixoutPrefix<- strsplit(grep("_userfit", names(ReadSysList$gMatrixList), value = TRUE)[1], split = "_")[[1]][1]
-#
-#     matrix_userfit<- as.data.frame(eval(parse(text = paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_userfit"))))
-#     matrix_userfit$gin<- c(1:ReadSysList$gNGins)
-#     # add to system file
-#     systemFile[["matrix_userfit"]]<- matrix_userfit
-#   }
-#
-#   return(systemFile)
-#
-# }

@@ -1,3 +1,20 @@
+# CHANGES IN conquestr VERSION 1.0.0
+
+## NEW FEATURES
+
+* added support for producing and plotting model expected curves related to items and tests, see e.g., `plotModelICC`
+* added support for extracting item parameters, variances, fits, labels in `getCqRespModel`
+
+## MAJOR CHANGES
+
+* functions that deal with items scores are more general and apply to any model that scores categories including those
+  that do not assume integer scoring.
+
+## Bug fixes
+
+* many.
+
+
 # CHANGES IN conquestr VERSION 0.9.4
 
 ## NEW FEATURES

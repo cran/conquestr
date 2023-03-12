@@ -14,7 +14,7 @@ A data frame.
 }
 \description{
 creates a data frame representation of the variables in the model statement.
-    Note that steps are not variables.
+Note that steps are not variables.
 }
 \examples{
 \dontrun{

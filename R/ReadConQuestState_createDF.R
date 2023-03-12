@@ -4,29 +4,30 @@
 #' @title getCqDataDf
 #'
 #' @description Takes a list object returned by `conquestr::getCqData` and coerces it to a wide data frame.
-#'     This can sometimes cause issues in complex data, for example where there are multiple response
-#'     vectors for each case (for example a many-facets model). This is because it is assumed that the data
-#'     can be reduced to a matrix of _gNCases x m variables_ (where _m_ is the number of id, item, estimate and
-#'     regression variables in the analysis). For more complex data, the user should use the outputs of
-#'     `conquestr::getCqData` to manually merge together a data frame.
+#'   This can sometimes cause issues in complex data, for example where there are multiple response
+#'   vectors for each case (for example a many-facets model). This is because it is assumed that the data
+#'   can be reduced to a matrix of _gNCases x m variables_ (where _m_ is the number of id, item, estimate and
+#'   regression variables in the analysis). For more complex data, the user should use the outputs of
+#'   `conquestr::getCqData` to manually merge together a data frame.
 #'
 #' @param cqData An R object of class list, returned by the function conquestr::getCqData
-#' @return A data frame containing R data frames based on the list objects in the ConQuest system file that has been read in.
+#' @return A data frame containing R data frames based on the list objects in
+#'   the ConQuest system file that has been read in.
 #' @seealso conquestr::ConQuestSys()
 #' @seealso conquestr::getCqData
 #' @examples
-#' mySys <- ConQuestSys()
-#' myData <- getCqData(mySys)
-#' myDataDf <- getCqDataDf(myData)
-getCqDataDf<-function(cqData){
-  if(!"cqData" %in% class(cqData))
+#'   mySys <- ConQuestSys()
+#'   myData <- getCqData(mySys)
+#'   myDataDf <- getCqDataDf(myData)
+getCqDataDf <-function(cqData) {
+  if (!"cqData" %in% class(cqData))
   {
     stop("'cqData' must be a list created by 'conquestr::getCqData'")
   }
 
-  tmpRespData<- cqData[["Responses"]]
+  tmpRespData <- cqData[["Responses"]]
 
-  tmpRespData<- tryCatch(
+  tmpRespData <- tryCatch(
     #try this
     reshape(tmpRespData, timevar = "Item", idvar = "Pid", direction = "wide"),
     # if there's a warning, handle it like this
@@ -41,15 +42,27 @@ getCqDataDf<-function(cqData){
     # finally, do this
     finally = { } # don't need anything here as reshape will always return the result from reshape
   )
+  # reorder resp data cols
+  tmpColNames <- names(tmpRespData)
+  tmpColNames[-c(1)] # remove "pid"
+  myOrder <- as.numeric(
+    gsub(
+      "^\\w+\\.+(\\d+)$",
+      "\\1",
+      tmpColNames
+    )
+  )
+  tmpColNames <- tmpColNames[order(myOrder)]
+  tmpRespData <- tmpRespData[ , c("Pid", tmpColNames)]
 
-  myConQuestData<- cqData[["PID"]]
+  myConQuestData <- cqData[["PID"]]
   # merge response data on PID lookup, this gives us the right link between seqNum and PID
-  myConQuestData<- merge(myConQuestData, tmpRespData, by.x = "seqNum", by.y ="Pid", all.x = TRUE)
-  # myConQuestData<- merge(myConQuestData, gGroupDataDf, by.x = "seqNum", by.y ="CaseNum", all.x = TRUE) # merge group data on response data, there will always be at least 1 vector of group vars (can be all NA)
+  myConQuestData <- merge(myConQuestData, tmpRespData, by.x = "seqNum", by.y ="Pid", all.x = TRUE)
+  # myConQuestData <- merge(myConQuestData, gGroupDataDf, by.x = "seqNum", by.y ="CaseNum", all.x = TRUE) # merge group data on response data, there will always be at least 1 vector of group vars (can be all NA)
   # merge gYData
-  myConQuestData<- merge(myConQuestData, cqData[["Regression"]], by.x = "seqNum", by.y ="seqNum", all.x = TRUE)
+  myConQuestData <- merge(myConQuestData, cqData[["Regression"]], by.x = "seqNum", by.y ="seqNum", all.x = TRUE)
   # merge estimates  (note some cases could be missing from gAllCaseEstimatesDf IF they are missing all response data and are missing regression data - e.g., missing regressors result in deletion)
-  myConQuestData<- merge(myConQuestData, cqData[["Estimates"]], by.x = "seqNum", by.y ="pid", all.x = TRUE)
+  myConQuestData <- merge(myConQuestData, cqData[["Estimates"]], by.x = "seqNum", by.y ="pid", all.x = TRUE)
 
   return(myConQuestData)
 
@@ -59,29 +72,29 @@ getCqDataDf<-function(cqData){
 #
 #
 #   # make nice DF out of matrix sampler  matricies iF they exist
-#   if(any(grep("_raw|_fit", names(ReadSysList$gMatrixList))))
+#   if (any(grep("_raw|_fit", names(ReadSysList$gMatrixList))))
 #   {
 #     # get user defined prefix
-#     myMatrixoutPrefix<- strsplit(grep("_raw|_fit", names(ReadSysList$gMatrixList), value = TRUE)[1], split = "_")[[1]][1]
+#     myMatrixoutPrefix <- strsplit(grep("_raw|_fit", names(ReadSysList$gMatrixList), value = TRUE)[1], split = "_")[[1]][1]
 #
-#     matrixSampler_fit<- as.data.frame(eval(parse(text=paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_fit"))))
-#     matrixSampler_raw<- as.data.frame(eval(parse(text=paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_raw"))))
+#     matrixSampler_fit <- as.data.frame(eval(parse(text=paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_fit"))))
+#     matrixSampler_raw <- as.data.frame(eval(parse(text=paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_raw"))))
 #
 #     # add to system file
-#     systemFile[["matrixSampler_fit"]]<- matrixSampler_fit
-#     systemFile[["matrixSampler_raw"]]<- matrixSampler_raw
+#     systemFile[["matrixSampler_fit"]] <- matrixSampler_fit
+#     systemFile[["matrixSampler_raw"]] <- matrixSampler_raw
 #   }
 #
 #   # make nice DF out of item fit to use with matrix sampler matricies iF they exist
-#   if(any(grep("_userfit", names(ReadSysList$gMatrixList))))
+#   if (any(grep("_userfit", names(ReadSysList$gMatrixList))))
 #   {
 #     # get user defined prefix
-#     myMatrixoutPrefix<- strsplit(grep("_userfit", names(ReadSysList$gMatrixList), value = TRUE)[1], split = "_")[[1]][1]
+#     myMatrixoutPrefix <- strsplit(grep("_userfit", names(ReadSysList$gMatrixList), value = TRUE)[1], split = "_")[[1]][1]
 #
-#     matrix_userfit<- as.data.frame(eval(parse(text=paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_userfit"))))
-#     matrix_userfit$gin<- c(1:ReadSysList$gNGins)
+#     matrix_userfit <- as.data.frame(eval(parse(text=paste0("ReadSysList$gMatrixList$", myMatrixoutPrefix, "_userfit"))))
+#     matrix_userfit$gin <- c(1:ReadSysList$gNGins)
 #     # add to system file
-#     systemFile[["matrix_userfit"]]<- matrix_userfit
+#     systemFile[["matrix_userfit"]] <- matrix_userfit
 #   }
 #
 #   return(systemFile)
@@ -91,19 +104,22 @@ getCqDataDf<-function(cqData){
 #' @title getCqData
 #'
 #' @description Get data objects from an R object of class ConQuestSys.
-#'     This function returns person IDs, response data, case estimates, regression and weight data.
-#'     Each data type is stored as a data frame, and each data frame is a named element of a list.
-#'     1. PID, 2. Responses, 3. Estimates, 4. Regression.
+#'   This function returns person IDs, response data, case estimates, regression and weight data.
+#'   Each data type is stored as a data frame, and each data frame is a named element of a list.
+#'
+#'   1. PID,
+#'   2. Responses,
+#'   3. Estimates,
+#'   4. Regression.
 #'
 #' @param mySys An R object of class ConQuestSys, returned by the function conquestr::ConQuestSys
 #' @return A List of data frames.
 #' @seealso conquestr::ConQuestSys()
 #' @examples
-#' mySys <- ConQuestSys()
-#' myData <- getCqData(mySys)
+#'   mySys <- ConQuestSys()
+#'   myData <- getCqData(mySys)
 getCqData <- function(mySys) {
-  if (!"conQuestSysFile" %in% class(mySys))
-  {
+  if (!"conQuestSysFile" %in% class(mySys)) {
     stop("'mySys' must be a ConQuest system file object created by 'conquestr::ConQuestSys'")
   }
   tmpList <- list()
@@ -135,8 +151,8 @@ getCqData <- function(mySys) {
 #' @keywords internal
 getCqPid <- function(mySys) {
   # if no PID is declared in datafile/format, gPIDLookUp is empty
-  tmpSeq <- c(seq(mySys$gNCases))
-  if (!length(mySys$gPIDLookUp) == 0){
+  tmpSeq <- c(seq(mySys$gNCases[[1]]))
+  if (!length(mySys$gPIDLookUp) == 0) {
     # note PID can be string
     tmpPid <- as.character(unlist(mySys$gPIDLookUp))
     gPidDf <- data.frame(
@@ -162,7 +178,7 @@ getCqPid <- function(mySys) {
 #' @return A data frame containing raw item responses (pre key) and scored item response (post key).
 #' @importFrom stats reshape
 #' @keywords internal
-getCqResp <- function(mySys){
+getCqResp <- function(mySys) {
 
   # note: "pid" is really seqNum
   tmpColNames <- names(mySys$gResponseData[[1]])
@@ -185,6 +201,8 @@ getCqResp <- function(mySys){
   tmpRespData <- tmpRespData[order(tmpRespData$Pid, tmpRespData$Item), ]
 
   tmpRespData <- replaceInDataFrame(tmpRespData, -1.797693e+308, NA)
+
+  tmpRespData$Rsp[tmpRespData$RspFlag == 10] <- NA # these are dummies for drawing PVs
 
   return(tmpRespData)
 }
@@ -226,26 +244,25 @@ getCqEsts <- function(mySys) {
 #' @param mySys An R object of class conQuestSysFile, returned by the function conquestr::ConQuestSys
 #' @return A data frame containing weight and regression data.
 #' @keywords internal
-getCqYData<- function(mySys){
-  tmpNCol<- length(unlist(mySys$gYData[[1]]))
-  if(tmpNCol > 2)
+getCqYData <- function(mySys) {
+  tmpNCol <- length(unlist(mySys$gYData[[1]]))
+  if (tmpNCol > 2)
   {
-    tmpNames<- c("Weight", "Constant", paste0("Y", 1:(tmpNCol-2)))
+    tmpNames <- c("Weight", "Constant", paste0("Y", 1:(tmpNCol-2)))
   } else
   {
-    tmpNames<- c("Weight", "Constant")
+    tmpNames <- c("Weight", "Constant")
   }
-  # tmpNames<- c("Weight", unlist(mySys$gRegressorLabels)) # doesnt work with multidim - gRegressorLabels is a list PER dim
 
-  gYDataDf<- matrix(
+  gYDataDf <- matrix(
     unlist(mySys$gYData),
     ncol = tmpNCol, byrow = TRUE
   )
-  gYDataDf<- as.data.frame(gYDataDf)
-  names(gYDataDf)<- tmpNames
-  gYDataDf$seqNum<- 1:mySys$gNCases
+  gYDataDf <- as.data.frame(gYDataDf)
+  names(gYDataDf) <- tmpNames
+  gYDataDf$seqNum <- 1:mySys$gNCases[[1]]
 
-  gYDataDf<- replaceInDataFrame(gYDataDf, -1.797693e+308, NA)
+  gYDataDf <- replaceInDataFrame(gYDataDf, -1.797693e+308, NA)
 
   return(gYDataDf)
 }

@@ -2,7 +2,7 @@ utils::globalVariables("where") # "where" is not exported by tidyselect
 
 #' @title getCqItanal
 #'
-#' @description helper function to return list of lists, each list relates to one 
+#' @description helper function to return list of lists, each list relates to one
 #'   generalised item from an ACER ConQuest `itanal` output.
 #'   Each list contains: (1) item-total and item-rest correlations ....
 #'
@@ -83,12 +83,11 @@ getCqItanal <- function(sysFile, matrixPrefix = "", isDebug = FALSE) {
     }
   }
 
-
   # data to work on
   tmp_ptbis <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_ptbis$"), names(sysFile$gMatrixList))]]
-  tmp_pvmeansd <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_pvmeansd$"), names(sysFile$gMatrixList))]]
+  tmp_abilitymeansd <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_abilitymeansd$"), names(sysFile$gMatrixList))]]
   tmp_counts <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_counts$"), names(sysFile$gMatrixList))]]
-  tmp_itemRest <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_itemtotrestcor$"), names(sysFile$gMatrixList))]]
+  tmp_itemRest <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_itemstats$"), names(sysFile$gMatrixList))]]
   tmp_summary <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_summarystats$"), names(sysFile$gMatrixList))]]
   if (myDebug) print("read in itanal matrix objects to work on")
 
@@ -112,53 +111,66 @@ getCqItanal <- function(sysFile, matrixPrefix = "", isDebug = FALSE) {
 
   # response category names - used as first column in tables
   tmpRespCatNames <- matrix(gsub("(\\w+_)", "", names(as.data.frame(tmp_counts))), ncol = 1)
+  # note if there are recodes, need to remove them from the possible cat names
+  toDrop <- unlist(sysFile$gRecodes)[names(unlist(sysFile$gRecodes)) == "Before"]
+  if (length(toDrop) > 0) {
+    tmpRespCatNames <- tmpRespCatNames[!(tmpRespCatNames %in% toDrop)]
+  }
   if (myDebug)
   {
     print("got resp cat names")
     print(tmpRespCatNames)
+    print(tmp_counts)
   }
 
   # results
   tmpRes <- list()
 
-  # work through itan_ptbis, itan_pvmeansd, itan_counts
+  # work through itan_ptbis, itan_abilitymeansd, itan_counts
   for (i in seq(nrow(tmp_counts))) {
-    tmp_one_pvmeansd <- as.data.frame(t(tmp_pvmeansd[i, ]))
+    tmp_one_abilitymeansd <- as.data.frame(t(tmp_abilitymeansd[i, ]))
     tmp_one_ptbis <- as.data.frame(t(tmp_ptbis[i, ]))
     tmp_one_counts <- as.data.frame(t(tmp_counts[i, ]))
     if (myDebug) print(paste0("read in transpose of pvmean, ptbis, and counts for item: ", i))
     # to wider
-    tmp_one_pvmeansd <- tmp_one_pvmeansd %>% pivot_longer(
+    tmp_one_abilitymeansd <- tmp_one_abilitymeansd %>% pivot_longer(
       cols = everything(),
       names_pattern = "\\w+_(\\w+_\\w+)",
       names_to = c(".value")
     )
     #if (myDebug) print(paste0("pivot_longer pvmean item: ", i))
-    #if (myDebug) print(tmp_one_pvmeansd)
+    #if (myDebug) print(tmp_one_abilitymeansd)
 
     tmp_one_ptbis <- tmp_one_ptbis %>% pivot_longer(
       cols = everything(),
       names_pattern = "(\\w+)_\\s*\\w+", # there can be leading spaces in the name, e.g., "ptbis_ B"
       names_to = c(".value")
     )
-    #if (myDebug) print(paste0("pivot_longer ptbis item: ", i))
-    #if (myDebug) print(tmp_one_ptbis)
+    if (myDebug) print(paste0("pivot_longer ptbis item: ", i))
+    if (myDebug) print(tmp_one_ptbis)
 
     tmp_one_counts <- tmp_one_counts %>% pivot_longer(
       cols = everything(),
       names_pattern = "(\\w+)_\\s*\\w+", # there can be leading spaces in the name, e.g., "count_ 1"
       names_to = c(".value")
     )
-    
+
     #if (myDebug) print(paste0("pivot_longer counts item: ", i))
     #if (myDebug) print(tmp_one_counts)
 
-    #if (myDebug)
-    #{
-    #  print(paste0("pivot_longer matrix objects for item: ", i))
-    #}
+    if (myDebug)
+    {
+      print("tmpRespCatNames")
+      print(tmpRespCatNames)
+      print("tmp_one_counts")
+      print(tmp_one_counts)
+      print("tmp_one_ptbis")
+      print(tmp_one_ptbis)
+      print("tmp_one_abilitymeansd")
+      print(tmp_one_abilitymeansd)
+    }
 
-    oneResult <- cbind(tmpRespCatNames, tmp_one_counts, tmp_one_ptbis, tmp_one_pvmeansd)
+    oneResult <- cbind(tmpRespCatNames, tmp_one_counts, tmp_one_ptbis, tmp_one_abilitymeansd)
     oneResult <- replaceInDataFrame(oneResult, -1.797693e+308, NA)
     if (any(oneResult$count == 0)) oneResult$ptbis[oneResult$count == 0] <- NA
 
@@ -223,7 +235,7 @@ getCqItanal <- function(sysFile, matrixPrefix = "", isDebug = FALSE) {
         oneResult$score[is.na(oneResult$ptbis)] <- NA
       }
 
-    # check for 2PL and multiply score by tau. 
+    # check for 2PL and multiply score by tau.
     # Need to check how Bock model works - is gTau a list of lists, one per gin?
 
     } else
@@ -239,12 +251,12 @@ getCqItanal <- function(sysFile, matrixPrefix = "", isDebug = FALSE) {
     # is the key included blank/dummy cats ("x"), Score will be NA
     oneResult <- oneResult[!is.na(oneResult$Score), ]
 
-    if (myDebug){
+    if (myDebug) {
       print("finished with this gin: ")
       print(oneResult)
     }
 
-    #TODO: rename columns (e.g., _1 becomes "Dimension 1")
+    # place table and item-rest in final object
     tmpRes[[i]] <- list()
     tmpRes[[i]]["name"] <- tmpGinLabs[i]
     if (myDebug) {
@@ -282,7 +294,7 @@ getCqItanal <- function(sysFile, matrixPrefix = "", isDebug = FALSE) {
 #' print(myItanalSummary[[1]])
 #' @importFrom magrittr %>%
 #' @importFrom methods is
-fmtCqItanal <- function(cqItanal, itemNumber = "all", ptBisFlag = 0, textColHighlight = "red", valueDecPlace = 2){
+fmtCqItanal <- function(cqItanal, itemNumber = "all", ptBisFlag = 0, textColHighlight = "red", valueDecPlace = 2) {
   # test if List passed in is ConQuest Itanal object
   if (!is(cqItanal, "cqItanal"))
   {
@@ -345,9 +357,9 @@ fmtCqItanal <- function(cqItanal, itemNumber = "all", ptBisFlag = 0, textColHigh
 #' @importFrom magrittr %>%
 #' @importFrom kableExtra cell_spec kable_styling
 #' @importFrom dplyr across
-fmtCqItanalTbl <- function(cqItanalTbl, ptBisFlag, textColHighlight, valueDecPlace, itemName){
+fmtCqItanalTbl <- function(cqItanalTbl, ptBisFlag, textColHighlight, valueDecPlace, itemName) {
 
-  # deals with "no visible binding for global variable" wanring 
+  # deals with "no visible binding for global variable" warning
   `Pt Bis` <- Score <- NULL
 
   # remove item categories that do not have an associated score
@@ -386,7 +398,7 @@ fmtCqItanalTbl <- function(cqItanalTbl, ptBisFlag, textColHighlight, valueDecPla
 #' @keywords internal
 #' @importFrom magrittr %>%
 #' @importFrom kableExtra cell_spec
-fmtCqItanalSmry <- function(cqItanalSmry, valueDecPlace){
+fmtCqItanalSmry <- function(cqItanalSmry, valueDecPlace) {
 
   tmpItanalSmry <- as.data.frame(t(cqItanalSmry))
 
@@ -394,7 +406,7 @@ fmtCqItanalSmry <- function(cqItanalSmry, valueDecPlace){
   itanalSummary <- cbind(rownames(tmpItanalSmry), data.frame(tmpItanalSmry, row.names=NULL))
 
   # choose generic colnames (what does the summary look like when nDim > 1)
-  colnames(itanalSummary)<- c('Statistic', 'Value')
+  colnames(itanalSummary) <- c('Statistic', 'Value')
 
   # with minimal formatting
   itanalSummaryFormatted <- itanalSummary %>%
@@ -415,7 +427,7 @@ fmtCqItanalSmry <- function(cqItanalSmry, valueDecPlace){
 #' @return A data frame.
 #' @keywords internal
 #' @importFrom methods is
-getCqKeys <- function(sysFile){
+getCqKeys <- function(sysFile) {
   if (!is(sysFile, "conQuestSysFile"))
   {
     stop(
@@ -427,18 +439,18 @@ getCqKeys <- function(sysFile){
   keyL <- length(sysFile$gKeys)
   if (keyL > 0)
   {
-    for(i in seq(keyL))
+    for (i in seq(keyL))
     {
       # for each key produce an item(gin) * key df
       tmpCat <- unlist(sysFile$gKeys[[i]][[1]]) # which cat gets this key?
       tmpKey <- unlist(sysFile$gKeys[[i]][[2]]) # what is the key score?
-      gKeyDfs[[i]]<- data.frame(
+      gKeyDfs[[i]] <- data.frame(
         gin = 1:sysFile$gNGins,
         cat = tmpCat, # length = nGins
         score = tmpKey # recycled nGin times
       )
     }
-    for(i in seq(length(gKeyDfs)))
+    for (i in seq(length(gKeyDfs)))
     {
       if (i == 1)
       {
@@ -465,7 +477,7 @@ getCqKeys <- function(sysFile){
 #' @return A data frame.
 #' @keywords internal
 #' @importFrom methods is
-getCqScores <- function(sysFile){
+getCqScores <- function(sysFile) {
   if (!is(sysFile, "conQuestSysFile"))
   {
     stop(
@@ -525,21 +537,23 @@ getCqScores <- function(sysFile){
 #' @param itanalTbl An itanal table being worked on by fmtCqItanalTbl.
 #' @return A data frame.
 #' @keywords internal
-orderItanalCols <- function(itanalTbl){
+orderItanalCols <- function(itanalTbl) {
 
   # ndims is implied by length of names
   ndims <- (length(names(itanalTbl))-5)/2
 
   # order
   myOrder <- c(
-    grep("^tmpRespCatNames", names(itanalTbl)) , #'Category'
+    grep("^tmpRespCatNames", names(itanalTbl)), #'Category'
     grep("^score", names(itanalTbl)), # Score'
     grep("^count", names(itanalTbl)), # Count'
     grep("^prop", names(itanalTbl)), # 'Percent'
-    grep("^ptbis", names(itanalTbl)) #, # 'Pt Bis'
+    grep("^ptbis", names(itanalTbl)), # 'Pt Bis'
+    grep("^t$", names(itanalTbl)), # 'Pt Bis t'
+    grep("^p$", names(itanalTbl)) # 'Pt Bis p'
   )
 
-  for(i in seq(ndims))
+  for (i in seq(ndims))
   {
     myOrder <- c(myOrder, grep(paste0("^mean_", i), names(itanalTbl)))
     myOrder <- c(myOrder, grep(paste0("^sd_", i), names(itanalTbl)))
@@ -548,16 +562,128 @@ orderItanalCols <- function(itanalTbl){
   itanalTbl <- itanalTbl[ , myOrder]
 
   # rename cols
-  names(itanalTbl)<- gsub("^tmpRespCatNames", "Category", names(itanalTbl))
-  names(itanalTbl)<- gsub("^score", "Score", names(itanalTbl))
-  names(itanalTbl)<- gsub("^count", "Count", names(itanalTbl))
-  names(itanalTbl)<- gsub("^prop", "Percent", names(itanalTbl))
-  names(itanalTbl)<- gsub("^ptbis", "Pt Bis", names(itanalTbl))
-  names(itanalTbl)<- gsub("^mean_(\\d+)", "Ability mean (D\\1)", names(itanalTbl))
-  names(itanalTbl)<- gsub("^sd_(\\d+)", "Ability SD (D\\1)", names(itanalTbl))
+  names(itanalTbl) <- gsub("^tmpRespCatNames", "Category", names(itanalTbl))
+  names(itanalTbl) <- gsub("^score", "Score", names(itanalTbl))
+  names(itanalTbl) <- gsub("^count", "Count", names(itanalTbl))
+  names(itanalTbl) <- gsub("^prop", "Percent", names(itanalTbl))
+  names(itanalTbl) <- gsub("^ptbis", "Pt Bis", names(itanalTbl))
+  names(itanalTbl) <- gsub("^t$", "Pt Bis t stat.", names(itanalTbl))
+  names(itanalTbl) <- gsub("^p$", "Pt Bis sig.", names(itanalTbl))
+  names(itanalTbl) <- gsub("^mean_(\\d+)", "Ability mean (D\\1)", names(itanalTbl))
+  names(itanalTbl) <- gsub("^sd_(\\d+)", "Ability SD (D\\1)", names(itanalTbl))
 
 
   return(itanalTbl)
 
 }
 
+
+#' @title getCqItanalFacility
+#'
+#' @description returns an item facility for each item in itanal object created
+#'   by ACER ConQuest.
+#'   For a dichotomously scored Rasch-like item, facility is the percent correct.
+#'   For a polytomously scored item, or with estimated scores, facility is given by:
+#'   the sum of the number of cases in each response category, multiplied by the score for that category
+#'   divided by the sum of all cases responding to the items times the maximum score for the item.
+#'
+#' @param itan A list of class "cqItanal" created by `conquestr::getCqItanal()`
+#' @return A list.
+#'
+#' @examples
+#' mySys <- ConQuestSys()
+#' myItan <- getCqItanal(mySys)
+#' getCqItanalFacility(myItan)
+getCqItanalFacility <- function(itan) {
+
+  if (!is(itan, "cqItanal")) stop("`itan` must be an object returned by `conquestr::getCqItanal()`")
+
+  facilityList <- list()
+
+  myNItems <- length(itan) - 1 #itan has an extra element at the end with descriptive stats
+
+  for (i in seq_len(myNItems)) {
+    tName <- itan[[i]]$name
+    tScore <- as.numeric(itan[[i]]$table$Score)
+    tCount <- as.numeric(itan[[i]]$table$Count)
+
+    nN <- sum(tCount)
+    tFac <- (tScore * tCount) / (nN * max(tScore))
+    tFac <- sum(tFac) * 100
+
+    facilityList[[i]] <- tFac
+    names(facilityList)[i] <- tName
+  }
+
+return(facilityList)
+
+}
+
+
+#' @title getCqItanalSummary
+#'
+#' @description returns an itanal as a data frame in summary format:
+#'   one row per generalised item with:
+#'
+#'   - item label
+#'   - valid N
+#'   - facility (see `conquestr::getCqItanalFacility`)
+#'   - item-rest correlation
+#'   - item-total correlation
+#'   - fit (infit/weighted MNSQ) if available
+#'   - item locations (deltas)
+#'
+#' @param itan A list of class "cqItanal" created by `conquestr::getCqItanal()`
+#' @return A data frame.
+#'
+#' @examples
+#' mySys <- ConQuestSys()
+#' myItan <- getCqItanal(mySys)
+#' getCqItanalSummary(myItan)
+getCqItanalSummary <- function(itan) {
+
+  if (!is(itan, "cqItanal")) stop("`itan` must be an object returned by `conquestr::getCqItanal()`")
+
+  # tmp list for results
+  sumList <- list()
+
+  # get facilities
+  tmpFacil <- getCqItanalFacility(itan)
+
+  myNItems <- length(itan) - 1 #itan has an extra element at the end with descriptive stats
+
+  for (i in seq_len(myNItems)) {
+    sumList[[i]] <- list()
+
+    itemLab <- as.character(itan[[i]]$name)
+    itemN <- as.numeric(sum(itan[[i]]$table$Count, na.rm = TRUE))
+    itemFacil <- as.numeric(tmpFacil[[i]])
+    itemRestCor <- as.numeric(itan[[i]]$item_rest_total[names(itan[[i]]$item_rest_total) == "item-rest"])
+    itemTotalCor <- as.numeric(itan[[i]]$item_rest_total[names(itan[[i]]$item_rest_total) == "item-total"])
+    itemObsMean <- as.numeric(itan[[i]]$item_rest_total[names(itan[[i]]$item_rest_total) == "obs_mean"])
+    itemExpMean <- as.numeric(itan[[i]]$item_rest_total[names(itan[[i]]$item_rest_total) == "exp_mean"])
+    itemAdjMean <- as.numeric(itan[[i]]$item_rest_total[names(itan[[i]]$item_rest_total) == "adj_mean"])
+
+    sumList[[i]]["item_label"] <- itemLab
+    sumList[[i]]["N"] <- itemN
+    sumList[[i]]["facility"] <- itemFacil
+    sumList[[i]]["item_rest"] <- itemRestCor
+    sumList[[i]]["item_total"] <- itemTotalCor
+    sumList[[i]]["obs_mean"] <- itemObsMean
+    sumList[[i]]["exp_mean"] <- itemExpMean
+    sumList[[i]]["adj_mean"] <- itemAdjMean
+
+    tmpResult <- matrix(unlist(sumList[[i]]), ncol = length(sumList[[i]]))
+    if (i == 1) {
+      tmpMat <- tmpResult
+    } else {
+      tmpMat <- rbind(tmpMat, tmpResult)
+    }
+  }
+
+  summaryDf <- as.data.frame(tmpMat)
+  names(summaryDf) <- names(sumList[[1]])
+
+return(summaryDf)
+
+}

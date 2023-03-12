@@ -14,13 +14,18 @@ A List of data frames.
 }
 \description{
 Get data objects from an R object of class ConQuestSys.
-    This function returns person IDs, response data, case estimates, regression and weight data.
-    Each data type is stored as a data frame, and each data frame is a named element of a list.
-    1. PID, 2. Responses, 3. Estimates, 4. Regression.
+This function returns person IDs, response data, case estimates, regression and weight data.
+Each data type is stored as a data frame, and each data frame is a named element of a list.
+\enumerate{
+\item PID,
+\item Responses,
+\item Estimates,
+\item Regression.
+}
 }
 \examples{
-mySys <- ConQuestSys()
-myData <- getCqData(mySys)
+  mySys <- ConQuestSys()
+  myData <- getCqData(mySys)
 }
 \seealso{
 conquestr::ConQuestSys()

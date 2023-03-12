@@ -5,7 +5,7 @@ NULL
 #' @rawNamespace exportPattern("^[[:alpha:]]+") # this exports all functions that start with an alphanumeric charachter so that every function in the package is visible (otherwise need to manually add exports to NAMESPACE)
 #' @rawNamespace if (.Platform$OS.type=="windows") importFrom(utils,shortPathName)
 
-packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5.19.5")
+packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5.29.5")
 
 # for vignette or default we can access files like this: system.file("extdata", "ex1.cqc", package = "conquestr")
 # consider using this in the future https://www.tidyverse.org/blog/2018/09/processx-3.2.0/
@@ -15,17 +15,17 @@ packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5
 #' @description Call an instance of 'ACER ConQuest' at the command line and run a control file (syntax).
 #'
 #' @param cqc The location of the control file (syntax) to be run.
-#' @param cqExe The path to the 'ACER ConQuest' executable. Note, if this argument is missing, conquestr 
+#' @param cqExe The path to the 'ACER ConQuest' executable. Note, if this argument is missing, conquestr
 #'    will find a local installation of ACER ConQuest by first searching the default installtion locations
-#'    (Program Files on Windows and Applications on Mac) then searching other local directories (Appdata 
+#'    (Program Files on Windows and Applications on Mac) then searching other local directories (Appdata
 #'    and the HOME path).
 #' @param stdout On Mac only, can be toggled to NULL (or a connection) to suppress output to R console.
 #' @return prints 'ACER ConQuest' output to stdout.
 #' @examples
 #' \dontrun{
-#' ConQuestCall(cqExe = file.path("/Applications", "ConQuest BETA", "ConQuest"))
+#' ConQuestCall()
 #' }
-ConQuestCall <- function(cqc, cqExe, stdout = "") { 
+ConQuestCall <- function(cqc, cqExe, stdout = "") {
 
   if (missing(cqExe)) {
     cqExe <- findConQuestExe()
@@ -75,8 +75,8 @@ ConQuestCall <- function(cqc, cqExe, stdout = "") {
 #' @param myCqs The location of an uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest' > 4.30.2.
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #' @examples
-#' mySysData<- ConQuestSys()
-#' myEx1SysData<- ConQuestSys(myCqs = system.file("extdata", "mysysfile.cqs", package = "conquestr"))
+#' mySysData <- ConQuestSys()
+#' myEx1SysData <- ConQuestSys(myCqs = system.file("extdata", "mysysfile.cqs", package = "conquestr"))
 #' \dontrun{
 #' # if you run the above example this will return your original 'ACER ConQuest' syntax.
 #' cat(unlist(myEx1SysData$gCommandHistory))
@@ -105,7 +105,7 @@ ConQuestSys <- function(myCqs) {
   myMode <- "rb"
   #if (Sys.info()["sysname"] == "Linux") myMode <- "w+b"
   myFile <- file(myCqs, myMode)
-  #r<-invisible(ReadSys(myFile)) 
+  #r <-invisible(ReadSys(myFile))
   r <- tryCatch(
     {
       invisible(conquestr::ReadSys(myFile))
@@ -128,17 +128,17 @@ ConQuestSys <- function(myCqs) {
 #'
 #' @description Read an ''ACER ConQuest'' rout file created by a `plot` command in 'ACER ConQuest'.
 #'
-#' @param myRout The location of an 'ACER ConQuest' rout file created by 'ACER ConQuest' > 5.1.4.
+#' @param myRout The location of an 'ACER ConQuest' rout file created by 'ACER ConQuest'
 #' @return A list containing the data objects created by 'ACER ConQuest' plot command.
 #' @examples
-#' myPlot<- ConQuestRout()
+#' myPlot <- ConQuestRout()
 #' \dontrun{
 #' # if you run the above example you will have the points from a plot ICC command.
 #' str(myPlot)
 #' }
-ConQuestRout<- function(myRout){
+ConQuestRout <- function(myRout) {
 
-  if(missing(myRout)){
+  if (missing(myRout)) {
 
     message("no rout file provided, loading the example rout file instead")
     routFile <- list()
@@ -151,9 +151,9 @@ ConQuestRout<- function(myRout){
   } else {
 
     # create required lists
-    routFile<- list()
-    myFile<- file(myRout, "rb")
-    r<-invisible(ReadGraph(myFile))
+    routFile <- list()
+    myFile <- file(myRout, "rb")
+    r <-invisible(ReadGraph(myFile))
     on.exit(
       close(myFile)
     )
@@ -162,7 +162,7 @@ ConQuestRout<- function(myRout){
   }
 
   # append class to r (used later for dispatching)
-  myRoutType<- routType(r)
+  myRoutType <- routType(r)
   # append class so we can do dispatching
   class(r)<- append(class(r), myRoutType)
   return(r)

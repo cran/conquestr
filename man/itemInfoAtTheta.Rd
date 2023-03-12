@@ -7,14 +7,14 @@
 itemInfoAtTheta(myItem, theta)
 }
 \arguments{
-\item{myItem}{A matrix of item parameters of the structure used in `simplef`}
+\item{myItem}{A matrix of item parameters of the structure used in \code{simplef}}
 
-\item{theta}{a number.}
+\item{theta}{A number.}
 }
 \description{
-Calculates item information at a value of theta given a set of item parameters.
+Calculates item information at a value of theta given a set of item parameters for one item.
 }
 \examples{
-anItem<-  matrix(c(0,0,0,1,1,0), nrow = 2, byrow = TRUE)
+anItem <-  matrix(c(0,0,0,1,1,1,0,1), nrow = 2, byrow = TRUE)
 itemInfoAtTheta(anItem, 0)
 }

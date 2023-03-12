@@ -4,15 +4,19 @@
 \alias{simplef}
 \title{simplef}
 \usage{
-simplef(theta, params)
+simplef(theta, i_params)
 }
 \arguments{
 \item{theta}{a scalar value of theta.}
 
-\item{params}{an item design matrix that is of size response categories (k) by three. The three columns are:
-* column one is scoring values, usually from 0 to k.
-* column two is the delta dot parameter repeated k times
-* column three is the tau parameter where for k = 1, tau = 0, and for k > 2, subsequent entries are deviations from delta dot.}
+\item{i_params}{an item design matrix that is of size response categories (k) by three. The three columns are:
+\itemize{
+\item column one is scoring values, usually from 0 to k.
+\item column two is the delta dot parameter repeated k times (the average difficulty of the item)
+\item column three is the tau (step) parameter where for k = 1, tau = 0, and for k >= 2,
+subsequent entries are deviations from delta dot.
+\item column four is the discrimination paramter ("a")
+}}
 }
 \value{
 a double - the expected score at theta.
@@ -21,15 +25,16 @@ a double - the expected score at theta.
 returns expected score at a given value of theta.
 }
 \examples{
-myTheta<- 0
-myDelta<- 1.5
-x<- 2
+myTheta <- 0
+myDelta <- 1.5
 k <- 3
-itemParamX<- seq(0, k-1, 1)
-itemParamD<- rep(myDelta, k)
-itemParamT<- c(0, -0.5, 0.5)
-itemParam<- cbind(itemParamX, itemParamD, itemParamT)
-colnames(itemParam)<- c("x", "d", "t")
-myExpect<- simplef(myTheta, itemParam)
+a <- 1
+itemParamX <- seq(0, k-1, 1)
+itemParamD <- rep(myDelta, k)
+itemParamT <- c(0, -0.5, 0.5)
+itemParamA <- rep(a, k)
+itemParam <- cbind(itemParamX, itemParamD, itemParamT, itemParamA)
+colnames(itemParam)<- c("x", "d", "t", "a")
+myExpect <- simplef(myTheta, itemParam)
 }
 \keyword{internal}

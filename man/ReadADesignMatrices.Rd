@@ -7,7 +7,7 @@
 ReadADesignMatrices(myFile, Columns, Items, ItemSteps)
 }
 \arguments{
-\item{myFile}{An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
+\item{myFile}{An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
 
 \item{Columns}{An integer representation of 'ACER ConQuest' object gNParameters.}
 

@@ -9,9 +9,9 @@ thetaScore(theta, responses, itemParams, perfAdjust = 0.3)
 \arguments{
 \item{theta}{a scalar value of theta.}
 
-\item{responses}{a vector of item responses for one case (can contain NA). Responses are in the same order as `items`}
+\item{responses}{a vector of item responses for one case (can contain NA). Responses are in the same order as \code{items}}
 
-\item{itemParams}{a list of item designs (each used in a call to `simplef`). Must be of same length as `responses`.}
+\item{itemParams}{a list of item designs (each used in a call to \code{simplef}). Must be of same length as \code{responses}.}
 
 \item{perfAdjust}{the correction factor for zeros and perfects to be add/subtracted from the raw score.}
 }
@@ -19,6 +19,7 @@ thetaScore(theta, responses, itemParams, perfAdjust = 0.3)
 a double, the score (O-E) at theta.
 }
 \description{
-Return score (O-E) at theta. Used in estimation of theta by minimising _raw score - expected score_ at theta
+Return score (O-E) at theta. Used in estimation of theta by minimising
+\emph{raw score - expected score} at theta
 }
 \keyword{internal}

@@ -17,6 +17,6 @@ checkVars(data, varNames, except = NULL)
 A list.
 }
 \description{
-Check raw data: are all required variables preseent and 
-    ensure there are no extraneous variables.
+Check raw data: are all required variables preseent and
+ensure there are no extraneous variables.
 }

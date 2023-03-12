@@ -7,7 +7,7 @@
 ReadYOneCase(myFile, NReg)
 }
 \arguments{
-\item{myFile}{An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
+\item{myFile}{An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
 
 \item{NReg}{An integer representing the number of regressors in the model, a representation of 'ACER ConQuest' object gNReg.}
 }

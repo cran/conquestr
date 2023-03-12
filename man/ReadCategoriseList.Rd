@@ -7,7 +7,7 @@
 ReadCategoriseList(myFile)
 }
 \arguments{
-\item{myFile}{An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
+\item{myFile}{An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
 }
 \value{
 A list

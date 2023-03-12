@@ -7,13 +7,15 @@
 ReadSys(myFile)
 }
 \arguments{
-\item{myFile}{An 'ACER ConQuest' system file created by the `put` command in 'ACER ConQuest'. The put command must use the option `compressed = no`.}
+\item{myFile}{An 'ACER ConQuest' system file created by the \code{put} command in 'ACER ConQuest'.
+The put command must use the option \code{compressed = no}.}
 }
 \value{
 A list containing the data objects created by 'ACER ConQuest'.
 }
 \description{
-Internal function to read an 'ACER ConQuest' system file. Called by conquestr::ConQuestSys.
+Internal function to read an 'ACER ConQuest' system file.
+Called by conquestr::ConQuestSys.
 }
 \seealso{
 conquestr::ConQuestSys()

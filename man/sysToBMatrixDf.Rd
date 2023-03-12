@@ -7,18 +7,23 @@
 sysToBMatrixDf(mySys, applyLabels = TRUE)
 }
 \arguments{
-\item{mySys}{An R object of class ConQuestSys, returned by the function conquestr::ConQuestSys}
+\item{mySys}{An R object of class ConQuestSys,
+returned by the function conquestr::ConQuestSys}
 
-\item{applyLabels}{A bool indicating whether labels (e.g., dimension labels) should be appended.}
+\item{applyLabels}{A bool indicating whether labels
+(e.g., dimension labels) should be appended.}
 }
 \value{
 A data frame containing R the labelled B matrix.
 }
 \description{
-Read an R object of class ConQuestSys and create a labelled representation of the B matrix (scoring matrix). This maps item response catagories to items and dimensions. Returns long data frame, where items are duplicated if they are in many dimnsions.
+Read an R object of class ConQuestSys and create a labelled
+representation of the B matrix (scoring matrix). This maps item response
+categories to items and dimensions. Returns long data frame, where items are
+duplicated if they are in many dimensions.
 }
 \examples{
-myBMatrix<- sysToBMatrixDf(ConQuestSys())
+myBMatrix <- sysToBMatrixDf(ConQuestSys())
 \dontrun{
 # if you run the above example you will have the B Matrix from the example system file.
 str(myBMatrix)

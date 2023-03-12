@@ -1,0 +1,147 @@
+---
+title: "Generate item responses in conquestr"
+author: "Dan Cloney"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Generate item responses in conquestr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+
+Given a set of item parameters and a set of abilities, it is possible to simulate a set of item responses.
+
+Users can also impose a factor structure that maps items to specific dimensions, and impose various missing data structures.
+
+Users can also permute the discrimination of items to impose misfit on the simulated data.
+
+# Example
+
+## Simple case: unidimensional structure with Rasch-like items
+
+The item parameters for a simple item are represented as:
+
+```{r slmItem}
+library(conquestr)
+myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
+colnames(myItem) <- c("k", "d", "t", "a")
+print(myItem)
+plotModelCCC(myItem)
+```
+
+where `k` is the category score, `d` is the delta dot ($\dot{\delta}$), `t` is the tau, and `a` is the 
+discrimination parameter. By convention, the first row of the item matrix is zeros.
+
+items are stored in lists, and a list of items can be visualised as the 
+test characteristic curve which illustrates the expected raw score give an ability, theta ($\Theta$).
+
+
+```{r slmItemList}
+myItems <- list(myItem, myItem)
+myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
+print(plotModelExp(myItems))
+```
+
+In the unidminsaional case, abilities are a simple vector of abilities (for example, EAPs):
+
+```{r slmAbils}
+myAbils <- rnorm(100)
+```
+
+Given fixed item parameters and abilities, it I possible then to simulate item 
+responses for each case. 
+By default, there is no missing data and item response fit 
+the item response model implied by the item parameters.
+The first 10 responses are shown, along with the person ability (column 3):
+
+```{r slmResps}
+myResponses <- genResponses(myAbils, myItems)
+print(cbind(myResponses[1:10, 1:2], myAbils[1:10]))
+```
+
+## More complex case: multidimensional structure with a mixture of item types
+
+A polytomous item can be described by including an item matrix with more than two rows.
+An item with its own discrimination parameter can be described by including the value in the `a` column.
+An item with non-integer scoring can be described by varying the value in the `k` column.
+Note that for identification purposes, the values in the `t` column should sum to zero, though this is 
+not enforced to allow for sophisticated designs. 
+
+```{r moreItems}
+myItemPoly <- matrix(
+  c(
+    0, 0.0,  0.0, 0,
+    1, 0.5, -1.5, 1,
+    2, 0.5,  1.5, 1
+  ),
+  ncol = 4, byrow = TRUE
+)
+
+myItem2Pl <- matrix(
+  c(
+    0,  0,  0.00, 0.00,
+    1, -2, -1.25, 0.85,
+    2, -2, -0.25, 0.85,
+    3, -2,  0.30, 0.85,
+    4, -2,  1.20, 0.85
+  ),
+  ncol = 4, byrow = TRUE
+)
+
+myItemNonIntScore <- matrix(
+  c(
+    0,   0,  0.00, 0,
+    1.2, 0, -0.35, 1,
+    1.8, 0,  0.15, 1,
+    3.8, 0,  0.20, 1
+  ),
+  ncol = 4, byrow = TRUE
+)
+
+myItems <- append(myItems, list(myItemPoly, myItem2Pl, myItemNonIntScore))
+plotModelCCC(myItemPoly)
+plotModelExp(myItems)
+```
+
+The multidimensional structure of the model is defined by allocating items to dimensions by constructing a B-matrix 
+(sometimes called a scoring matrix – see Wilson, M., Zheng, X., & McGuire, L. (2012). Formulating latent growth using 
+an explanatory item response model approach. Journal of Applied Measurement, 13(1), 1–22.). The B matrix maps items 
+(rows) to dimensions (columns). Note that this is a simplified B matrix, in that it is strictly binary – any aspect of 
+increasing coefficients (for example over time) should be captured in the scoring column, `k`, within the item matrix.
+
+Note that now that the model is multidimensional, the abilities provided should also be a matrix, rather than a vector:
+cases (rows) by dimensions (columns). Any covariance structure amongst the dimensions is encoded within the matrix 
+of abilities.
+
+Note that one of the items does not use integer scoring. If the software to analyse the data assumes integer scoring,
+then secondary processing is required to yield traditional categorical data, and the scoring assumptions should be otherwise 
+input into the software.
+
+```{r multiDimData}
+myBMatrix <- matrix(
+  c(
+    1, 0,
+    1, 0,
+    0, 1,
+    0, 1,
+    0, 1
+  ),
+  byrow = TRUE,
+  ncol = 2
+)
+
+myAbils2 <- rnorm(length(myAbils))
+myAbilsMat <- cbind(myAbils, myAbils2) # assumes expected correlation = 0
+
+myResponses <- genResponses(myAbilsMat, myItems, BMatrix = myBMatrix)
+print(cbind(myResponses[1:10, 1:5], myAbilsMat[1:10, 1:2]))
+```

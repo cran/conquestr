@@ -2,19 +2,19 @@
 % Please edit documentation in R/infoHelpers.R
 \name{myItemHelper}
 \alias{myItemHelper}
-\title{myAbilitiesHelper}
+\title{myItemHelper}
 \usage{
-myItemHelper(myWhat = "ok", myItems = NA)
+myItemHelper(myWhat = "ok", myItems)
 }
 \arguments{
 \item{myWhat}{A character string indicating what to check.}
 
-\item{myItems}{A numeric vector of item deltas.}
+\item{myItems}{A list of item matricies.}
 }
 \value{
 A Boolean or a double.
 }
 \description{
-helper function to return attributes of vector of item deltas for use in information function and WI.
+helper function to return attributes of list of items for use in information function helpers and WI.
 }
 \keyword{internal}

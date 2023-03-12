@@ -17,9 +17,9 @@ getCqItanal(sysFile, matrixPrefix = "", isDebug = FALSE)
 A list.
 }
 \description{
-helper function to return list of lists, each list relates to one 
-  generalised item from an ACER ConQuest `itanal` output.
-  Each list contains: (1) item-total and item-rest correlations ....
+helper function to return list of lists, each list relates to one
+generalised item from an ACER ConQuest \code{itanal} output.
+Each list contains: (1) item-total and item-rest correlations ....
 }
 \examples{
 myItanal <- getCqItanal()

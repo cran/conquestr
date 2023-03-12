@@ -17,14 +17,15 @@ perturbDelta(myAbilities, myItems, myProbs)
 A matrix.
 }
 \description{
-When probabilities are perturbed, the item difficulties may need to be updated to be location where p = 0.5
+When probabilities are perturbed, the item difficulties may need to be updated
+to be location where p = 0.5
 }
 \examples{
-myAbilities<- rnorm(1000, 0, 1)
-myItems<- runif(10, -2, 3)
-myExProbs<- matrix(rnorm(100, 0, 1), 10, 10)
-myExPerturb<- list(data.frame(item = 1, type = "flat", pivot = 0.5, factor = 25))
-myProbs<- perturbProbs(myProbs = myExProbs, perturbP = myExPerturb)
-myPerturbDelta<- perturbDelta(myAbilities = myAbilities, myItems = myItems, myProbs = myProbs)
+myAbilities <- rnorm(1000, 0, 1)
+myItems <- runif (10, -2, 3)
+myExProbs <- matrix(rnorm(100, 0, 1), 10, 10)
+myExPerturb <- list(data.frame(item = 1, type = "flat", pivot = 0.5, factor = 25))
+myProbs <- perturbProbs(myProbs = myExProbs, perturbP = myExPerturb)
+myPerturbDelta <- perturbDelta(myAbilities = myAbilities, myItems = myItems, myProbs = myProbs)
 }
 \keyword{internal}

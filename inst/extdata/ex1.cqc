@@ -18,10 +18,10 @@ labels 10 "item ten"      ! item;
 labels 11 "item eleven"   ! item;
 labels 12 "item twelve"   ! item;
 
-Estimate!abilities = yes,fit=no,stderr=quick;
+estimate!abilities = yes,fit=yes,stderr=quick;
 itanal ! matrixout = itan;
 
-plot icc ! gins = 1, rout = myicc;
+plot icc ! gins = 1, filetype = rout >> myicc.rout;
 
 banddefine ! label = "L0 (critical)", upper = -2.133, lower = -100;
 banddefine ! label = "L1 (upper)", upper = 100, lower = 2.133;

@@ -9,7 +9,7 @@ recodeResps(data, recodeMap, varLabel, rawLabel, recodeLabel)
 \arguments{
 \item{data}{Raw data, a data frame.}
 
-\item{recodeMap}{A data frame which contains the raw responses and corresponding recoded responses 
+\item{recodeMap}{A data frame which contains the raw responses and corresponding recoded responses
 for each of the items in long form.}
 
 \item{varLabel}{A variable name in recodeMap that identifes the item label.}

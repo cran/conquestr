@@ -7,16 +7,16 @@
 ConQuestRout(myRout)
 }
 \arguments{
-\item{myRout}{The location of an 'ACER ConQuest' rout file created by 'ACER ConQuest' > 5.1.4.}
+\item{myRout}{The location of an 'ACER ConQuest' rout file created by 'ACER ConQuest'}
 }
 \value{
 A list containing the data objects created by 'ACER ConQuest' plot command.
 }
 \description{
-Read an ''ACER ConQuest'' rout file created by a `plot` command in 'ACER ConQuest'.
+Read an ''ACER ConQuest'' rout file created by a \code{plot} command in 'ACER ConQuest'.
 }
 \examples{
-myPlot<- ConQuestRout()
+myPlot <- ConQuestRout()
 \dontrun{
 # if you run the above example you will have the points from a plot ICC command.
 str(myPlot)

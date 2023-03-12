@@ -4,55 +4,53 @@
 \alias{genResponses}
 \title{genResponses}
 \usage{
-genResponses(
-  abilities,
-  itemParams,
-  BMatrix = 1,
-  discrim = 1,
-  mcarP = 0,
-  perturbP = NULL
-)
+genResponses(abilities, itemParams, BMatrix = 1, mcarP = 0, perturbP = NULL)
 }
 \arguments{
-\item{abilities}{A matrix of person abilities. One column per dimension. Rows are cases.}
+\item{abilities}{A person by latent-dimension matrix of abilities.
+One column per dimension.}
 
-\item{itemParams}{A list of item params of the structure used in `simplef`
-(a matrix of k categories by three (category score, delta dot, tau)).
+\item{itemParams}{A list of item params of the structure used in \code{simplef}
+(a matrix of k categories by four (category score, delta dot, tau, discrimintation)).
 See conquestr::makeItemList for a helper to generate this list.}
 
 \item{BMatrix}{A simplified B-matrix mapping dimensions (columns) to items (rows).
 Or the integer "1" if items are dichotomous and ability is uni-dimensional.}
 
-\item{discrim}{A vector of item discrimination paramters,
-or an integer where all items have constant discrimination.}
-
 \item{mcarP}{A double indicating the proportion of missing data
 under the MCAR assumption.}
 
 \item{perturbP}{A list, where each element of the list contains a data frame
- referring to an item.
- Each data frame is either a 1 * 4 data frame describing the general
- perturbation to apply to the probabilities for that item
- (currently developed) or a pair of vectors mapping theta to
- probabilities (not developed).
+referring to an item.
+Each data frame is either a 1 * 4 data frame describing the general
+perturbation to apply to the probabilities for that item
+(currently developed) or a pair of vectors mapping theta to
+probabilities (not developed).
 In the first case - the data frame is in this order:
-     - "item": item number (int),
-     - "type": the type of perturbation to apply (string, "flat", or "steep"),
-     - "pivot": probability pivot point around which the
-        perturbation is applied (double in{0 < x < 1}),
-     - "factor": magnitude of the perturbation
-        (double - when in {0 < x < 100} probs remain positively
-        correlated with theta (0 = no perturbation, 100 = maximum perturbation)
-        when in{100 < x < Inf} probs are negatively correlated with theta).}
+\itemize{
+\item "item": item number (int),
+\item "type": the type of perturbation to apply (string, "flat", or "steep"),
+\item "pivot": probability pivot point around which the
+perturbation is applied (double in{0 < x < 1}),
+\item "factor": magnitude of the perturbation
+(double - when in {0 < x < 100} probs remain positively
+correlated with theta (0 = no perturbation, 100 = maximum perturbation)
+when in{100 < x < Inf} probs are negatively correlated with theta).
+}}
 }
 \value{
-A matrix.
+A matrix, \code{n} cases by \code{i} items, of scored item responses.
 }
 \description{
-Generates responses to i items for n cases given some item parameters, (true) person abilities, and other inputs.
+Generates response vectors for \code{n} cases to \code{i} items given
+known item parameters, person abilities, and (optionally) other inputs.
 }
 \examples{
-\dontrun{
-myResponses<- genResponses(rnorm(1000, 0, 1), runif(10, -2, 3)) # TODO - update this
+  myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
+  myItems <- list(myItem, myItem)
+  myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
+  myResponses <- genResponses(rnorm(100), myItems)
 }
+\seealso{
+\code{\link[=simplef]{simplef()}}, \code{browseVignettes("conquestr")}
 }

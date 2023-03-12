@@ -7,9 +7,10 @@
 perturbProbs(myProbs, perturbP)
 }
 \arguments{
-\item{myProbs}{A matrix of response probabilities from n persons * i items.}
+\item{myProbs}{A matrix of size \code{n} persons by \code{i} items. Each element is a
+response probability or expected scores for the person by item combination.}
 
-\item{perturbP}{A matrix of response probabilities from n persons * i items.}
+\item{perturbP}{A list of length \code{i} of response probabilities from n persons * i items.}
 }
 \value{
 A matrix.
@@ -18,8 +19,8 @@ A matrix.
 Perturbs response probabilities.
 }
 \examples{
-myExProbs<- matrix(rnorm(100, 0, 1), 10, 10)
-myExPerturb<- list(data.frame(item = 1, type = "flat", pivot = 0.5, factor = 25))
-myProbs<- perturbProbs(myProbs = myExProbs, perturbP = myExPerturb)
+myExProbs <- matrix(rnorm(100, 0, 1), 10, 10)
+myExPerturb <- list(data.frame(item = 1, type = "flat", pivot = 0.5, factor = 25))
+myProbs <- perturbProbs(myProbs = myExProbs, perturbP = myExPerturb)
 }
 \keyword{internal}

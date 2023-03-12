@@ -11,7 +11,7 @@ Char with path to ConQuest executable.
 }
 \description{
 Searches in common insall paths to find ConQuest executable.
-This is called by `ConQuestCall` when no executable is passed explicitly.
+This is called by \code{ConQuestCall} when no executable is passed explicitly.
 }
 \examples{
 \dontrun{

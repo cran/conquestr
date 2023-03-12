@@ -11,13 +11,15 @@ ItemDfStdZMerge(myDf1, myDf2, mySuffixes)
 
 \item{myDf2}{a data frame.}
 
-\item{mySuffixes}{a vector of strings specifying the names for the two groups being analysed, e.g., if the two system files are an analysis of boys and girls, the vector may be `c(_male", "_female")`.}
+\item{mySuffixes}{a vector of strings specifying the names for the two
+groups being analysed, e.g., if the two system files are an analysis of boys and girls, the vector may be \verb{c(_male", "_female")}.}
 }
 \value{
 a data frame.
 }
 \description{
-Calculates Z test on the common items from 2 data frames returned from `conquestr::ItemDfStdZ`.
+Calculates Z test on the common items from 2 data frames
+returned from \code{conquestr::ItemDfStdZ}.
 }
 \seealso{
 conquestr::sysToItemDifDf()

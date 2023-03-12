@@ -8,8 +8,8 @@ library("conquestr")
 
 ## -----------------------------------------------------------------------------
 # set up
-oldWd<- getwd()
-myTmpDir<- tempdir()
+oldWd <- getwd()
+myTmpDir <- tempdir()
 setwd(myTmpDir)
 file.copy(from = c(
   system.file("extdata", "ex1.cqc", package = "conquestr"),
@@ -20,7 +20,7 @@ file.copy(from = c(
 # run ConQuest
 # ConQuestCall is not run here, as it requires a local install of ConQuest 
 # ConQuestCall(cqc = file.path(myTmpDir, "ex1.cqc"), stdout = NULL) # searches for valid install of CQ
-myExSys<- ConQuestSys(myCqs = file.path(myTmpDir, "mysysfile.cqs"))
+myExSys <- ConQuestSys(myCqs = file.path(myTmpDir, "mysysfile.cqs"))
 
 # see the content of the sysfile
 str(myExSys)
@@ -34,7 +34,7 @@ setwd(oldWd)
 
 ## -----------------------------------------------------------------------------
 # if no argument is provided to ConQuestSys, the example system file is read in by default.
-myCqs<- ConQuestSys()
+myCqs <- ConQuestSys()
 
 ## -----------------------------------------------------------------------------
 # search for objects named history in myCqs

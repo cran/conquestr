@@ -92,8 +92,8 @@ The next example runs a small analysis and creates a system file that is read in
 
 ```{r}
 # set up
-oldWd<- getwd()
-myTmpDir<- tempdir()
+oldWd <- getwd()
+myTmpDir <- tempdir()
 setwd(myTmpDir)
 file.copy(from = c(
   system.file("extdata", "ex1.cqc", package = "conquestr"),
@@ -104,7 +104,7 @@ file.copy(from = c(
 # run ConQuest
 # ConQuestCall is not run here, as it requires a local install of ConQuest 
 # ConQuestCall(cqc = file.path(myTmpDir, "ex1.cqc"), stdout = NULL) # searches for valid install of CQ
-myExSys<- ConQuestSys(myCqs = file.path(myTmpDir, "mysysfile.cqs"))
+myExSys <- ConQuestSys(myCqs = file.path(myTmpDir, "mysysfile.cqs"))
 
 # see the content of the sysfile
 str(myExSys)
@@ -125,7 +125,7 @@ _conquestr_ can read in a system file, using the `ConQuestSys` function. This fu
 
 ```{r}
 # if no argument is provided to ConQuestSys, the example system file is read in by default.
-myCqs<- ConQuestSys()
+myCqs <- ConQuestSys()
 ```
 
 You can see the data objects available within the object (e.g., `str(myCqs)`), and some useful objects will be:
@@ -135,7 +135,7 @@ You can see the data objects available within the object (e.g., `str(myCqs)`), a
 - `gAllCaseEstimates` - the latent ability estimates (e.g., PVs, WLEs).
 - The option `matrixout` is available for several commands and will ensure data objects are saved to the system file - these can be found in `gMatrixList`. For example:
     - The command `matrixsampler` and the option `matrixout` creates the objects `matrixSampler_fit`, `matrixSampler_raw`, `matrix_userfit` (the simulated data) in `gMatrixList`.
-    - The command `itanal`, and the option `matrixout` creates the objects `*_counts`, `*_itemtotrestcor`, `*_ptbis`, `*_pvmeansd` (where "*" is a user defined prefix declared in the  option `matrixout`) in `gMatrixList` .
+    - The command `itanal`, and the option `matrixout` creates the objects `*_counts`, `*_itemstats`, `*_ptbis`, `*_abilitymeansd` (where "*" is a user defined prefix declared in the  option `matrixout`) in `gMatrixList` .
     - The command `estimate` and the option `matrixout`... for more information see the [manual](https://conquestmanual.acer.org/s4-00.html#s4-08)
 
 Users can search the names of objects in the system file using the helper function `searchConQuestSys`:

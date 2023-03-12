@@ -7,27 +7,29 @@
 pX(x, probs)
 }
 \arguments{
-\item{x}{a scalar integer - a response to an item (usually in the range 0, k-1, where k is the number of response categories).}
+\item{x}{a scalar integer - a response to an item (usually in the range 0, k-1,
+where k is the number of response categories).}
 
 \item{probs}{a matrix returned from simplef.}
 }
 \value{
-a 1 x 1 matrix giving the response probability of _x_.
+a 1 x 1 matrix giving the response probability of \emph{x}.
 }
 \description{
-returns response probabilities for given response _x_ to an item.
+returns response probabilities for given response \emph{x} to an item.
 }
 \examples{
-myTheta<- 0
-myDelta<- 1.5
-x<- 2
+myTheta <- 0
+myDelta <- 1.5
 k <- 3
-itemParamX<- seq(0, k-1, 1)
-itemParamD<- rep(myDelta, k)
-itemParamT<- c(0, -0.5, 0.5)
-itemParam<- cbind(itemParamX, itemParamD, itemParamT)
-colnames(itemParam)<- c("x", "d", "t")
-myProbs<- simplef(myTheta, itemParam)
-myProb<- pX(0, myProbs)
+a <- 1.25
+itemParamX <- seq(0, k-1, 1)
+itemParamD <- rep(myDelta, k)
+itemParamT <- c(0, -0.5, 0.5)
+itemParamA <- rep(a, k)
+itemParam <- cbind(itemParamX, itemParamD, itemParamT, itemParamA)
+colnames(itemParam)<- c("x", "d", "t", "a")
+myProbs <- simplef(myTheta, itemParam)
+myProb <- pX(0, myProbs)
 }
 \keyword{internal}

@@ -36,25 +36,26 @@ zapNulls <- function(x) {
 
 #' @title zapSystemMissing
 #'
-#' @description Coerce ConQuest system missing values to NA. Note this is very slow and users should use the internal function conquestr::replaceInDataFrame where possible.
+#' @description Coerce ConQuest system missing values to NA. Note this is very slow and users should use the internal 
+#'   function conquestr::replaceInDataFrame where possible.
 #'
 #' @param x a data frame.
 #' @return x
 #' @keywords internal
-zapSystemMissing<- function(x){
-  if(!(class(x) == "data.frame")){
+zapSystemMissing <- function(x) {
+  if (!inherits(x, "data.frame")) {
     stop("x must be a data.frame")
   } else {
-    for(i in seq_along(x)){
+    for (i in seq_along(x)) {
 
       # if column is not numeric
-      if(!(class(x[[i]]) == "numeric")){
+      if (!inherits(x[[i]], "numeric")) {
         next
       } else {
-        # print(names(myDemo$myConQuestData[i]))
-        for(j in seq_along(x[[i]])){
-          if(all.equal(x[[i]][j], -1.7976931348e+308) == TRUE){ # this is the required level of precision to get this to return true, -1.797693e+308 will retunr FALSE
-            x[[i]][j]<- NA
+        for (j in seq_along(x[[i]])) {
+          # this is the required level of precision to get this to return true, -1.797693e+308 will return FALSE
+          if (all.equal(x[[i]][j], -1.7976931348e+308) == TRUE) {
+            x[[i]][j] <- NA
           } else {
             next
           }
@@ -74,12 +75,12 @@ zapSystemMissing<- function(x){
 #' @param value Should searchConQuestSys return the name of the object or its index.
 #' @param ignore.case Should searchConQuestSys ignore the case of the search term.
 #' @return a string including object names mathching the search term
-searchConQuestSys<- function(searchString, mySys, value = TRUE, ignore.case = TRUE){
+searchConQuestSys <- function(searchString, mySys, value = TRUE, ignore.case = TRUE) {
 
-  if(!("conQuestSysFile" %in% class(mySys))){
+  if (!("conQuestSysFile" %in% class(mySys))) {
     stop("mySys must be an 'ACER ConQuest' system file object created using the conquestr::ConQuestSys function")
   } else {
-    x<- grep(searchString, names(mySys), value = value, ignore.case = ignore.case)
+    x <- grep(searchString, names(mySys), value = value, ignore.case = ignore.case)
   }
   return(x)
 }
@@ -103,52 +104,52 @@ searchConQuestSys<- function(searchString, mySys, value = TRUE, ignore.case = TR
 #' @param debug A temporary flag to spit-out objects to global env for chekcing.
 #'     Will be removed when pushed to CRAN
 #' @return a List of transofrmed PVs with as many elements as PVs were listed in 'x'.
-transformPvs<- function(x, mT = 0, sdT = 1, weights, data, addToDf = FALSE, debug = TRUE){
+transformPvs <- function(x, mT = 0, sdT = 1, weights, data, addToDf = FALSE, debug = TRUE) {
   # setup
-  results<- list()
-  pvDataList<- list()
-  weightDataList<- list()
-  m<- length(x)
-  dataName<- deparse(substitute(data)) # name of data frame
+  results <- list()
+  pvDataList <- list()
+  weightDataList <- list()
+  m <- length(x)
+  dataName <- deparse(substitute(data)) # name of data frame
 
   # put the PVs and weights in a list to calculate the pooled mean and var
-  i<- 1
-  for(pv in x){
+  i <- 1
+  for (pv in x) {
     # add cehcking that i is less than m
-    pvDataList[[i]]<- eval(parse(text = paste0(dataName, "$", pv)))
-    weightDataList[[i]]<- eval(parse(text = paste0(dataName, "$", weights)))
-    pvData<- unlist(pvDataList)
-    pvWeights<- unlist(weightDataList)
-    i<- i + 1
+    pvDataList[[i]] <- eval(parse(text = paste0(dataName, "$", pv)))
+    weightDataList[[i]] <- eval(parse(text = paste0(dataName, "$", weights)))
+    pvData <- unlist(pvDataList)
+    pvWeights <- unlist(weightDataList)
+    i <- i + 1
   }
 
-  if(debug == TRUE) {
+  if (debug == TRUE) {
     print(utils::str(pvDataList))
     # tmpCheckMe<<- pvDataList
     print("object tmpCheckMe added to global envrionemt for debugging")
   }
 
   # calc mean and var pooled over PVs
-  pvM<- stats::weighted.mean(pvData, pvWeights)
-  pvVar<- (sum(pvWeights) / (sum(pvWeights)^2 - sum(pvWeights^2))) * sum(pvWeights * (pvData - pvM)^2)
-  pvSd<- sqrt(pvVar)
+  pvM <- stats::weighted.mean(pvData, pvWeights)
+  pvVar <- (sum(pvWeights) / (sum(pvWeights)^2 - sum(pvWeights^2))) * sum(pvWeights * (pvData - pvM)^2)
+  pvSd <- sqrt(pvVar)
 
   # use values to create tranformed PVs in results
   # such that PV_Ti = A × PV_Ui + B, where T = transformed, U = untransofrmed,PV = verctor of all PVs combined
   # SD = desired SD
   # M = desired mean
   # A = SD/sd(PV), B = M - A*mean(PV_U)
-  myA<- sdT/pvSd
-  myB<- mT - myA* pvM
-  i<- 1
-  for(pv in x){
-    results[[i]]<- eval(parse(text = paste0(myA, "*", dataName, "$", pv, "+", myB)))
+  myA <- sdT/pvSd
+  myB <- mT - myA* pvM
+  i <- 1
+  for (pv in x) {
+    results[[i]] <- eval(parse(text = paste0(myA, "*", dataName, "$", pv, "+", myB)))
     i <- i + 1
   }
 
-  # results["pvM"]<- pvM
-  # results["pvVar"]<- pvVar
-  # results["pvSd"]<- pvSd
+  # results["pvM"] <- pvM
+  # results["pvVar"] <- pvVar
+  # results["pvSd"] <- pvSd
   return(results)
 
 }
@@ -164,13 +165,14 @@ transformPvs<- function(x, mT = 0, sdT = 1, weights, data, addToDf = FALSE, debu
 #' \dontrun{
 #' findConQuestExe()
 #' }
-findConQuestExe<- function(){
+findConQuestExe <- function() {
   message("no path to ConQuest Executable provided: searching common install locations.")
   # FIRST we look for a folder (not recursive) that has the string ConQuest in it in commonInstallLocs
-  # then we loop through each and is we find a possible folder, we search recusrively for a file called ConQuest and see if it is an exe
-  if(Sys.info()["sysname"] == "Windows")
+  # then we loop through each and is we find a possible folder, we search recusrively for a file called
+  #  ConQuest and see if it is an exe
+  if (Sys.info()["sysname"] == "Windows")
   {
-    commonInstallLocs<- c(
+    commonInstallLocs <- c(
       file.path(Sys.getenv("PROGRAMFILES")),
       file.path(Sys.getenv("ProgramFiles(x86)")),
       file.path(Sys.getenv("APPDATA")),
@@ -178,8 +180,8 @@ findConQuestExe<- function(){
       file.path(Sys.getenv("HOME"))
     )
 
-  } else if(Sys.info()["sysname"] == "Darwin") {
-    commonInstallLocs<- c(
+  } else if (Sys.info()["sysname"] == "Darwin") {
+    commonInstallLocs <- c(
         file.path("", "Applications"),
         file.path("~", "Applications"),
         file.path("~", "Desktop"),
@@ -187,24 +189,29 @@ findConQuestExe<- function(){
     )
 
   } else {
-    commonInstallLocs<- c("/") # placeholder for Linux
+    commonInstallLocs <- c("/") # placeholder for Linux
   }
-  for(path1 in commonInstallLocs){
-    mytmp<- list.dirs(path1, recursive = FALSE)
-    mytmp<- mytmp[grep("conquest", mytmp, ignore.case = TRUE)]
-    if(length(mytmp) == 0){
+  for (path1 in commonInstallLocs) {
+    mytmp <- list.dirs(path1, recursive = FALSE)
+    mytmp <- mytmp[grep("conquest", mytmp, ignore.case = TRUE)]
+    if (length(mytmp) == 0) {
       message(paste0("searched in ", path1, ". No ConQuest directory found"))
     } else {
-      for(dir in mytmp){
-        myFiles<- list.files(dir, recursive = TRUE, pattern = "ConQuest",  full.names=TRUE)
-        if(length(myFiles) == 0){
+      for (dir in mytmp) {
+        myFiles <- list.files(dir, recursive = TRUE, pattern = "ConQuest",  full.names=TRUE)
+        if (length(myFiles) == 0) {
           message(paste0("searched in ", dir, ". No ConQuest executable found"))
           break
         } else {
-          for(myFile in myFiles){
-            if(file.access(myFile, 1) == 0){ # file.access, mode = 1 (execute), 0 = TRUE, -1 FAIL
-              message(paste0("found executable ", normalizePath(myFile, mustWork = FALSE), ". This will be used to try to call ACER ConQuest"))
-              if(Sys.info()["sysname"] == "Windows") myFile<- normalizePath(myFile, winslash = "/", mustWork = TRUE)
+          for (myFile in myFiles) {
+            if (file.access(myFile, 1) == 0) { # file.access, mode = 1 (execute), 0 = TRUE, -1 FAIL
+              message(
+                paste0(
+                  "found executable ", normalizePath(myFile, mustWork = FALSE), 
+                  ". This will be used to try to call ACER ConQuest"
+                )
+              )
+              if (Sys.info()["sysname"] == "Windows") myFile <- normalizePath(myFile, winslash = "/", mustWork = TRUE)
               return(myFile)
             }
           }
@@ -228,24 +235,24 @@ findConQuestExe<- function(){
 #' createConQuestProject()
 #' }
 #' @importFrom methods hasArg
-createConQuestProject<- function(prefix = getwd(), ...){
+createConQuestProject <- function(prefix = getwd(), ...) {
   # debug
-  myDebug<- FALSE
-  setDebug<- FALSE
-  if(hasArg(setDebug)){
-    myArgs<- c(...) # have to get the optional arguments first!
-    myDebug<- myArgs["setDebug"]
+  myDebug <- FALSE
+  setDebug <- FALSE
+  if (hasArg(setDebug)) {
+    myArgs <- c(...) # have to get the optional arguments first!
+    myDebug <- myArgs["setDebug"]
   }
 
-  if(is.null(prefix)) stop("prefix must be a valid dir") # mostly in case getwd() returns NULL (e.g.., if you delete your wd)
+  if (is.null(prefix)) stop("prefix must be a valid dir") # mostly in case getwd() returns NULL (e.g.., if you delete your wd)
 
   # print message
   message(paste("creating project folders in ", prefix))
 
   # create alist of file paths to create
-  myFilePathsList<- list()
+  myFilePathsList <- list()
 
-  myFilePathsVec<- c(
+  myFilePathsVec <- c(
     file.path("data"),
     file.path("syntax"),
     file.path("syntax", "R"),
@@ -273,23 +280,23 @@ createConQuestProject<- function(prefix = getwd(), ...){
     file.path("submission")
   )
 
-  if(prefix == getwd()){
+  if (prefix == getwd()) {
     # put paths in a list
-    for(myFilePath in myFilePathsVec){
-      if(myDebug) print(myFilePath)
-      myFilePathsList[[myFilePath]]<- myFilePath
+    for (myFilePath in myFilePathsVec) {
+      if (myDebug) print(myFilePath)
+      myFilePathsList[[myFilePath]] <- myFilePath
     }
   } else {
     # put paths in a list with the prefix in front
-    for(myFilePath in myFilePathsVec){
-      tmpPath<- file.path(prefix, myFilePath)
-      myFilePathsList[[myFilePath]]<- tmpPath
+    for (myFilePath in myFilePathsVec) {
+      tmpPath <- file.path(prefix, myFilePath)
+      myFilePathsList[[myFilePath]] <- tmpPath
     }
   }
 
   # create dirs
-  for(i in seq_along(myFilePathsList)){
-    if(myDebug){
+  for (i in seq_along(myFilePathsList)) {
+    if (myDebug) {
       print(i)
       print(myFilePathsList[[i]])
     }
@@ -311,7 +318,7 @@ createConQuestProject<- function(prefix = getwd(), ...){
 #' \dontrun{
 #' getCqHist(ConQuestSys())
 #' }
-getCqHist <- function(myCqs){
+getCqHist <- function(myCqs) {
 
   IterHistTmp <- data.frame(
     RunNo = unlist(myCqs$gHistory$RunNo),
@@ -331,11 +338,11 @@ getCqHist <- function(myCqs){
   # iterate over each param type and unlist into a named list
   for (paramType in ParamTypesTmp) {
     # which lists in gHistory are we working with?
-    whichParam<- as.logical(match(names(myCqs$gHistory), paramType, nomatch = 0)) 
+    whichParam <- as.logical(match(names(myCqs$gHistory), paramType, nomatch = 0)) 
     # Deal with "Xsi" , "Tau", "RanTermVariance"
     # beta is special case, 1 row per dim, var is special case, 
     # (1,1); (1,2), ... , (1,gNDim), ... , (2, 1), ... (gNDim, gNDim)
-    if(paramType != "Beta" & paramType != "Variance")
+    if (paramType != "Beta" & paramType != "Variance")
     {
       histList[[paramType]] <- unlist(myCqs$gHistory[whichParam])
       history[[paramType]] <- as.data.frame(
@@ -434,18 +441,18 @@ getCqHist <- function(myCqs){
 #' \dontrun{
 #' getCqChain(ConQuestSys())
 #' }
-getCqChain<- function(myCqs){
-  if(!myCqs$gIntegrationMethod %in% c(7:8)) stop("getCqHist is for models using MCMC integration only, try getCqHist instead")
-  tmpHist<- getCqHist(myCqs)
-  tmpBurn<- myCqs$gBurn
-  if(tmpBurn > 0)
+getCqChain <- function(myCqs) {
+  if (!myCqs$gIntegrationMethod %in% c(7:8)) stop("getCqHist is for models using MCMC integration only, try getCqHist instead")
+  tmpHist <- getCqHist(myCqs)
+  tmpBurn <- myCqs$gBurn
+  if (tmpBurn > 0)
   {
     # "myHist$Iter[1] == 0" checks that iter 1 is the first burn iteration,
     # and that this function hasnt been called multiple times
-    tmpBurn<- tmpBurn+1 # note that gBurn is 1-offset, and iter is 0-offset
-    if(tmpHist$Iter[1] == 0) tmpHist<- tmpHist[ -c(1:tmpBurn), ]
+    tmpBurn <- tmpBurn+1 # note that gBurn is 1-offset, and iter is 0-offset
+    if (tmpHist$Iter[1] == 0) tmpHist <- tmpHist[ -c(1:tmpBurn), ]
   }
-  tmpHist<- tmpHist[ , -c(grep("^Iter", names(tmpHist))) ]
+  tmpHist <- tmpHist[ , -c(grep("^Iter", names(tmpHist))) ]
   return(tmpHist)
 }
 
@@ -460,17 +467,17 @@ getCqChain<- function(myCqs){
 #' summariseCqChain(getCqChain(ConQuestSys()))
 #' }
 #' @importFrom stats var
-summariseCqChain<- function(myChain)
+summariseCqChain <- function(myChain)
 {
-  mySummary<- list()
+  mySummary <- list()
 
-  tmp<- as.data.frame(colMeans(myChain))
+  tmp <- as.data.frame(colMeans(myChain))
   names(tmp)<- c("est")
-  mySummary[["mean"]]<- tmp
+  mySummary[["mean"]] <- tmp
 
-  tmp<- as.data.frame(sapply(myChain, var)) # manual alg. (sum(myHist$Xsi1^2) - (sum(myHist$Xsi1)^2) / length(myHist$Xsi1)) / (length(myHist$Xsi1) - 1)
+  tmp <- as.data.frame(sapply(myChain, var)) # manual alg. (sum(myHist$Xsi1^2) - (sum(myHist$Xsi1)^2) / length(myHist$Xsi1)) / (length(myHist$Xsi1) - 1)
   names(tmp)<- c("est")
-  mySummary[["var"]]<- tmp
+  mySummary[["var"]] <- tmp
 
   return(mySummary)
 }
@@ -485,8 +492,8 @@ summariseCqChain<- function(myChain)
 #' \dontrun{
 #' getCqVars(ConQuestSys())
 #' }
-getCqVars<- function(myCqs){
-  myVars<- data.frame(
+getCqVars <- function(myCqs) {
+  myVars <- data.frame(
     VariableType = c(rep("E", length(myCqs$gModelVariables[[1]])), rep("I", length(myCqs$gModelVariables[[2]]))),
     VariableNumber = unlist(myCqs$gModelVariables),
     VariableLevels = unlist(myCqs$gLevel),
@@ -504,14 +511,14 @@ getCqVars<- function(myCqs){
 #' \dontrun{
 #' getCqTerms(ConQuestSys())
 #' }
-getCqTerms<- function(myCqs){
-  termList<- list()
-  tmpVars<- getCqVars(myCqs)
+getCqTerms <- function(myCqs) {
+  termList <- list()
+  tmpVars <- getCqVars(myCqs)
 
-  for(term in seq_len(length(myCqs$gTerms))){
-    stepInvolved<- any(unlist(myCqs$gTerms[[term]][c("VariableNumber", "VariableType")]) == 2) # does this term involve steps?
-    thisVarType<- unlist(myCqs$gTerms[[term]][c("VariableType")])
-    termList[[term]]<-data.frame(
+  for (term in seq_len(length(myCqs$gTerms))) {
+    stepInvolved <- any(unlist(myCqs$gTerms[[term]][c("VariableNumber", "VariableType")]) == 2) # does this term involve steps?
+    thisVarType <- unlist(myCqs$gTerms[[term]][c("VariableType")])
+    termList[[term]] <-data.frame(
       # what variables are involved in this term matrix(unlist(myGroupSys$gTerms[[4]][c("VariableNumber", "VariableType")]), ncol = 2)
       VariableNumber = unlist(myCqs$gTerms[[term]][c("VariableNumber")]),
       VariableType = ifelse (thisVarType == 0, "I", ifelse(thisVarType == 1, "E", "S")),
@@ -523,105 +530,164 @@ getCqTerms<- function(myCqs){
     )
   }
 
-  termDf<- do.call("rbind", termList)
-  # termDf<- merge(termDf, tmpVars, by.x = c("VariableNumber", "VariableType"), by.y = c("VariableNumber", "VariableType"), all.x = TRUE)
+  termDf <- do.call("rbind", termList)
+  # termDf <- merge(termDf, tmpVars, by.x = c("VariableNumber", "VariableType"), by.y = c("VariableNumber", "VariableType"), all.x = TRUE)
   return(termDf)
 }
 
 
 #' @title getCqParams
 #'
-#' @description creates a data frame representation of the parameters of the model, including both estimated and constrained parameters.
-#'    Parameters are either freely estimated ('ParamType' == 0) or constrained ('ParamType' == 0).
-#'    Parameters are indexed (0 offset) by the column 'ParamNumber'. There is a seperate index for free and constrained parameters.
-#' @param myCqs A system file.
+#' @description creates a data frame representation of the parameters of the model, 
+#'   including both estimated, constrained, and anchored parameters.
+#'
+#' @param sysFile An ACER ConQuest system file read into R using conquestr::ConQuestSys.
 #' @return A data frame.
+#' @keywords internal
 #' @examples
 #' \dontrun{
 #' getCqParams(ConQuestSys())
 #' }
-getCqParams<- function(myCqs){
+getCqParams <- function(sysFile) {
 
-  if(myCqs$gPairWise) stop("pairwise is not yet supported by getCqParams")
-  # will want to have, for each param, est, SE, unwFit, unw95CIlow, unw95CIhigh, unwT, wFit, nw95CIlow, w95CIhigh, wT,
-  # neeed to know, are the SE? are there fits
-  myFit<- myCqs$gIFit # bool
-  mySe<- myCqs$gStdError < 3 # bool SE is calculated, 3 = none
+  isDebug <- FALSE
+  # check sysfile is okay
+  defaultSys <- FALSE
+  if (missing(sysFile)) {
+    sysFile <- conquestr::ConQuestSys()
+    defaultSys <- TRUE
+  }
+  sysFileOk(sysFile, defaultSys)
 
-  # at the moment, we simply get back a list of param nums, param types, signs and labels
-  # first get info about terms
-  termList<- list()
+  # checks
+  if (sysFile$gPairWise) stop("pairwise is not yet supported") # actually don't know if this will work
+  isFit <- sysFile$gIFit # is fit available?
+  isSe <- sysFile$gStdError < 3 # bool SE is calculated, 3 = none
 
-  for(term in seq_len(length(myCqs$gTerms))){
-    stepInvolved<- any(unlist(myCqs$gTerms[[term]][c("VariableType")]) == 2) # does this term involve steps?
-    termList[[term]]<-matrix(
-      unlist(myCqs$gTerms[[term]][c("ParamNumber", "ParamType")]),
-      nrow = length(myCqs$gTerms[[term]][["ParamNumber"]]),
-      byrow = FALSE
+  # get terms, and params associated with each term
+  tmpNames <- c("ParamNumber", "ParamType")
+  for (i in seq_along(sysFile$gTerms)) {
+    tmp1 <- sysFile$gTerms[[i]]
+    tmpParamNo <- unlist(tmp1$ParamNumber)
+    tmpParamtype <- unlist(tmp1$ParamType)
+    tmpResult <- as.data.frame(
+      cbind(tmpParamNo, tmpParamtype)
     )
-
-    tempDf<- data.frame(
-        TermSign = myCqs$gTerms[[term]]["Sign"],
-        TermLabel = myCqs$gTerms[[term]]["Label"],
-        TermNum = term,
-        TermStepInvolved = stepInvolved, # does this term involve steps?
-        ParamNumber =  termList[[term]][ , 1],
-        ParamType =  termList[[term]][ , 2],
-        ParamXsi = NA,
-        ParamSe = NA,
-        ParamAnchored = 0,
-        ParamDim = NA,
-        ParamStep = NA
-    )
-
-    if(term == 1){
-      tmpParamListDf<- tempDf
+    tmpResultL <- nrow(tmpResult)
+    if (tmpResultL > 0) {
+      names(tmpResult) <- tmpNames
+      tmpResult$label <- tmp1$Label
+      # there is a var type for each variable involved in the term
+      tmpResult$variable_type <- paste0(unlist(tmp1$VariableType), collapse = ",")
+      tmpResult$variable_number <- paste0(unlist(tmp1$VariableNumber), collapse = ",")
+      if (i == 1) {
+        tempTerms <- tmpResult
+      } else
+      {
+        tempTerms <- rbind(tempTerms, tmpResult)
+      }
     } else {
-      tmpParamListDf<- rbind(tmpParamListDf, tempDf)
+      warning(
+        paste0(
+          tmp1$Label,
+          " is defined in model statement but no parameters are associated with it"
+        )
+      )
     }
-
   }
 
-  # add in anchor xsi
-  if(length(myCqs$gImportParameters) > 0){
-    anyItemAnchors<- FALSE
-    for(i in seq_len(length(myCqs$gImportParameters))){
-      if(myCqs$gImportParameters[[i]]$Type == 0){
-        anyItemAnchors<- TRUE
-        tmpParamNo<- myCqs$gImportParameters[[i]]$I1 #I2 not used for anchor Xsi
-        tmpParamAnchorVal<- myCqs$gImportParameters[[i]]$Value
-        tmpParamListDf$ParamXsi[tmpParamListDf$ParamNumber == tmpParamNo & tmpParamListDf$ParamType == 0]<- tmpParamAnchorVal
-        tmpParamListDf$ParamAnchored[tmpParamListDf$ParamNumber == tmpParamNo & tmpParamListDf$ParamType == 0]<- 1
+  # See https://github.com/acerorg/ACER-ConQuest/issues/10
+  tmpFlag <- length(unlist(sysFile$gParam)) %% 3
+  if (tmpFlag > 0) {
+    tmpDim <- 4
+    tmpTrimReq <- TRUE
+  } else {
+    tmpDim <- 3
+    tmpTrimReq <- FALSE
+  }
+
+  if (isDebug) {
+    print("got terms, and params associated with each term")
+    print(tmpResult)
+  }
+  # get param est values and associated info
+  tmpNames <- c("gin_no", "step_involved", "sign") #, "constrained", "anchor")
+  # est params or anchors
+  tmpParams <- as.data.frame(
+    matrix(unlist(sysFile$gParam), ncol = tmpDim, byrow = TRUE)
+  )
+  if (tmpTrimReq) tmpParams <- tmpParams[ , 2:tmpDim]
+  names(tmpParams) <- tmpNames
+  tmpParams$constrained <- FALSE
+  tmpParams$anchor <- unlist(sysFile$gXsiAnchor)
+  tmpParams$xsi <- as.vector(unlist(sysFile$gXsi))
+  tmpParams$se <- rep(NA, length(tmpParams$xsi))
+  tmpCounter <- 1
+  tmpErrVar <- as.vector(diag(sysFile$gDeriv2nd))
+  if(length(tmpParams$xsi) == sysFile$gNXsiAnchors) {
+    # nothing to do, all xsi anchored (no xsi params in model - no vars estimated either)
+  } else {
+    for (i in seq_along(unlist(sysFile$gXsiAnchor))) {
+      if(!unlist(sysFile$gXsiAnchor)[i]) {
+        tmpParams$se[i] <- tmpErrVar[tmpCounter]
+        tmpCounter <- tmpCounter + 1
       }
     }
   }
+  tmpParams$se <- sqrt(tmpParams$se)
 
-  # add in estimated xsi
-  thisXsiIndex<- 1
-  thisParamNum<- 0
-  thisParamNumSe<- 1
-  for(i in seq_len(length(tmpParamListDf$ParamNumber))){
-    if(tmpParamListDf$ParamAnchored[i] == 1){
-      thisXsiIndex<- thisXsiIndex + 1 # use up an index, because imported anchored Xsi appear in gXsi
-      thisParamNum<- thisParamNum + 1
-    } else if(tmpParamListDf$ParamType[i] == 1){
-      next # this param is a location constraint
-    } else {
-      tmpParamListDf$ParamXsi[tmpParamListDf$ParamNumber == thisParamNum & tmpParamListDf$ParamType == 0]<- myCqs$gXsi[thisXsiIndex]
-      if(mySe){
-        tmpParamListDf$ParamSe[tmpParamListDf$ParamNumber == thisParamNum & tmpParamListDf$ParamType == 0]<- sqrt(myCqs$gDeriv2nd[thisParamNumSe,thisParamNumSe])
-      } else {
-        tmpParamListDf$ParamSe[tmpParamListDf$ParamNumber == thisParamNum & tmpParamListDf$ParamType == 0]<- NA
-      }
-      thisXsiIndex<- thisXsiIndex + 1
-      thisParamNum<- thisParamNum + 1
-      thisParamNumSe<- thisParamNumSe + 1 # if the param is anchored, then it is skipped in gDeriv2nd and thisXsiIndex and thisParamNumSe get out of sync
-    }
-
+  if (length(sysFile$gParamConstrained) > 0) {
+    tmpParamsCons <- as.data.frame(
+      matrix(unlist(sysFile$gParamConstrained), ncol = tmpDim, byrow = TRUE)
+    )
+    if (tmpTrimReq) tmpParamsCons <- tmpParamsCons[ , 2:tmpDim]
+    names(tmpParamsCons) <- tmpNames
+    tmpParamsCons$constrained <- TRUE
+    tmpParamsCons$anchor <- FALSE
+    tmpParamsCons$xsi <- NA
+    tmpParamsCons$se <- NA
+  } else {
+   tmpParamsCons <- data.frame(
+    gin_no = NULL,
+    step_involved = NULL,
+    sign = NULL,
+    constrained = NULL,
+    anchor = NULL,
+    xsi = NULL,
+    se = NULL
+    )
   }
 
-  return(tmpParamListDf)
-  # to get the value of an anchored xsi, need to find out which Dim it is on, and calculate -1*(sum(Xsi_id)) (for d = d, and i = i in d)
+  # put params in same order as tempTerms
+  tmpCount1 <- 1 # which unconstrained param to get
+  tmpCount2 <- 1 # which constrained param to get
+
+  myParams <- list()
+  for (i in seq(length(tempTerms$ParamNumber))) {
+    if (tempTerms$ParamType[i] == 0) { # unconstrained
+      myParams[[i]] <- tmpParams[tmpCount1 , ]
+      tmpCount1 <- tmpCount1 + 1
+    } else if (tempTerms$ParamType[i] == 1) { # constrained
+      myParams[[i]] <- tmpParamsCons[tmpCount2 , ]
+      tmpCount2 <- tmpCount2 + 1
+    } else
+    {
+      stop("unknown param type encountered")
+    }
+  }
+
+  for (i in seq(length(myParams))) {
+    if (i == 1) {
+      myParamsDf <- myParams[[i]]
+    } else
+    {
+      myParamsDf <- rbind(myParamsDf, myParams[[i]])
+    }
+  }
+
+  myResult <- cbind(tempTerms, myParamsDf)
+
+  return(myResult)
 }
 
 #' @title getCqFit
@@ -633,144 +699,39 @@ getCqParams<- function(myCqs){
 #' \dontrun{
 #' getCqFit(ConQuestSys())
 #' }
-getCqFit<- function(myCqs){
-  if(!myCqs$gIFit) stop("fit has not been estimated")
-  myTempNames<- data.frame(fitName = matrix(unlist(myCqs$gFitStatistics[[1]]), ncol = 1))
-  myTempFits<-  matrix(unlist(myCqs$gFitStatistics[[2]]), nrow = length(myCqs$gFitStatistics[[2]]), byrow = TRUE)
-  myTempFits<- data.frame(myTempFits)
+getCqFit <- function(myCqs) {
+  if (!myCqs$gIFit) stop("fit has not been estimated")
+  myTempNames <- data.frame(fitName = matrix(unlist(myCqs$gFitStatistics[[1]]), ncol = 1))
+  myTempFits <-  matrix(unlist(myCqs$gFitStatistics[[2]]), nrow = length(myCqs$gFitStatistics[[2]]), byrow = TRUE)
+  myTempFits <- data.frame(myTempFits)
   names(myTempFits)<- names(myCqs$gFitStatistics$Value[[1]])
 
-  myFit<- cbind(myTempNames, myTempFits)
+  myFit <- cbind(myTempNames, myTempFits)
   return(myFit)
 }
 
-
-
-#' @title getCqParams2
+#' @title getCqLongLabs
 #'
-#' @description returns a list of data frames, one for each term in the model.
-#'    The data frames include the the estimate, location constraint, or anchored value for each parameter.
-#'    The standard error of estimated parameters is also included if it has been estimated.
-#'    The fit (un/weighted MNSQ, sometimes called outfit and infit) of all parameters is alre included if has been estimated.
-#' @param myCqs A system file.
-#' @return A list of data frames of length `gTerms`.
+#' @description returns a vector of long gin labels returns vector of length 0
+#'  if there are no labels used (see command labels in conquest)
+#'
+#' @param sysFile An ACER ConQuest system file read into R using conquestr::ConQuestSys.
+#' @return A vector.
+#' @keywords internal
 #' @examples
 #' \dontrun{
-#' getCqParams2(ConQuestSys())
+#' getCqLongLabs(ConQuestSys())
 #' }
-getCqParams2<- function(myCqs){
-
-  if(myCqs$gPairWise) stop("pairwise is not yet supported by getCqParams")
-
-  paramList<- list() # this is returned
-  mySeExist<- myCqs$gStdError < 3 # bool, is SE available? (3 = none)
-  myFitExist<- myCqs$gIFit
-
-  myVars<- getCqVars(myCqs)
-  myTerms<- getCqTerms(myCqs)
-  myXsiCounter<- 1 # counter to iterate over `gXsi`
-
-  for(i in 1:max(myTerms$TermNumber)){
-    myTermsSub<- myTerms[myTerms$TermNumber == i ,]
-    myTermVarN<- length(unique(paste0(myTermsSub$VariableNumber, myTermsSub$VariableType))) # how many variables in this term?
-    myVarsSub<- myVars[paste0(myVars$VariableNumber, myVars$VariableType) %in% paste0(myTermsSub$VariableNumber, myTermsSub$VariableType), ]
-    print(myVarsSub)
-    # do terms without steps first - it's easier!
-    if(all(!myTermsSub$TermStepInvolved)){
-      # how many variables involved?
-      myTotalLevels<- prod(myVarsSub$VariableLevels)
-      myTmpRes<- matrix(NA, ncol = 10+(2*myTermVarN), nrow = myTotalLevels) # e.g., for one variable in term, we will have variable level number, variable level label, xsi, stderr, (outfit x4), (infit x 4) = 12 cols AND product of levels rows
-      print(myTmpRes)
-    } else {
-      myStepCounter<- myCqs$gItemSteps[[myXsiCounter]] #how many steps for the Xsi?
-      myTotalLevels<- prod(myVarsSub$VariableLevels)
-      myTmpRes<- matrix(NA, ncol = 10+(2*myTermVarN), nrow = myTotalLevels) # e.g., for one variable in term, we will have variable level number, variable level label, xsi, stderr, (outfit x4), (infit x 4) = 12 cols AND product of levels rows
-      print(myTmpRes)
-    }
-
+getCqLongLabs <- function(sysFile) {
+  # check sysfile is okay
+  defaultSys <- FALSE
+  if (missing(sysFile)) {
+    sysFile <- conquestr::ConQuestSys()
+    defaultSys <- TRUE
   }
+  sysFileOk(sysFile, defaultSys)
 
-  return(TRUE)
-
-  # will want to have, for each param, est, SE, unwFit, unw95CIlow, unw95CIhigh, unwY, wFit, nw95CIlow, w95CIhigh, wT,
-  # neeed to know, are the SE? are there fits
-  # myCqs$gIFit # bool
-  mySeExist<- myCqs$gStdError < 3 # bool SE is calculated, 3 = none
-
-  # at the moment, we simply get back a list of param nums, param types, signs and labels
-  # first get info about terms
-  termList<- list()
-
-  for(term in seq_len(length(myCqs$gTerms))){
-    stepInvolved<- any(unlist(myCqs$gTerms[[term]][c("VariableType")]) == 2) # does this term involve steps?
-    termList[[term]]<-matrix(
-      unlist(myCqs$gTerms[[term]][c("ParamNumber", "ParamType")]),
-      nrow = length(myCqs$gTerms[[term]][["ParamNumber"]]),
-      byrow = FALSE
-    )
-
-    tempDf<- data.frame(
-      TermSign = myCqs$gTerms[[term]]["Sign"],
-      TermLabel = myCqs$gTerms[[term]]["Label"],
-      TermNum = term,
-      TermStepInvolved = stepInvolved, # does this term involve steps?
-      ParamNumber =  termList[[term]][ , 1],
-      ParamType =  termList[[term]][ , 2],
-      ParamXsi = NA,
-      ParamSe = NA,
-      ParamAnchored = 0,
-      ParamDim = NA,
-      ParamStep = NA
-    )
-
-    if(term == 1){
-      tmpParamListDf<- tempDf
-    } else {
-      tmpParamListDf<- rbind(tmpParamListDf, tempDf)
-    }
-
-  }
-
-  # add in anchor xsi
-  if(length(myCqs$gImportParameters) > 0){
-    anyItemAnchors<- FALSE
-    for(i in seq_len(length(myCqs$gImportParameters))){
-      if(myCqs$gImportParameters[[i]]$Type == 0){
-        anyItemAnchors<- TRUE
-        tmpParamNo<- myCqs$gImportParameters[[i]]$I1 #I2 not used for anchor Xsi
-        tmpParamAnchorVal<- myCqs$gImportParameters[[i]]$Value
-        tmpParamListDf$ParamXsi[tmpParamListDf$ParamNumber == tmpParamNo & tmpParamListDf$ParamType == 0]<- tmpParamAnchorVal
-        tmpParamListDf$ParamAnchored[tmpParamListDf$ParamNumber == tmpParamNo & tmpParamListDf$ParamType == 0]<- 1
-      }
-    }
-  }
-
-  # add in estimated xsi
-  thisXsiIndex<- 1
-  thisParamNum<- 0
-  thisParamNumSe<- 1
-  for(i in seq_len(length(tmpParamListDf$ParamNumber))){
-    if(tmpParamListDf$ParamAnchored[i] == 1){
-      thisXsiIndex<- thisXsiIndex + 1 # use up an index, because imported anchored Xsi appear in gXsi
-      thisParamNum<- thisParamNum + 1
-    } else if(tmpParamListDf$ParamType[i] == 1){
-      next # this param is a location constraint
-    } else {
-      tmpParamListDf$ParamXsi[tmpParamListDf$ParamNumber == thisParamNum & tmpParamListDf$ParamType == 0]<- myCqs$gXsi[thisXsiIndex]
-      if(mySeExist){
-        tmpParamListDf$ParamSe[tmpParamListDf$ParamNumber == thisParamNum & tmpParamListDf$ParamType == 0]<- sqrt(myCqs$gDeriv2nd[thisParamNumSe,thisParamNumSe])
-      } else {
-        tmpParamListDf$ParamSe[tmpParamListDf$ParamNumber == thisParamNum & tmpParamListDf$ParamType == 0]<- NA
-      }
-      thisXsiIndex<- thisXsiIndex + 1
-      thisParamNum<- thisParamNum + 1
-      thisParamNumSe<- thisParamNumSe + 1 # if the param is anchored, then it is skipped in gDeriv2nd and thisXsiIndex and thisParamNumSe get out of sync
-    }
-
-  }
-
-  return(tmpParamListDf)
-  # to get the value of an anchored xsi, need to find out which Dim it is on, and calculate -1*(sum(Xsi_id)) (for d = d, and i = i in d)
+  return(unlist(sysFile$gGinLongLabels))
 }
 
 #' @title isCqConverged
@@ -784,7 +745,7 @@ getCqParams2<- function(myCqs){
 #' \dontrun{
 #' isCqConverged(ConQuestSys())
 #' }
-isCqConverged <- function(myCqs){
+isCqConverged <- function(myCqs) {
   if (!"conQuestSysFile" %in% class(myCqs))
   {
     stop("'mySys' must be a ConQuest system file object created by 'conquestr::ConQuestSys'")

@@ -6,11 +6,25 @@ knitr::opts_chunk$set(
 
 ## ----plotRout-----------------------------------------------------------------
 library(conquestr)
-myRout<- ConQuestRout()
-plotRout(myRout)   
+myRout <- ConQuestRout()
+plotRout(myRout)
 
 ## ----infoWrightMap------------------------------------------------------------
-myItems<- runif(10, -1, 1)
-myPersons<- rnorm(500, 1, 1)
-informationWrightMap(myItems = myItems, myAbilities = myPersons, minTheta = -6, maxTheta = 6)
+myDeltaDots <- data.frame(
+  id = c(1:10),
+  itemid = paste0("item", 1:10),
+  delta = rnorm(10)
+)
+
+MyTaus <- data.frame(
+  id = c(2L, 10L),
+  itemId = NA,
+  step = c(1L, 1L),
+  tau = rnorm(2)
+)
+
+myItemList <- makeItemList(deltaDot = myDeltaDots, tau = MyTaus)
+
+myPersons <- rnorm(500, 1, 1)
+informationWrightMap(myItems = myItemList, myAbilities = myPersons, minTheta = -6, maxTheta = 6)
 

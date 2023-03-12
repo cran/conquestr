@@ -4,21 +4,21 @@
 \alias{getCqParams}
 \title{getCqParams}
 \usage{
-getCqParams(myCqs)
+getCqParams(sysFile)
 }
 \arguments{
-\item{myCqs}{A system file.}
+\item{sysFile}{An ACER ConQuest system file read into R using conquestr::ConQuestSys.}
 }
 \value{
 A data frame.
 }
 \description{
-creates a data frame representation of the parameters of the model, including both estimated and constrained parameters.
-   Parameters are either freely estimated ('ParamType' == 0) or constrained ('ParamType' == 0).
-   Parameters are indexed (0 offset) by the column 'ParamNumber'. There is a seperate index for free and constrained parameters.
+creates a data frame representation of the parameters of the model,
+including both estimated, constrained, and anchored parameters.
 }
 \examples{
 \dontrun{
 getCqParams(ConQuestSys())
 }
 }
+\keyword{internal}

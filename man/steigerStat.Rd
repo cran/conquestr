@@ -14,7 +14,7 @@ steigerStat(myDat, q3Adj = TRUE, fisher = TRUE, dfAdj = FALSE, tpm)
 \item{fisher}{A bool indicating whether the Fisher Transform should be applied.}
 
 \item{dfAdj}{A bool indicating whether the df should be adjusted for sample size, L, and targeting.
-If dfAdj is TRUE, then you must pass in the optional argument `tmp` (test-person match)}
+If dfAdj is TRUE, then you must pass in the optional argument \code{tmp} (test-person match)}
 
 \item{tpm}{A number indicating the test-person match, where 0 indicates that
 mean item difficulty is equal to mean person ability, and -1 indcates that mean item difficulty is 1 logit below mean person ability.}

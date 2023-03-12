@@ -22,22 +22,19 @@ plotRout(myRout, ...)
 \method{plotRout}{default}(myRout, ...)
 }
 \arguments{
-\item{myRout}{an R object created by the `ConQuestRout` function.}
+\item{myRout}{an R object created by the \code{ConQuestRout} function.}
 
-\item{...}{additional arguments passed into plotting functions (e.g., `plotZero = TRUE` to control whether the 0 category is plotted in ICC and MCC).}
+\item{...}{additional arguments passed into plotting functions}
 }
 \value{
 A ggplot2 object.
 }
 \description{
-generates a plot from an 'ACER ConQuest' Rout file. use `ConQuestRout` to read in an Rout
- file created by a `plot` command in 'ACER ConQuest'.
+generates a plot from an 'ACER ConQuest' Rout file. use \code{ConQuestRout} to read in an Rout
+file created by a \code{plot} command in 'ACER ConQuest'.
 }
 \examples{
-myPlot<- plotRout(ConQuestRout())
-\dontrun{
-# if you run the above example you will have a ggplot2 object, using the default Rout file (an ICC).
-str(myPlot)
-}
+myRout <- ConQuestRout()
+myPlot <- plotRout(myRout)
 ## to see why we import this, see https://ggplot2.tidyverse.org/articles/ggplot2-in-packages.html
 }

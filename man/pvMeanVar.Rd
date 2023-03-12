@@ -14,5 +14,5 @@ A list containing the mean and variaince of the PVs.
 }
 \description{
 Applies the law of total variance (EVEs law)
-    to calculate the mean and varinace of a set of PVs for one dimension.
+to calculate the mean and varinace of a set of PVs for one dimension.
 }

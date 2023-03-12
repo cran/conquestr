@@ -13,7 +13,9 @@ ItemDfStdZ(myDf)
 a data frame.
 }
 \description{
-Calculates centred and scaled item parameter estimates. Also calculates standardised standard errors of item parameter estimates to complement scaled item parameter estimates.
+Calculates centred and scaled item parameter estimates.
+Also calculates standardised standard errors of item parameter estimates
+to complement scaled item parameter estimates.
 }
 \seealso{
 conquestr::sysToItemDifDf()

@@ -9,14 +9,15 @@ plotMCC(item, data, range = c(-6, 6), e_linetype = "bins", bins = 6)
 \arguments{
 \item{item}{Item parameters for a single item.}
 
-\item{data}{Two vectors of data in an _n_ by 2 matrix or data frame, where _n_ are the cases in your analysis.
+\item{data}{Two vectors of data in an \emph{n} by 2 matrix or data frame, where \emph{n} are the cases in your analysis.
 The first vector should be item responses. the second vector should be estimated person abilities.}
 
-\item{range}{Lower and upper bounds to plot over (defaults to c(-6, 6) OR the minimum and maximum estimated ability, whichever is larger).}
+\item{range}{Lower and upper bounds to plot over (defaults to c(-6, 6) OR the
+minimum and maximum estimated ability, whichever is larger).}
 
 \item{e_linetype}{A string. Should the empirical lines be based on "bins", or "regression". Defaults to "bins"}
 
-\item{bins}{If _e\_linetype_ is "bins", how many bins should be used to chunk the empirical lines?
+\item{bins}{If _e\\emph{linetype} is "bins", how many bins should be used to chunk the empirical lines?
 defaults to 6. Ignored otherwise.}
 }
 \value{
@@ -24,12 +25,12 @@ A ggplot2 object.
 }
 \description{
 Creates a plot of an item characteristic curve (by response category). For a dichotomous item, this will
-    yield a single curve, for polytomous items this will produce a curve for each response category.
-    Note this is not for use with `rout` files. See the generic function `plotRout` for plotting rout files.
+yield a single curve, for polytomous items this will produce a curve for each response category.
+Note this is not for use with \code{rout} files. See the generic function \code{plotRout} for plotting rout files.
 }
 \examples{
 myRout <- ConQuestRout()
-myPlot<- plotRout(myRout)
+myPlot <- plotRout(myRout)
 \dontrun{
 # if you run the above example you will have an ICC plot in the object `myPlot`.
 plot(myPlot)

@@ -4,44 +4,112 @@
 \alias{makeItemList}
 \title{makeItemList}
 \usage{
-makeItemList(deltaDot, tau, scores = NULL)
+makeItemList(scores = NULL, deltaDot, tau = NULL, discrim = 1)
 }
 \arguments{
-\item{deltaDot}{a data frame or matrix of delta dots. If a data frame, column labels should be: "id", "itemid", "delta".
+\item{scores}{a data frame or matrix containing category scores for each item.
+If NULL, it is assumed increasing integer scoring starting at 0 is used for all items (that is, the
+first category is scored 0, the second category is scored 1, the \eqn{k^{th}}{kth} category is scored k-1).
+
+If a data frame, column labels should be "id", "itemid", "step", "score".
+If a matrix, the column order should be: "id", a unique item ID for each item matched with values in \code{deltaDot};
+"itemid", item labels for each item (or NA); "step", an indicator of which step/item category this score
+represents and "score" the value for the scoring parameter associated with this category.
+There must be one score for each category (i.e. 2 for dichotomies and one for each of k categories for
+polytomies).
+
+If a data frame, or a matrix:
+\itemize{
+\item "id" is an integer
+\item "itemid" is a character string
+\item "step" is an integer
+\item "score" is numeric
+\item The original category scores (i.e., increasing integer scoring) is preserved in the rownames of the matrix.
+}}
+
+\item{deltaDot}{a data frame or matrix of delta dots (average item location/difficulty for each item).
+
+If a data frame, column labels should be: "id", "itemid", "delta".
 "itemid" should be populated with an item label or be missing for all values.
-If a matrix, column order should be: "id", a unique item ID for each row; "itemid", item labels for each item (or NA); "delta", a delta dot.}
+If a matrix, column order should be: "id", a unique item ID for each row; "itemid", item labels for each item
+(or NA); "delta", a delta dot.
 
-\item{tau}{a data frame or matrix of taus for polytomous items. Only polytomous items should be in this file.
-If an item ID in `deltaDot` in not in `tau` it is assumed that the item is dichotomous.
-Where a polytomous item has k categories, there should be k-2 rows for that item in `tau`. For example, a 3-category item has categories k_1, k_2, and k_3. There will be one value in `tau` for this item.
-The tau parameters represent the deviation from the delta dot to give the item parameters for adjacent category boundaries (e.g., k_1 and k_2, and k_2 and k_3).
-The value in `tau` represents the the first category boundary (e.g., k_1 and k_2). The second category boundary is constrained to be the negative sum of the other values of tau for that item.
+If a data frame, or a matrix:
+\itemize{
+\item "id" is an integer
+\item "itemid" is a character string
+\item "delta" is numeric
+}}
+
+\item{tau}{NULL if all items are dichotomies.
+A data frame or matrix of taus for polytomous items. Only polytomous items should be in this file.
+If an item ID in \code{deltaDot} in not in \code{tau} it is assumed that the item is dichotomous.
+The tau parameters represent the deviation from the delta dot to give the item parameters for adjacent category
+boundaries (e.g., delta one (
+\eqn{\delta_{1} = \dot{\delta} + \tau_{1}}{delta_1 = delta_dot + tau_1}
+) is the boundary between \eqn{k_{1}}{k_1} and \eqn{k_{2}}{k_2},
+delta two (
+\eqn{\delta_{2} = \dot{\delta} + \tau_{2}}{delta_2 = delta_dot + tau_2}
+) is the category boundary between \eqn{k_{1}}{k_1} and \eqn{k_{2}}{k_2}).
+
+Where a polytomous item has k categories, there should be k-2 rows for that item in \code{tau}. For example,
+a 3-category item has categories \eqn{k_{1}}{k_1}, \eqn{k_{2}}{k_2} and \eqn{k_{3}}{k_3}.
+There will be one value in \code{tau} for this item.
+The value in \code{tau} represents the the first category boundary.
+(e.g., between \eqn{k_{1}}{k_1} and \eqn{k_{2}}{k_2}).
+The last (second in this case) category boundary is constrained to be the negative sum of the other tau values
+within this item (and is therefore not required in the file).
+
 If a data frame, column labels should be "id", "itemid", "step", "tau".
-If a matrix, the column order should be: "id", a unique item ID for each item matched with values in `deltaDot`; "itemid", item labels for each item (or NA);
-"step", an indicator of which step/item category this threshold represents (minimum value should be 1 and maximum value should be k-1);
-"tau" the value for the tau parameter associated with this step.}
+If a matrix, the column order should be: "id", a unique item ID for each item matched with values in \code{deltaDot};
+"itemid", item labels for each item (or NA); "step", an indicator of which step/item category this threshold
+represents (minimum value should be 1 and maximum value should be k-1);
+"tau" the value for the tau parameter associated with this step.
 
-\item{scores}{a data frame of item response category scores. Not currently used - items are assumed to be scored as per the values in `tau$step`.}
+If a data frame, or a matrix:
+\itemize{
+\item "id" is an integer
+\item "itemid" is a character string
+\item "step" is an integer
+\item "tau" is numeric
+}}
+
+\item{discrim}{a double, a data frame, or a matrix of item (or category) discrimination parameters.
+When a double is provided, the value is applied to all discrimination parameters.
+The default is 1. Setting the value to 1.7 is one approach to re-scale to the normal ogive metric.
+Otherwise a data.frame or matrix defining the discrimination parameter for each response category.
+If a data frame, column labels should be "id", "itemid", "step", "discrim".
+If step is NA and there is only one entry for an item "itemid", the discrimination is
+assumed to be constant for all response categories with the item.
+This is the case for names models like the GPCM and 2PL models, and can be a short
+hand way of defining the discrimination without specifying all categories.
+When discrimination varies across scoring categories, the bock-nominal model is implied.
+In the case of discrimination varying across scoring categories, all categories must be
+defined.
+
+If a data frame, or a matrix:
+\itemize{
+\item "id" is an integer
+\item "itemid" is a character string
+\item "step" is an integer
+\item "discrim" is numeric
+}}
 }
 \value{
 a list.
 }
 \description{
-creates a list of matrices. Each matrix represent item parameters of the structure used in `simplef` (a matrix of k categories by three (category score, delta dot, tau)).
+creates a list of item matrices.
+Each matrix represent one item's set of item parameters. The structure of the
+matrix is the same as used in \code{conquestr::simplef}
+(a matrix of k categories by four (category score, delta dot, tau, discrimination)).
 }
 \examples{
-nItems<- 10
-myItemsDeltaDot<- data.frame(
+nItems <- 10
+myItemsDeltaDot <- data.frame(
   id= seq(nItems),
-  itemId= NA,
-  delta = runif(nItems, -4, 1) # nItems items in range -4,1
+  itemid= NA,
+  delta = runif (nItems, -4, 1) # nItems items in range -4,1
 )
-myItemsTau<- data.frame(
-  id = NA,
-  itemId = NA,
-  step = NA,
-  tau = NA # this is only needed because the function is...in progress
-)
-myAbilities<- rnorm(100, 1, 2) # 100 person, offset from items - poor targeting (?)
-myItemsList<- conquestr::makeItemList(deltaDot = myItemsDeltaDot, tau = myItemsTau)
+myItemsList <- conquestr::makeItemList(deltaDot = myItemsDeltaDot)
 }

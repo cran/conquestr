@@ -7,7 +7,7 @@
 ReadCDesignMatrices(myFile, Dimensions, ItemSteps, Items)
 }
 \arguments{
-\item{myFile}{An uncompresed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
+\item{myFile}{An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
 
 \item{Dimensions}{An integer representation of 'ACER ConQuest' object gNDim.}
 
