@@ -2,22 +2,47 @@
 % Please edit documentation in R/plotGeneral.R
 \name{plotModelExp}
 \alias{plotModelExp}
-\title{plotModelExp}
+\title{plotExpected}
 \usage{
-plotModelExp(items, range = c(-6, 6), by = 0.1)
+plotModelExp(
+  items,
+  range = c(-6, 6),
+  by = 0.1,
+  bins = NULL,
+  abilities = NULL,
+  weights = NULL,
+  group = NULL,
+  scale = FALSE
+)
 }
 \arguments{
-\item{items}{List of one or more matricies of item parameters.}
+\item{items}{a \emph{list} of one or more matrices of item parameters. Used in producing model-implied curves.}
 
-\item{range}{Lower and upper bounds to plot over (defaults to c(-6, 6).}
+\item{range}{Lower and upper bounds to plot over (defaults to c(-6, 6).
+Used in producing model-implied curves. For empirical curves a range is chosen given the
+min and max values in abilities.}
 
-\item{by}{Increment to the sequence along `range``.}
+\item{by}{Increment to calculate expectation along \code{range}. Used in producing model-implied curves.}
+
+\item{bins}{A double. Optional. How many equally sized bins should abilities be broken up into?
+Used in producing empirical curves. If not provided and abilities are provided, a suitable value is chosen
+given the length of abilities.}
+
+\item{abilities}{A vector of doubles. Optional.}
+
+\item{weights}{A vector of doubles. Optional.}
+
+\item{group}{A vector of type factor. Optional.}
+
+\item{scale}{A Boolean. Whether plot should be scaled such that the Y-axis ranges from 0 to 1.}
 }
 \value{
 A ggplot2 object.
 }
 \description{
-Creates a plot of a model-implied expected score curve.
+Creates a plot of an item- or test- expected score curve.
+If ability estimates are provided, both empirical and model curves are produced.
+Can optionally handle weights and groups as required.
 Note this is not for use with \code{rout} files. See the generic function \code{plotRout} for plotting rout files.
 }
 \examples{

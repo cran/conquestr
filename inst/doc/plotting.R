@@ -7,7 +7,16 @@ knitr::opts_chunk$set(
 ## ----plotRout-----------------------------------------------------------------
 library(conquestr)
 myRout <- ConQuestRout()
-plotRout(myRout)
+myPlot <- plotRout(myRout)
+myPlot
+
+## ----updatePlotRout-----------------------------------------------------------
+library(gridExtra)
+myPlot_themed <- myPlot + ggplot2::theme_dark()
+myPlot_themed_new <- myPlot_themed
+# remove geom_point layer
+myPlot_themed_new$layers[[2]] <- NULL
+grid.arrange(myPlot_themed, myPlot_themed_new)
 
 ## ----infoWrightMap------------------------------------------------------------
 myDeltaDots <- data.frame(

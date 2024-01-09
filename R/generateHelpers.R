@@ -1,18 +1,18 @@
 #' @title genItems
 #'
-#' @description Generates a list of item parameter matrcies for use in
+#' @description Generates a list of item parameter matrices for use in
 #'   function like `conquestr::genResponses` and `conquestr::informationWrightMap`
 #'
 #' @param n How many items?
 #' @param scores When NULL it is assumed that all items have
-#'   integer scoring, increasing for each category k, and begining from 0.
+#'   integer scoring, increasing for each category k, and beginning from 0.
 #'   Otherwise a list where the elements are, in order:
 #'   * a string naming a distribution function (for example `runif`, `rnorm`) to generate random deviates
 #'     from (the scores).
 #'   * a list of parameters to pass to the distribution function (for example, for `runif`, a list of
 #'     length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
 #'     the function.
-#'   * a boolean indicating whether the scores should be forced to be increasing accross the response
+#'   * a boolean indicating whether the scores should be forced to be increasing across the response
 #'     categories.
 #'   * optionally a vector of item numbers to apply scores too. If not provided it is assumed that all items
 #'     will be scored.
@@ -26,7 +26,7 @@
 #'   Otherwise a list where the elements are, in order:
 #'   * a string naming a distribution function (for example `runif`, `rnorm`) to generate random deviates
 #'     from (the taus).
-#'     Or the string "manual" to indicate that a user-defined list of the tau paramters will be
+#'     Or the string "manual" to indicate that a user-defined list of the tau parameters will be
 #'     provided.
 #'   * a list of parameters to pass to the distribution function (for example, for `runif`, a list of
 #'     length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
@@ -47,7 +47,7 @@
 #'   Otherwise a list where the elements are, in order:
 #'   * a string naming a distribution function (for example `runif`, `rnorm`) to generate random deviates
 #'     from (the discriminations).
-#'     Or the string "manual" to indicate that a user-defined list of the discrimination paramters will be
+#'     Or the string "manual" to indicate that a user-defined list of the discrimination parameters will be
 #'     provided.
 #'   * a list of parameters to pass to the distribution function (for example, for `runif`, a list of
 #'     length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
@@ -63,7 +63,7 @@
 #'   myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
 #'   myItems <- list(myItem, myItem)
 #'   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
-#'   myResponses <- genResponses(rnorm(100), myItems)
+#'   myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
 #' @importFrom stats runif
 genItems <- function(n, scores = NULL, deltadots, taus = NULL, discrims = 1) {
   return(NULL)
@@ -76,87 +76,172 @@ genItems <- function(n, scores = NULL, deltadots, taus = NULL, discrims = 1) {
 #'
 #' @param abilities A person by latent-dimension matrix of abilities.
 #'   One column per dimension.
-#' @param itemParams A list of item params of the structure used in `simplef`
-#'   (a matrix of k categories by four (category score, delta dot, tau, discrimintation)).
+#' @param groups A vector of factors of the same length as `abilities` that
+#'   allocates each case to a group. Used in perturbR. Defaults to NULL such that
+#'   all cases are in the one group.
+#' @param itemParams A list of item parameters of the structure used in `simplef`
+#'   (a matrix of k categories by four (category score, delta dot, tau, discrimination)).
 #'   See conquestr::makeItemList for a helper to generate this list.
 #' @param BMatrix A simplified B-matrix mapping dimensions (columns) to items (rows).
 #'   Or the integer "1" if items are dichotomous and ability is uni-dimensional.
 #' @param mcarP A double indicating the proportion of missing data
 #'   under the MCAR assumption.
-#' @param perturbP A list, where each element of the list contains a data frame
-#'   referring to an item.
-#'   Each data frame is either a 1 * 4 data frame describing the general
-#'   perturbation to apply to the probabilities for that item
-#'   (currently developed) or a pair of vectors mapping theta to
-#'   probabilities (not developed).
-#'   In the first case - the data frame is in this order:
-#'   * "item": item number (int),
-#'   * "type": the type of perturbation to apply (string, "flat", or "steep"),
-#'   * "pivot": probability pivot point around which the
-#'     perturbation is applied (double in{0 < x < 1}),
-#'   * "factor": magnitude of the perturbation
-#'     (double - when in {0 < x < 100} probs remain positively
-#'     correlated with theta (0 = no perturbation, 100 = maximum perturbation)
-#'     when in{100 < x < Inf} probs are negatively correlated with theta).
+#' @param perturbR A list of lists, where each element of the list refers to one item
+#'  and contains a list of elements describing how responses to that item should
+#'  be perturbed to model misfit.
+#'  Each element of the list should contain, in order:
+#'
+#'  * item number (int). Which item in `itemParams` is affected,
+#'  * type of perturbation (string) to apply. One of
+#'     * "discrimination" - increasing or decreases the discrimination
+#'     * ...more to come, like "shift"
+#'  * perturbation factor (double). When the type is "discrimination", this defines
+#'    the scale that the discrimination is increased or decreased. For example, if
+#'    the item has discrimination of 1, and the perturbation factor is 1.2, the
+#'    resulting probabilities will be calculated assuming the discrimination
+#'    is 1 * 1.2 = 1.2.
+#'  * pivot point (double), When the type is "discrimination", this defines the
+#'      location  around which the perturbation is applied relative to
+#'      the delta dot. That is, when the type is "discrimination" and the
+#'      "perturbation factor" is > 1, probabilities above the pivot point
+#'      will be overestimated (generated responses will higher than expectation)
+#'      and probabilities below the pivot point will be underestimated
+#'      (generated responses will lower than expectation). When the pivot point
+#'      is 0, this calculation happens at the item location parameter (e.g., at the
+#'      category boundary).
+#'  * group (string). The group found in `groups that should be perturbed.
+#'    note that is `groups` is not used in call to `genResponses` than this
+#'    value is ignored and all cases' responses are perturbed.
+#'
 #' @return A matrix, `n` cases by `i` items, of scored item responses.
 #' @seealso [conquestr::simplef()], `browseVignettes("conquestr")`
 #' @examples
 #'   myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
 #'   myItems <- list(myItem, myItem)
 #'   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
-#'   myResponses <- genResponses(rnorm(100), myItems)
+#'   myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
 #' @importFrom stats runif
-genResponses <- function(abilities, itemParams, BMatrix = 1, mcarP = 0, perturbP = NULL) {
+genResponses <- function(
+    abilities, groups = NULL, itemParams,
+    BMatrix = 1, mcarP = 0, perturbR = NULL
+  ) {
+
+  # for debug only
   isDebug <- FALSE
+
+  # error checking
   if (!is.list(itemParams)) {
     stop(
       "`itemParams` should be a list of item params of the structure used in `simplef`"
     )
   }
+
   # in unidimensional case myNCases could be a vector so coerce to matrix
   myAbilitiesT <- as.matrix(abilities)
-  myNCases <- length(myAbilitiesT[, 1]) # includes NAs
-  # myNCases <- length(na.omit(myAbilitiesT[, 1]))
+  myNCases <- length(myAbilitiesT[, 1]) # can includes NAs - responses will all be NA
   myNItems <- length(itemParams)
   isMultDim <- FALSE
   if (is.matrix(BMatrix) && ncol(as.matrix(BMatrix)) > 1) {
       isMultDim <- TRUE
       if (!all(rowSums(BMatrix) == 1)) stop("only between-item designs currently allowed")
   }
-  #
+  # handle groups
+  isGroups <- FALSE
+  if (is.null(groups)) {
+    myGroups <- factor(rep(1, myNCases))
+  } else {
+    if (!is.factor(groups)) groups <- as.factor(groups) # attempt to cast to factor
+    if (!is.factor(groups) || length(groups) != myNCases) {
+      stop(
+        "groups must be the same length as the number of cases in abilities
+        and must be of type factor"
+      )
+    }
+    isGroups <- TRUE
+    myGroups <- groups
+  }
+  # handle perturbations
+  myNperturb <- 0 # how many perturbed items?
+  myPerturbI <- NULL # which items are perturbed?
+  if (!is.null(perturbR)) {
+    myNperturb <- length(perturbR)
+    for (i in seq(perturbR)) {
+      tmpI <- as.integer(perturbR[[i]][1])
+      if (!is.integer(tmpI)) {
+        stop(
+          paste0(
+            "item number in perturbR must be integer, problem with item ",
+            i,
+            " and value: ",
+            tmpI
+          )
+        )
+      }
+      myPerturbI <- c(myPerturbI, tmpI)
+    }
+  }
+
+  # Now start the real work
   # create a temp response matrix, n cases by i items
   myResponses <- matrix(NA, myNCases, myNItems)
+  # create a temp expectation matrix, n cases by i items
   myExpected <- matrix(NA, myNCases, myNItems)
+  # loop over cases and items and calculate expectation and response
   for (case in seq(myNCases)) {
+    thisGroup <- myGroups[case]
+    if (!isGroups) thisGroup <- NULL
     for (item in seq(myNItems)) {
       if (isMultDim) {
         thisDim <- which(BMatrix[item, ] == 1)
       } else {
         thisDim <- 1
       }
+      thisItemPeturb <- FALSE
+      thisPeturb <- NULL # the actual list of perturbation info for this item
+      if (isDebug) print(paste0("working on item: ", item))
+      if (isDebug) print(paste0("is item: ", item, " in myPerturbI: ", myPerturbI, " ?", item %in% myPerturbI))
+      if (item %in% myPerturbI) {
+        thisItemPeturb <- TRUE
+        for (i in seq(perturbR)) {
+          if (as.integer(perturbR[[i]][1]) == item) thisPeturb <- perturbR[[i]]
+        }
+      }
+      if (thisItemPeturb && is.null(thisPeturb)) {
+        stop("could not find the info in perturbR for this item")
+      }
       if (is.na(myAbilitiesT[case, thisDim])) {
         resp <- NA
         prob <- NA
       } else {
-        resp <- itemResp(myAbilitiesT[case, thisDim], itemParams[[item]])
         prob <- simplef(myAbilitiesT[case, thisDim], itemParams[[item]])
+        if(thisItemPeturb) {
+          if (isDebug) print(paste0("This case's group: '", thisGroup, "' this items perturbed group: '", thisPeturb[5], "'"))
+          resp <- perturbResp(
+            myAbilitiesT[case, thisDim], itemParams[[item]],
+            thisGroup, thisPeturb
+          )
+        } else {
+          resp <- itemResp(myAbilitiesT[case, thisDim], itemParams[[item]])
+        }
       }
       myResponses[case, item] <- resp
       myExpected[case, item] <- prob
-      if (isDebug) {
+      if (isDebug && case < 11 && item < 3) {
         print(
           paste0(
             "case: ", case,
+            " group: ", thisGroup,
             " item: ", item,
-            " response:", resp,
-            " expected score:", prob,
-            " theta: ", myAbilitiesT[case , thisDim]
+            " response: ", resp,
+            " expected score: ", round(prob, 2),
+            " theta: ", round(myAbilitiesT[case , thisDim], 2)
           )
         )
       }
     }
   }
 
+  # add missing if requested
   if (mcarP > 0) {
     myRand2 <- matrix(runif(myNCases * myNItems), myNCases, myNItems)
     for (r in 1:nrow(myResponses)) {
@@ -169,57 +254,73 @@ genResponses <- function(abilities, itemParams, BMatrix = 1, mcarP = 0, perturbP
   }
 
   return(myResponses)
-
-  # consider what to really do here - probably need to pass in the item too?
-   # # if (!is.null(perturbP)) myProbs <- perturbProbs(myExpected, perturbP)
-  # # if (!is.null(perturbP)) myItemsU <- perturbDelta(myAbilities, myItems, myExpected)
-  #
-  # myGenResults <- list()
-  # myGenResults[["myResponses"]] <- myResponses
-  # # myGenResults[["myProbs"]] <- myProbs
-  # myGenResults[["myAbilities"]] <- myAbilitiesT
-  # myGenResults[["myItems"]] <- myItems
-  # return(myGenResults)
 }
 
-
-
-#' @title perturbProbs
+#' @title perturbResp
 #'
-#' @description Perturbs response probabilities.
+#' @description Perturbs a response given specified (item) misfit to implied model.
 #'
-#' @param myProbs A matrix of size `n` persons by `i` items. Each element is a
-#'   response probability or expected scores for the person by item combination.
-#' @param perturbP A list of length `i` of response probabilities from n persons * i items.
-#' @return A matrix.
+#' @param ability a double - the location of the person on the measure.
+#' @param item a matrix - the item parameters in the format required by 
+#'   `conquestr::simplef` 
+#' @param group a string - the group this case belongs to. If NULL, the case is 
+#'   always in this group.
+#' @param perturbation A matrix - the description of the way this item should be 
+#'   perturbed. In the format required by `conquestr::genResponses` 
+#' @return A double - the observed response.
 #' @keywords internal
+#' @seealso [conquestr::simplef()], [conquestr::genResponses()], 
+#'   `browseVignettes("conquestr")`
 #' @examples
-#' myExProbs <- matrix(rnorm(100, 0, 1), 10, 10)
-#' myExPerturb <- list(data.frame(item = 1, type = "flat", pivot = 0.5, factor = 25))
-#' myProbs <- perturbProbs(myProbs = myExProbs, perturbP = myExPerturb)
+#' myN <- 250
+#' myMean <- 0
+#' mySd <- 2
+#' myGroups <- c("gfit", "bfit")
+#' myAbilities <- rnorm(myN, myMean, mySd)
+#' # students with large weights and unperturbed responses (good fit)
+#' #   and students with small weights and perturbed responses (bad fit)
+#' myData <- data.frame(
+#'   ability = myAbilities,
+#'   group = factor(sample(x = myGroups, size = myN, replace = TRUE))
+#' )
+#' myData$weight <- ifelse(myData$group == myGroups[1], 1, 0.001)
+#' myItems <- list()
+#' myItems[[1]] <- matrix(c(
+#'   0, 0, 0   , 1,
+#'   1, 1, -0.2, 1,
+#'   2, 1, 0.2 , 1
+#' ), ncol = 4, byrow = TRUE)
+#' myPerturbations<- list()
+#' myPerturbations[[1]] <- list()
+#' myPerturbations[[1]] <- append(myPerturbations[[1]], 1L)
+#' myPerturbations[[1]] <- append(myPerturbations[[1]], "discrimination")
+#' myPerturbations[[1]] <- append(myPerturbations[[1]],  0.50)
+#' myPerturbations[[1]] <- append(myPerturbations[[1]], 0)
+#' myPerturbations[[1]] <- append(myPerturbations[[1]], "bfit")
+#' names(myPerturbations[[1]]) <- c("item", "type", "factor", "pivot", "group")
+#' myResponses <- genResponses(
+#'     abilities = myData$ability, itemParams = myItems, perturbR = myPerturbations,
+#'     groups = myData$group
+#' )
 #' @importFrom stats runif
-perturbProbs <- function(myProbs, perturbP) {
-  if (!class(perturbP) %in% "list") stop("perturbP must be of type list")
-  # which items to work on
-  for (i in seq_len(length(perturbP))) {
-    tmpP <- perturbP[[i]]
-    if (!class(tmpP) %in% "data.frame") stop("elements of perturbP must be of type data.frame")
-    if (all(!names(tmpP) == c("item", "type", "pivot", "factor"))) stop("elements of perturbP must have vector names item, type, pivot, factor")
-    # (prob + flat|steep *((pivot-prob)/100)*factor)
-    myItem <- tmpP$item
-    myType <- 1
-    if (tmpP$type == "steep") myType <- myType*-1
-    myPivot <- tmpP$pivot
-    myFactor <- tmpP$factor
-    for (j in seq_along(myProbs[ , myItem])) {
-      tmpProb <- myProbs[ j , myItem ] + myType *((myPivot-myProbs[ j , myItem ])/100)*myFactor
-      if (tmpProb < 0) tmpProb <- 0 + runif (1, 0, 0.01)
-      if (tmpProb > 1) tmpProb <- 1 - runif (1, 0, 0.01)
-      myProbs[ j , myItem ] <- tmpProb
-    }
+perturbResp <- function(ability, item, group, perturbation) {
 
+  # Is this case is in the group to be perturbed?
+  caseIsInGroup <- FALSE
+  if (is.null(group) || group == perturbation[5]) caseIsInGroup <- TRUE
+
+  if (!caseIsInGroup) {
+    thisResp <- itemResp(ability, item)
+  } else {
+    tmpI <- item
+    nCats <- length(tmpI[ , 2])
+    tFac <- as.numeric(perturbation[3])
+    tPivot <- as.numeric(perturbation[4])
+    tmpI[, 4] <- tmpI[, 4] * tFac
+    tmpI[(2:nCats), 2] <- tmpI[(2:nCats), 2] + tPivot
+    thisResp <- itemResp(ability, tmpI)
   }
-  return(myProbs)
+  return(thisResp)
 }
 
 
@@ -244,27 +345,6 @@ itemResp <- function(myAblty, myItem) {
   myCdf <- cumsum(myRspP)
   myCatScore <- min(which(myRand < myCdf))
   return(myItem[myCatScore, 1])
-}
-
-#' @title perturbDelta
-#'
-#' @description When probabilities are perturbed, the item difficulties may need to be updated
-#'   to be location where p = 0.5
-#'
-#' @param myAbilities A matrix of perspon abilities.
-#' @param myItems A vector of item deltas.
-#' @param myProbs A matrix of response probabilities from n persons * i items.
-#' @return A matrix.
-#' @keywords internal
-#' @examples
-#' myAbilities <- rnorm(1000, 0, 1)
-#' myItems <- runif (10, -2, 3)
-#' myExProbs <- matrix(rnorm(100, 0, 1), 10, 10)
-#' myExPerturb <- list(data.frame(item = 1, type = "flat", pivot = 0.5, factor = 25))
-#' myProbs <- perturbProbs(myProbs = myExProbs, perturbP = myExPerturb)
-#' myPerturbDelta <- perturbDelta(myAbilities = myAbilities, myItems = myItems, myProbs = myProbs)
-perturbDelta <- function(myAbilities, myItems, myProbs) {
-  return(TRUE)
 }
 
 #' @title rawScore
@@ -292,7 +372,7 @@ rawScore <- function(x, itemParams, perfAdjust = 0.3) {
     maxScore <- 0
     for (i in seq(countItems))
     {
-      # this is the max category for this item - TODO: when we set up for 2PL multiply by scores
+      # this is the max category for this item - NOTE: this may include scores
       tmp <- max(tmpItemParams[[i]][ , 1])
       maxScore <- maxScore + tmp
     }
@@ -327,7 +407,7 @@ rawScore <- function(x, itemParams, perfAdjust = 0.3) {
 #' @return a double, the score (O-E) at theta.
 #' @keywords internal
 thetaScore <- function(theta, responses, itemParams, perfAdjust = 0.3) {
-  tmpRaw <- conquestr::rawScore(responses, itemParams, perfAdjust = perfAdjust)[[2]] # observed
+  tmpRaw <- rawScore(responses, itemParams, perfAdjust = perfAdjust)[[2]] # observed
   tmpExp <- list()
   for (i in seq(itemParams)) {
     if (is.na(responses[i])) {
@@ -340,17 +420,79 @@ thetaScore <- function(theta, responses, itemParams, perfAdjust = 0.3) {
   return(tmpRaw - tmpExpSum)
 }
 
+#' @title cnvrtItemParam
+#'
+#' @description takes an item in one model's parameterisation and
+#'   returns it in another parameterisation.
+#'
+#' @param item an item design matrix that is of size response categories (m) by four:
+#'   * column one is category values, usually from 0 to m. Sometimes referred to as 'x',
+#'     and in this case, this value times the discrimination is the category score.
+#'   * column two is the delta dot parameter repeated m times (the average difficulty of the item)
+#'   * column three is the tau (step) parameter where for the first response category (x = 0) tau = 0,
+#'     and for m >= 2, entries are deviations from delta dot. In the dichotomous case, all items
+#'     in this column are zero.
+#'   * column four is the discrimination parameter ("a")
+#' @param from a string, either "muraki"  or "conquest" (default) (see 10.1177/0146621697211001).
+#'   Describing the parameterisation of _item_
+#' @param to a string, either "muraki"  or "conquest" (default) (see 10.1177/0146621697211001).
+#'   Describing the output parameterisation of the returned _item_ parameter matrix
+#'   Note that "muraki" assumes the scaling constant D = 1.7 (to give the normal ogive metric)
+#' @param D a number, giving the scaling constant. Default is 1 (logistic metric).
+#'   Other common values are D = 1.7 (to give the normal ogive metric)
+#'
+#' @return an m x 4 matrix of item parameters. The same dimensions as the input, _item_
+#' @examples
+#' myTheta <- 0
+#' myDelta <- 1.5
+#' a <- 1.5
+#' m <- 3
+#' itemParamX <- seq(0, m-1, 1)
+#' itemParamD <- rep(myDelta, m)
+#' itemParamT <- c(0, -0.5, 0.5)
+#' itemParamA <- rep(a, m)
+#' itemParam <- cbind(itemParamX, itemParamD, itemParamT, itemParamA)
+#' colnames(itemParam)<- c("x", "d", "t", "a")
+#' myItem <- cnvrtItemParam(itemParam, from = "conquest", to = "muraki")
+cnvrtItemParam <- function(item, from = "muraki", to = "conquest", D = 1) {
+  # check item, check from and to
+  # TODO
+  myItem_t <- item
+  if (from == "muraki") {
+    # item discrimination
+    myItem_t[, 4] <- item[, 4] * D
+    # item locations ("conquest delta dots", in delta plus tau notation)
+    myItem_t[, 2] <- item[, 2] * (D * item[, 4])
+    # item steps ("conquest taus", in delta plus tau notation)
+    # -1 takes us from easiness to difficulty parameterisation
+    myItem_t[, 3] <- -1 * item[, 3] * (D * item[, 4])
+  } else {
+    # conquest -> Muraki
+    myItem_t[, 4] <- item[, 4] / D # a = tau/D
+    myItem_t[, 2] <- item[, 2] / (D * myItem_t[, 4]) # b = delta_dot/(D*a)
+    myItem_t[, 3] <- -1 * item[, 3] / (D * myItem_t[, 4]) # d = -tau/(D*a)
+  }
+  return(myItem_t)
+}
+
 #' @title simplep
 #'
-#' @description returns response probabilities for each reponse category of an item at a given value of theta.
+#' @description returns response probabilities for each response category of an item at a given value of theta.
 #'
 #' @param theta a scalar value of theta.
-#' @param i_params an item design matrix that is of size response categories (k) by three. The three columns are:
-#'   * column one is scoring values, usually from 0 to k.
-#'   * column two is the delta dot parameter repeated k times (the average difficulty of the item)
-#'   * column three is the tau (step) parameter where for k = 1, tau = 0, and for k >= 2,
-#'     subsequent entries are deviations from delta dot.
-#'   * column four is the discrimination paramter ("a")
+#' @param item an item design matrix that is of size response categories (m) by four:
+#'   * column one is category values, usually from 0 to m. Sometimes referred to as 'x',
+#'     and in this case, this value times the discrimination is the category score.
+#'   * column two is the delta dot parameter repeated m times (the average difficulty of the item)
+#'   * column three is the tau (step) parameter where for the first response category (x = 0) tau = 0,
+#'     and for m >= 2, entries are deviations from delta dot. In the dichotomous case, all items
+#'     in this column are zero.
+#'   * column four is the discrimination parameter ("a")
+#' @param model a string, either "muraki"  or "conquest" (default) (see 10.1177/0146621697211001).
+#'   This tells downstream functions what parameterisation has been used for the model and helps with
+#'   plotting and other outputs.
+#' @param D a number, giving the scaling constant. Default is 1 (logistic metric).
+#'   Other common values are D = 1.7 (to give the normal ogive metric)
 #'
 #' @return a k x 1 matrix of response probabilities evaluated at theta.
 #' @keywords internal
@@ -366,27 +508,34 @@ thetaScore <- function(theta, responses, itemParams, perfAdjust = 0.3) {
 #' itemParam <- cbind(itemParamX, itemParamD, itemParamT, itemParamA)
 #' colnames(itemParam)<- c("x", "d", "t", "a")
 #' myProbs <- simplep(myTheta, itemParam)
-simplep <- function(theta, i_params) {
-  if (!is.numeric(theta) & length(theta) !=1) stop("theta must be a scalar value")
-  if (!is.matrix(i_params) & !ncol(i_params) %in% c(3,4) & nrow(i_params) > 1) {
-    stop("i_params must be a matrix with at least scores, delta dots, and taus")
+simplep <- function(theta, item, model = "conquest", D = 1) {
+  if (missing(model)) model <- "conquest"
+  if (!model %in% c("muraki", "conquest")) stop("model must be muraki or conquest")
+  if (!is.numeric(theta) && length(theta) != 1) stop("theta must be a scalar value")
+  if (!is.matrix(item) && !ncol(item) %in% c(3, 4) && nrow(item) > 1) {
+    stop("item must be a matrix with at least scores, delta dots, and taus")
   }
-  if (ncol(i_params) == 3) {
-    i_params <- cbind(i_params, rep(1, length(i_params[ , 1])))
+  if (ncol(item) == 3) {
+    item <- cbind(item, rep(1, length(item[ , 1])))
     message("assuming item discrimination is constant and equal to 1")
   }
-  tmp <- matrix(NA, nrow = nrow(i_params))
-  probs <- matrix(NA, nrow = nrow(i_params))
-  for (i in seq(nrow(i_params)))
-  {
+  tmp <- matrix(NA, nrow = nrow(item))
+  probs <- matrix(NA, nrow = nrow(item))
+  #tmp_delta_plus_tau <- 0
+  for (i in seq_len(nrow(item))) {
     tmp[i , 1] <- exp(
-        # a(b*theta - sum(delta+tau))
-        i_params[i, 4] * (i_params[i, 1] * theta - sum(i_params[1:i, 2:3]))
-      )
+      if (model == "muraki") {
+        # Da(x*theta_m - b_m + d_m) # Muraki's GPCM
+        1.7 * item[i, 4] * (item[i, 1] * theta - item[i, 2] + item[i, 3])
+      } else {
+        # or
+        # (a*b*theta_a) - sum(delta_a+tau_a) # Adams' MMCLM
+        (item[i, 4] * item[i, 1] * theta) - (sum(item[1:i, 2:3]))
+      }
+    )
   }
   denom <- sum(tmp[ , 1])
-  for (i in seq(nrow(i_params)))
-  {
+  for (i in seq_len(nrow(item))) {
     probs[i , 1] <- tmp[i , 1] / denom
   }
   return(probs)
@@ -397,12 +546,17 @@ simplep <- function(theta, i_params) {
 #' @description returns expected score at a given value of theta.
 #'
 #' @param theta a scalar value of theta.
-#' @param i_params an item design matrix that is of size response categories (k) by three. The three columns are:
+#' @param item an item design matrix that is of size response categories (k) by three. The three columns are:
 #'   * column one is scoring values, usually from 0 to k.
 #'   * column two is the delta dot parameter repeated k times (the average difficulty of the item)
 #'   * column three is the tau (step) parameter where for k = 1, tau = 0, and for k >= 2,
 #'     subsequent entries are deviations from delta dot.
 #'   * column four is the discrimination paramter ("a")
+#' @param model a string, either "muraki"  or "conquest" (default) (see 10.1177/0146621697211001).
+#'   This tells downstream functions what parameterisation has been used for the model and helps with
+#'   plotting and other outputs.
+#' @param D a number, giving the scaling constant. Default is 1 (logistic metric).
+#'   Other common values are D = 1.7 (to give the normal ogive metric)
 #'
 #' @return a double - the expected score at theta.
 #' @keywords internal
@@ -418,11 +572,13 @@ simplep <- function(theta, i_params) {
 #' itemParam <- cbind(itemParamX, itemParamD, itemParamT, itemParamA)
 #' colnames(itemParam)<- c("x", "d", "t", "a")
 #' myExpect <- simplef(myTheta, itemParam)
-simplef <- function(theta, i_params) {
+simplef <- function(theta, item, model, D) {
+  if (missing(model)) model <- "conquest"
+  if (missing(D)) D <- 1
   expt <- 0
-  probs <- simplep(theta, i_params)
+  probs <- simplep(theta, item, model)
   for (i in seq(probs)) {
-    expt <- expt + (i_params[i, 1]) * probs[i, 1]
+    expt <- expt + (item[i, 1]) * probs[i, 1]
   }
   return(expt)
 }
@@ -455,14 +611,17 @@ pX <- function(x, probs) {
 
 #' @title theta_ll
 #'
-#' @description returns the log of the likelihood of theta, given a vector of item responses, item parameters.
-#'     Note that this is the simple ll - it is the continuing product of the response probabilities. It
-#'     includes a hack, that will nudge the raw response to the first item to adjust for zeros and perfects.
-#'     This should be updated to work with adjusted raw scores instead...
+#' @description returns the log of the likelihood of theta, given a vector of 
+#'   item responses, item parameters.
+#'   Note that this is the simple ll - it is the continuing product of the 
+#'   response probabilities. It includes a hack, that will nudge the raw 
+#'   response to the first item to adjust for zeros and perfects.
+#'   This should be updated to work with adjusted raw scores instead...
 #'
 #' @param theta  a scalar value of theta.
 #' @param responses a vector of item responses (used in a call to `pX`).
-#' @param params a list of item designs (each used in a call to `simplef`). Must be of same length as `responses`.
+#' @param itemParams a list of item designs (each used in a call to `simplef`). 
+#'   Must be of same length as `responses`.
 #'
 #' @return a double, the log of the likelihood at theta..
 #' @keywords internal
@@ -471,6 +630,12 @@ theta_ll <- function(theta, responses, itemParams) {
     stop(
       "you must provide a vector of responses and a list with an item design for each response"
     )
+  }
+  # drop items where response in NA
+  itemParamsT <- list()
+  if (any(is.na(responses))) {
+    itemParamsT <- itemParams[[!is.na(responses)]]
+    itemParams <- itemParamsT
   }
   results <- list()
   tmpProbs <- list()
@@ -627,7 +792,7 @@ makeItemList <- function(scores = NULL, deltaDot, tau = NULL, discrim = 1) {
 
   itemCounter <- 1
 
-  # coerce matricies to dfs
+  # coerce matrices to dfs
   if (inherits(myScr, "matrix")) {
     myScr <- data.frame(
       id = scores[, 1],
@@ -729,7 +894,7 @@ makeItemList <- function(scores = NULL, deltaDot, tau = NULL, discrim = 1) {
       colnames(tItm) <- c("k", "d", "t", "a")
     } else { # item is polytomous
       tmpMyTau <- myTau[myTau$id == item , ]
-      tStps <- max(tmpMyTau$step)+2
+      tStps <- max(tmpMyTau$step) + 2
       if (isDebug) print(paste0("item: ", item, " is polytomous and has ", tStps, " steps"))
       tIdCnstr <- -1 * sum(tmpMyTau$tau) # negative sum of taus
       tItm <- matrix(rep(c(NA, tmpMyDlt$delta, NA, 1), tStps), ncol = 4, byrow = TRUE)
@@ -805,20 +970,54 @@ makeItemList <- function(scores = NULL, deltaDot, tau = NULL, discrim = 1) {
 }
 
 
-##' @title mleCalc
-##'
-##' @description returns the MLE for each case and asymptotic variance given a _fixed_ set of item parameters.
-##'    This is done by finding the root of the distance between the observed and expected score at theta.
-##'    That is, the location where O-E = 0.
-##'
-##' @param responses a data frame made up of rows of vectors of item responses, one for each case.
-##' @param itemParams a list of item designs (each used in a call to `simplef`). Must be of same length as `responses`.
-##' @param ... optional arguments, e.g., perfAdj.
-##'
-##' @return a data frame.
-##' @keywords internal
+#' @title mleCalc
+#'
+#' @description returns the MLE for each case and asymptotic variance given a _fixed_ set of item parameters.
+#'    This is done by finding the root of the distance between the observed and expected score at theta.
+#'    That is, the location where O-E = 0.
+#'
+#' @param responses a data frame made up of rows of vectors of item responses, one for each case.
+#' @param itemParams a list of item designs (each used in a call to `simplef`). Must be of same length as `responses`.
+#' @param ... optional arguments, e.g., perfAdj.
+#'
+#' @return a data frame.
+#' @keywords internal
 #' @importFrom stats optim
 mleCalc <- function(responses, itemParams, ...) {
+  myMle <- list()
+  for (i in seq(length(responses[ , 1]))) {
+    myMle[[i]] <- list()
+    myScores <- rawScore(x = responses[i , ], itemParams = itemParams)
+    tmpMle <- optim(
+      0, theta_ll, method = "BFGS", control = list(fnscale = -1),
+      responses = responses[i , ], itemParams = itemParams, hessian = TRUE
+    )
+    myMle[[i]][["rawScore"]] <- myScores[[1]]
+    myMle[[i]][["maxScore"]] <- myScores[[3]]
+    myMle[[i]][["est"]] <- tmpMle$par
+    # variance of the MLE given by Newton R is inverse of the negative Hessian
+      #(i.e. the inverse of the negative of the matrix)
+    #print(paste0("inv hessian for case: ", i))
+    myMle[[i]]["se"] <- sqrt(solve(-tmpMle$hessian))
+  }
+  myMles <- matrix(unlist(myMle), ncol = 4, byrow = TRUE)
+  myMles <- as.data.frame(myMles)
+  names(myMles) <- c("raw_score", "max_score", "est", "se")
+  return(myMles)
+}
+
+#' @title getItemMatrix
+#'
+#' @description generates an item matrix. Useful for
+#'
+#' @param responses a data frame made up of rows of vectors of item responses, one for each case.
+#' @param itemParams a list of item designs (each used in a call to `simplef`). Must be of same length as `responses`.
+#' @param ... optional arguments, e.g., perfAdj.
+#'
+#' @return a data frame.
+#' @keywords internal
+#' @importFrom stats optim
+getItemMatrix <- function(responses, itemParams, ...) {
   myMle <- list()
   for (i in seq(length(responses[ , 1]))) {
     myMle[[i]] <- list()

@@ -4,14 +4,25 @@
 \alias{genResponses}
 \title{genResponses}
 \usage{
-genResponses(abilities, itemParams, BMatrix = 1, mcarP = 0, perturbP = NULL)
+genResponses(
+  abilities,
+  groups = NULL,
+  itemParams,
+  BMatrix = 1,
+  mcarP = 0,
+  perturbR = NULL
+)
 }
 \arguments{
 \item{abilities}{A person by latent-dimension matrix of abilities.
 One column per dimension.}
 
-\item{itemParams}{A list of item params of the structure used in \code{simplef}
-(a matrix of k categories by four (category score, delta dot, tau, discrimintation)).
+\item{groups}{A vector of factors of the same length as \code{abilities} that
+allocates each case to a group. Used in perturbR. Defaults to NULL such that
+all cases are in the one group.}
+
+\item{itemParams}{A list of item parameters of the structure used in \code{simplef}
+(a matrix of k categories by four (category score, delta dot, tau, discrimination)).
 See conquestr::makeItemList for a helper to generate this list.}
 
 \item{BMatrix}{A simplified B-matrix mapping dimensions (columns) to items (rows).
@@ -20,22 +31,33 @@ Or the integer "1" if items are dichotomous and ability is uni-dimensional.}
 \item{mcarP}{A double indicating the proportion of missing data
 under the MCAR assumption.}
 
-\item{perturbP}{A list, where each element of the list contains a data frame
-referring to an item.
-Each data frame is either a 1 * 4 data frame describing the general
-perturbation to apply to the probabilities for that item
-(currently developed) or a pair of vectors mapping theta to
-probabilities (not developed).
-In the first case - the data frame is in this order:
+\item{perturbR}{A list of lists, where each element of the list refers to one item
+and contains a list of elements describing how responses to that item should
+be perturbed to model misfit.
+Each element of the list should contain, in order:
 \itemize{
-\item "item": item number (int),
-\item "type": the type of perturbation to apply (string, "flat", or "steep"),
-\item "pivot": probability pivot point around which the
-perturbation is applied (double in{0 < x < 1}),
-\item "factor": magnitude of the perturbation
-(double - when in {0 < x < 100} probs remain positively
-correlated with theta (0 = no perturbation, 100 = maximum perturbation)
-when in{100 < x < Inf} probs are negatively correlated with theta).
+\item item number (int). Which item in \code{itemParams} is affected,
+\item type of perturbation (string) to apply. One of
+\itemize{
+\item "discrimination" - increasing or decreases the discrimination
+\item ...more to come, like "shift"
+}
+\item perturbation factor (double). When the type is "discrimination", this defines
+the scale that the discrimination is increased or decreased. For example, if
+the item has discrimination of 1, and the perturbation factor is 1.2, the
+resulting probabilities will be calculated assuming the discrimination
+is 1 * 1.2 = 1.2.
+\item pivot point (double), When the type is "discrimination", this defines the
+location  around which the perturbation is applied relative to
+the delta dot. That is, when the type is "discrimination" and the
+"perturbation factor" is > 1, probabilities above the pivot point
+will be overestimated (generated responses will higher than expectation)
+and probabilities below the pivot point will be underestimated
+(generated responses will lower than expectation). When the pivot point
+is 0, this calculation happens at the item location parameter (e.g., at the
+category boundary).
+\item group (string). The group found in \verb{groups that should be perturbed. note that is }groups\verb{is not used in call to}genResponses` than this
+value is ignored and all cases' responses are perturbed.
 }}
 }
 \value{
@@ -49,7 +71,7 @@ known item parameters, person abilities, and (optionally) other inputs.
   myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
   myItems <- list(myItem, myItem)
   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
-  myResponses <- genResponses(rnorm(100), myItems)
+  myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
 }
 \seealso{
 \code{\link[=simplef]{simplef()}}, \code{browseVignettes("conquestr")}

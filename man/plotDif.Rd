@@ -9,15 +9,18 @@ plotDif(mySysToItemDifDf, myScale = "centred", mySuffixes)
 \arguments{
 \item{mySysToItemDifDf}{An R object of class data frame returned from conquestr::sysToItemDifDf}
 
-\item{myScale}{A string specifying if the item parameter estimates displayed should be "centred" (default), "scaled" (z scores), or "none" (raw).}
+\item{myScale}{A string specifying if the item parameter estimates displayed should be "centred" (default),
+"scaled" (z scores), or "none" (raw).}
 
-\item{mySuffixes}{a vector of strings specifying the names for the two groups being analysed, e.g., if the two system files are an analysis of boys and girls, the vector may be \verb{c(_male", "_female")}.}
+\item{mySuffixes}{a vector of strings specifying the names for the two groups being analysed,
+e.g., if the two system files are an analysis of boys and girls, the vector may be \verb{c(_male", "_female")}.}
 }
 \value{
 A ggplot2 object.
 }
 \description{
-Creates a plot (ggplot2 object) of item parameter estimates common to two system files (e.g., a DIF analysis).
+Creates a plot (ggplot2 object) of item parameter estimates common to two system files
+(e.g., a DIF analysis).
 }
 \examples{
 mySys1 <- ConQuestSys()

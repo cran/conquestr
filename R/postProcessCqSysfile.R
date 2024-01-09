@@ -2,7 +2,7 @@
 #'
 #' @description Post processing of ConQuest system file created by ConQuestSys.
 #'   Adds names and attributes (e.g., descriptions) to objects in list.
-#' @param myFile A list of class conQuestSysFile
+#' @param sysFile A list of class conQuestSysFile
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #'  Object is of class conQuestSysFile.
 #' @seealso conquestr::ConQuestSys()

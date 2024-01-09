@@ -4,7 +4,7 @@
 \alias{ReadTerms}
 \title{ReadTerms}
 \usage{
-ReadTerms(myFile)
+ReadTerms(myFile, cqs_version)
 }
 \arguments{
 \item{myFile}{An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.}

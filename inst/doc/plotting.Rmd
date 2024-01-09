@@ -18,22 +18,46 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-conquestr has two main types of plots.
-The first is plots based on the `plot` command in [ACER ConQuest](https://conquestmanual.acer.org/s4-00.html#plot).
-These plots are done using the generic function `conquestr::plotRout`
-The second is more general plots, usually of the inputs or outputs of IRT estimate.
+_conquestr_ has two main types of plotting functions:
+
+- Functions for _rout_ files created from the `plot` command in [ACER ConQuest](https://conquestmanual.acer.org/s4-00.html#plot).
+  These plots are created using the generic function `conquestr::plotRout`. 
+  _rout_ files are read in using the function `conquestr::ConQuestRout`. 
+- General plots, usually of the inputs or outputs of IRT estimation.
+  These include for example: 
+    - Estimation history (_conquestr::plotCqHist_)
+    - Wright maps based on system file (_conquestr::plotItemMap_)
 
 # Example
 
 ## plotRout
 
+This generic function, _plotRout_, will dispatch to specific methods depending on the class of the _rout_ file.
+For example, in ConQuest if an ICC _rout_ file is created, then when you call _plotRout_, the method _plotRout.ICC_
+will be called and an ICC will be returned.
+
 ```{r plotRout}
 library(conquestr)
 myRout <- ConQuestRout()
-plotRout(myRout)
+myPlot <- plotRout(myRout)
+myPlot
 ```
 
+It is also to manually edit the returned object to do your own styling.
+
+```{r updatePlotRout}
+library(gridExtra)
+myPlot_themed <- myPlot + ggplot2::theme_dark()
+myPlot_themed_new <- myPlot_themed
+# remove geom_point layer
+myPlot_themed_new$layers[[2]] <- NULL
+grid.arrange(myPlot_themed, myPlot_themed_new)
+```
+
+
 ## General Plots
+
+TODO here, add example of history plots. Especially with plot problems. 
 
 You can plot an arbitrary information function against a distribution of students - a so called information Wright map. 
 

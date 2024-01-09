@@ -4,12 +4,12 @@
 \alias{simplef}
 \title{simplef}
 \usage{
-simplef(theta, i_params)
+simplef(theta, item, model, D)
 }
 \arguments{
 \item{theta}{a scalar value of theta.}
 
-\item{i_params}{an item design matrix that is of size response categories (k) by three. The three columns are:
+\item{item}{an item design matrix that is of size response categories (k) by three. The three columns are:
 \itemize{
 \item column one is scoring values, usually from 0 to k.
 \item column two is the delta dot parameter repeated k times (the average difficulty of the item)
@@ -17,6 +17,13 @@ simplef(theta, i_params)
 subsequent entries are deviations from delta dot.
 \item column four is the discrimination paramter ("a")
 }}
+
+\item{model}{a string, either "muraki"  or "conquest" (default) (see 10.1177/0146621697211001).
+This tells downstream functions what parameterisation has been used for the model and helps with
+plotting and other outputs.}
+
+\item{D}{a number, giving the scaling constant. Default is 1 (logistic metric).
+Other common values are D = 1.7 (to give the normal ogive metric)}
 }
 \value{
 a double - the expected score at theta.

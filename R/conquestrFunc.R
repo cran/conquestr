@@ -156,7 +156,7 @@ transformPvs <- function(x, mT = 0, sdT = 1, weights, data, addToDf = FALSE, deb
 
 #' @title findConQuestExe
 #'
-#' @description Searches in common insall paths to find ConQuest executable.
+#' @description Searches in common install paths to find ConQuest executable.
 #' This is called by `ConQuestCall` when no executable is passed explicitly.
 #'
 #' @return Char with path to ConQuest executable.
@@ -168,7 +168,7 @@ transformPvs <- function(x, mT = 0, sdT = 1, weights, data, addToDf = FALSE, deb
 findConQuestExe <- function() {
   message("no path to ConQuest Executable provided: searching common install locations.")
   # FIRST we look for a folder (not recursive) that has the string ConQuest in it in commonInstallLocs
-  # then we loop through each and is we find a possible folder, we search recusrively for a file called
+  # then we loop through each and is we find a possible folder, we search recursively for a file called
   #  ConQuest and see if it is an exe
   if (Sys.info()["sysname"] == "Windows")
   {
@@ -244,7 +244,8 @@ createConQuestProject <- function(prefix = getwd(), ...) {
     myDebug <- myArgs["setDebug"]
   }
 
-  if (is.null(prefix)) stop("prefix must be a valid dir") # mostly in case getwd() returns NULL (e.g.., if you delete your wd)
+  # mostly in case getwd() returns NULL (e.g.., if you delete your wd)
+  if (is.null(prefix)) stop("prefix must be a valid dir")
 
   # print message
   message(paste("creating project folders in ", prefix))

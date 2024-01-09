@@ -26,9 +26,8 @@ ReadDoubleList <- function(myFile)
 #' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
-ReadInteger <- function(myFile)
-{
-    readBin(myFile, integer(), endian = "little", size = 4, n = 1)
+ReadInteger <- function(myFile) {
+  readBin(myFile, integer(), endian = "little", size = 4, n = 1)
 }
 
 #' @title ReadBoolean
@@ -501,7 +500,7 @@ ReadLabelList <- function(myFile)
   Value <- list()
     for (i in seq_len(N))
     {
-            Value[[i]] <-ReadLabel(myFile)
+      Value[[i]] <-ReadLabel(myFile)
     }
     return(Value)
 }
@@ -510,49 +509,49 @@ ReadLabelList <- function(myFile)
 #' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
-ReadTerms <- function(myFile) {
-    N <- ReadInteger(myFile)
-    NP <- ReadInteger(myFile)
+ReadTerms <- function(myFile, cqs_version) {
+  N <- ReadInteger(myFile)
+  NP <- ReadInteger(myFile)
   VariableNumber <- list()
   VariableType <- list()
   ParamNumber <- list()
   ParamType <- list()
-    for (i in seq_len(N))
-    {
-            VariableNumber[[i]] <- ReadInteger(myFile) # MAYBE: sequential count of terms in model
+    for (i in seq_len(N)) {
+      VariableNumber[[i]] <- ReadInteger(myFile)
     }
-    for (i in seq_len(N))
-    {
-            VariableType[[i]] <- ReadInteger(myFile) # 0 if implicit, 1 if explicit
+    for (i in seq_len(N)) {
+      VariableType[[i]] <- ReadInteger(myFile)
     }
-    for (i in seq_len(NP))
-    {
-            ParamNumber[[i]] <- ReadInteger(myFile) # param number in the model (0 offset)
+    for (i in seq_len(NP)) {
+      ParamNumber[[i]] <- ReadInteger(myFile)
     }
-    for (i in seq_len(NP))
-    {
-            ParamType[[i]] <- ReadInteger(myFile) # 0 if estimated, 1 if constrained
+    for (i in seq_len(NP)) {
+      ParamType[[i]] <- ReadInteger(myFile)
     }
-    Sign <- readChar(myFile, 1)
-    Label <- ReadString(myFile)
-  V <- list(VariableNumber,VariableType,ParamNumber,ParamType,Sign,Label)
-  names(V)<-c("VariableNumber","VariableType","ParamNumber","ParamType","Sign","Label")
-  return (V)
+  Sign <- readChar(myFile, 1)
+  if (cqs_version >= 26) Constraint <- ReadInteger(myFile)
+  Label <- ReadString(myFile)
+  V <- list(VariableNumber, VariableType, ParamNumber, ParamType, Sign, Label)
+  names(V) <- c("VariableNumber", "VariableType", "ParamNumber", "ParamType", "Sign", "Label")
+  if (cqs_version >= 26) {
+    V <- append(V, Constraint, (length(V) - 1))
+    names(V) <- c("VariableNumber", "VariableType", "ParamNumber", "ParamType", "Sign", "Constraint", "Label")
+  }
+  return(V)
 }
 
 #' @title ReadTermsList
 #' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
 #' @return A list
 #' @keywords internal
-ReadTermsList <- function(myFile)
+ReadTermsList <- function(myFile, cqs_version)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadTerms(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N)) {
+    Value[[i]] <- ReadTerms(myFile, cqs_version)
+  }
+  return(Value)
 }
 
 #' @title ReadVarInfo

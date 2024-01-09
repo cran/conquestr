@@ -4,23 +4,51 @@
 \alias{plotCqHist}
 \title{plotCqHist}
 \usage{
-plotCqHist(myHist, centre = TRUE, params = c("all"), legend = FALSE)
+plotCqHist(
+  myHist,
+  centre = TRUE,
+  params = c("all"),
+  legend = FALSE,
+  plotProblems = NULL
+)
 }
 \arguments{
 \item{myHist}{an R object created by the \code{getCqHist} function.}
 
 \item{centre}{a Boolean representing whether the iteration history should be mean centred (within parameter).
-This is helpful for plots that include all parameters to ensure the Y axis is sensible. Consider a plot with raw values of the Likelihood \emph{and} item parameters on it.}
+This is helpful for plots that include all parameters to ensure the Y axis is sensible.
+Consider, for example, the readability of a plot with raw values of the Likelihood \emph{and} item parameters on it.}
 
-\item{params}{A vector of which params to plot. Must be one or more of "all", "Likelihood", "Beta", Variance", "Xsi", "Tau".}
+\item{params}{A string of which params to plot.
+Must be one or more of "all", "Likelihood", "Beta", Variance", "Xsi", "Tau".
+Note the match when using "Beta", Variance", "Xsi", "Tau" is by regular expression,
+so "Xsi1" will plot item location parameter 1, 10-19, 100-199 and so on.}
 
-\item{legend}{Should a legend be plotted?.}
+\item{legend}{Should a legend be plotted?}
+
+\item{plotProblems}{an optional list defining which potential problem parameters to plot.
+\itemize{
+\item Iters: The first element of the list is an integer defining how many of the final iterations
+to consider (e.g., identify parameters that are moving the most over the final 20 iterations).
+if NA, the default is to consider the last 10\% of iterations.
+\item Magnitude: The second element of the list is number indicating the magnitude of change over the last
+n iterations. if NA, and \emph{Type} is "relative", defaults to 30 times the largest change at the final iteration.
+if NA, and \emph{Type} is "absolute", defaults to 0.05 logits.
+\item Type: The third element of the list is a string, either "relative" or "absolute":
+\itemize{
+\item "relative" indicates that \emph{Magnitude} is the multiple of the change between the final
+iteration and the second-to-last iteration that indicates a potential problem.
+\item "absolute" indicates that \emph{Magnitude} refers to change between the the final
+iteration and the value in \emph{Iters} that indicates a potential problem.
+}
+}}
 }
 \value{
 A ggplot2 object.
 }
 \description{
-generates a plot from a history object. Use \code{getCqHist} to create a history object from an 'ACER ConQuest' system file.
+generates a plot from a history object.
+Use \code{getCqHist} to create a history object from an 'ACER ConQuest' system file.
 }
 \examples{
 \dontrun{

@@ -4,47 +4,165 @@
 
 #' @title plotCqHist
 #'
-#' @description generates a plot from a history object. Use `getCqHist` to create a history object from an 'ACER ConQuest' system file.
+#' @description generates a plot from a history object.
+#' Use `getCqHist` to create a history object from an 'ACER ConQuest' system file.
 #'
 #' @param myHist an R object created by the `getCqHist` function.
 #' @param centre a Boolean representing whether the iteration history should be mean centred (within parameter).
-#'     This is helpful for plots that include all parameters to ensure the Y axis is sensible. Consider a plot with raw values of the Likelihood _and_ item parameters on it.
-#' @param params A vector of which params to plot. Must be one or more of "all", "Likelihood", "Beta", Variance", "Xsi", "Tau".
-#' @param legend Should a legend be plotted?.
+#'   This is helpful for plots that include all parameters to ensure the Y axis is sensible.
+#'   Consider, for example, the readability of a plot with raw values of the Likelihood _and_ item parameters on it.
+#' @param params A string of which params to plot.
+#'   Must be one or more of "all", "Likelihood", "Beta", Variance", "Xsi", "Tau".
+#'   Note the match when using "Beta", Variance", "Xsi", "Tau" is by regular expression,
+#'   so "Xsi1" will plot item location parameter 1, 10-19, 100-199 and so on.
+#' @param legend Should a legend be plotted?
+#' @param plotProblems an optional list defining which potential problem parameters to plot.
+#'
+#'   - Iters: The first element of the list is an integer defining how many of the final iterations
+#'     to consider (e.g., identify parameters that are moving the most over the final 20 iterations).
+#'     if NA, the default is to consider the last 10% of iterations.
+#'   - Magnitude: The second element of the list is number indicating the magnitude of change over the last
+#'     n iterations. if NA, and _Type_ is "relative", defaults to 30 times the largest change at the final iteration.
+#'     if NA, and _Type_ is "absolute", defaults to 0.05 logits.
+#'   - Type: The third element of the list is a string, either "relative" or "absolute":
+#'     -  "relative" indicates that _Magnitude_ is the multiple of the change between the final
+#'        iteration and the second-to-last iteration that indicates a potential problem.
+#'     - "absolute" indicates that _Magnitude_ refers to change between the the final
+#'        iteration and the value in _Iters_ that indicates a potential problem.
 #' @return A ggplot2 object.
 #' @examples
 #' \dontrun{
 #' myHistPlot <- plotCqHist(getCqHist(ConQuestSys()))
 #' }
-#' @importFrom magrittr %>%
 #' @importFrom tidyr pivot_longer
 #' @importFrom dplyr mutate group_by matches
-plotCqHist <- function(myHist, centre = TRUE, params = c("all"), legend = FALSE) {
+plotCqHist <- function(myHist, centre = TRUE, params = c("all"), legend = FALSE, plotProblems = NULL) {
+  myDebug <- FALSE
+  # remove cols that all NA
+  myHist <- myHist[ , !is.na(colSums(myHist))]
+  # there is no iter column in object returned from getCqChain
+  if (!"Iter" %in% names(myHist)) myHist$Iter <- seq_along(myHist[ , 1])
 
   if ("all" %in% params) {
-    myParams <- "Likelihood|Beta|Variance|Xsi|Tau"
+    # note myParams is index of names vector, NOT string
+    myParams <- grep("^Likelihood|^Beta|^Variance|^Xsi|^Tau", names(myHist))
   } else {
-    myParams = params
+    myParams <- grep(paste0("^", params), names(myHist))
+    if (length(myParams) < 1) {
+      stop(paste0("could not find and model parameters matching the regular expression, ", params))
+    }
+  }
+  myParams_string <- names(myHist)[myParams]
+  if (myDebug) {
+    print("myParams_string: ")
+    print(myParams_string)
   }
 
-  if (!"Iter" %in% names(myHist)) myHist$Iter <- 1:length(myHist[ , 1]) # there is no iter column in object returned from getCqChain
+  if (!is.null(plotProblems)) {
+    # catch errors
+    if (length(plotProblems) != 3) stop("plotProblems must be of length three")
+    if (!is.integer(plotProblems[[1]])) stop("plotProblems[[1]], 'Iters', must be an integer")
+    if (!is.numeric(plotProblems[[2]])) stop("plotProblems[[2]], 'Magnitude', must be a number")
+    if (!is.character(plotProblems[[3]])) stop("plotProblems[[3]], 'Type', must be either 'relative', or 'absolute'")
 
-  myHist_L <- myHist %>%
+    lastRunNo <- max(myHist$RunNo)
+    lastIter <- max(myHist$Iter)
+
+    if (is.na(plotProblems[[1]])) {
+      # get the last 10% of iters
+      firstIter <- lastIter - ceiling(max(myHist$Iter) / 100 * 10)
+      } else {
+      if (plotProblems[[1]] > max(myHist[, 2])) plotProblems[[1]] <- max(myHist[, 2])
+      firstIter <- plotProblems[[1]]
+      }
+
+    if (plotProblems[[3]] == "relative") {
+      # over all included params, collect largest change at final iter
+      largestChange <- {
+        max(
+          abs(
+            myHist[myHist$Iter == lastIter, myParams] -
+             myHist[myHist$Iter == (lastIter - 1), myParams]
+          )
+        )
+      }
+      if (is.na(plotProblems[[2]])) {
+        tmpCriteria <- largestChange * 30
+      } else  {
+        tmpCriteria <- largestChange * plotProblems[[2]]
+      }
+    } else if (plotProblems[[3]] == "absolute") {
+      if (is.na(plotProblems[[2]])) {
+        tmpCriteria <- 0.05
+      } else  {
+        tmpCriteria <- plotProblems[[2]]
+      }
+    }
+    # update myParams based on tmpCriteria over span from firstIter to lastIter
+    # which rows in myHist
+    tmpWhichLastRow <- myHist[myHist$Iter == lastIter & myHist$RunNo == lastRunNo, grep("^Iter", names(myHist))]
+    tmpWhichFirstRow <- myHist[myHist$Iter == firstIter & myHist$RunNo == lastRunNo, grep("^Iter", names(myHist))]
+    if (myDebug) {
+      print("Last row in history: ")
+      print(tmpWhichLastRow)
+      print("Comparison row in history: ")
+      print(tmpWhichFirstRow)
+      print("myParams before reducing to problems: ")
+      print(myParams_string)
+    }
+
+    t_diff <- abs((myHist[myHist$Iter == tmpWhichLastRow, ]) - (myHist[myHist$Iter == tmpWhichFirstRow, ]))
+    t_names <- names(myHist)[t_diff > tmpCriteria]
+    t_names_str <- paste0("^", paste0(t_names, collapse = "|^"))
+    t_problems <- grep(t_names_str, names(myHist))
+    whichParams <- myParams[myParams %in% t_problems]
+
+    if (myDebug) {
+      print("difference between last row and comparator row for all columns in history, t_diff: ")
+      print(t_diff)
+      print("which differences are bigger than the criteria for all columns in history, t_names: ")
+      print(t_names)
+      print("index of names of columns from above, t_names_str: ")
+      print(t_names_str)
+      print("string of index of column names from above, t_problems: ")
+      print(t_problems)
+    }
+    if (length(whichParams) == 0) {
+      warning("criteria in plotProblems found 0 potential issues, plotting all params instead.")
+    } else {
+      myParams <- whichParams
+      myParams_string <- names(myHist)[myParams]
+    }
+    if (myDebug) {
+      print("myParams after reducing to problems: ")
+      print(myParams_string)
+      print(paste0("tmpCriteria: ", tmpCriteria))
+    }
+  }
+
+  # need "RunNo", "Iter" plus myParams_string for plot
+  t_index <- grep("^RunNo|^Iter", names(myHist))
+  t_index_1 <- c(t_index, myParams)
+  myHist <- myHist[ , t_index_1]
+
+  myHist_L <- {
+    myHist |>
     pivot_longer(
-      cols = matches(myParams),
+      cols = matches(myParams_string),
       names_to = "param",
       values_to = "estimate"
     )
-
+  }
   yAxisLabel <- "Estimate"
   if (centre) {
-    myHist_L <- myHist_L %>%
-      group_by(.data$param)  %>%
+    yAxisLabel <- "Mean-centred estimate"
+    myHist_L <- {
+      myHist_L |>
+      group_by(.data$param)  |>
       mutate(
         estimate = scale(.data$estimate)
-    )
-
-    yAxisLabel <- "Mean-centred estimate"
+      )
+    }
   }
 
   if (legend) {
@@ -57,18 +175,21 @@ plotCqHist <- function(myHist, centre = TRUE, params = c("all"), legend = FALSE)
     ggplot2::geom_line(size = 0.5) +
     ggplot2::theme_bw() +
     ggplot2::labs(x = "Iteration", y = yAxisLabel, colour = "Parameter") +
-    ggplot2::theme(legend.position=LegendPos)
+    ggplot2::theme(legend.position = LegendPos)
 
   return(myHistPlot)
 }
 
 #' @title plotDif
 #'
-#' @description Creates a plot (ggplot2 object) of item parameter estimates common to two system files (e.g., a DIF analysis).
+#' @description Creates a plot (ggplot2 object) of item parameter estimates common to two system files
+#'   (e.g., a DIF analysis).
 #'
 #' @param mySysToItemDifDf An R object of class data frame returned from conquestr::sysToItemDifDf
-#' @param myScale A string specifying if the item parameter estimates displayed should be "centred" (default), "scaled" (z scores), or "none" (raw).
-#' @param mySuffixes a vector of strings specifying the names for the two groups being analysed, e.g., if the two system files are an analysis of boys and girls, the vector may be `c(_male", "_female")`.
+#' @param myScale A string specifying if the item parameter estimates displayed should be "centred" (default),
+#'   "scaled" (z scores), or "none" (raw).
+#' @param mySuffixes a vector of strings specifying the names for the two groups being analysed,
+#'   e.g., if the two system files are an analysis of boys and girls, the vector may be `c(_male", "_female")`.
 #' @return A ggplot2 object.
 #' @seealso conquestr::sysToItemDifDf()
 #' @examples
@@ -83,11 +204,22 @@ plotCqHist <- function(myHist, centre = TRUE, params = c("all"), legend = FALSE)
 #' }
 plotDif <- function(mySysToItemDifDf, myScale = "centred", mySuffixes) {
   myScaleVal <- ifelse(myScale == "none", "", ifelse(myScale == "centred", "C", "Z"))
-  myPlot <- ggplot2::ggplot(mySysToItemDifDf, ggplot2::aes(x = eval(parse(text = paste0("xsi", myScaleVal, mySuffixes[1]))), y = eval(parse(text = paste0("xsi", myScaleVal, mySuffixes[2]))))) +
+  myPlot <- ggplot2::ggplot(
+      mySysToItemDifDf,
+      ggplot2::aes(
+        x = eval(parse(text = paste0("xsi", myScaleVal, mySuffixes[1]))),
+        y = eval(parse(text = paste0("xsi", myScaleVal, mySuffixes[2])))
+      )
+    ) +
     ggplot2::geom_point(ggplot2::aes(size = .data$myZedTest)) +
     ggplot2::theme_bw() +
     ggplot2::geom_abline(intercept = 0, slope = 1) +
-    ggrepel::geom_text_repel(ggplot2::aes(label=ifelse(.data$myZedTest>1.96,as.character(.data$label),'')), box.padding = 0.5) +
+    ggrepel::geom_text_repel(
+      ggplot2::aes(
+        label = ifelse(.data$myZedTest > 1.96, as.character(.data$label), '')
+      ),
+      box.padding = 0.5
+    ) +
     ggplot2::coord_cartesian(xlim = c(-5, 5), ylim = c(-5, 5)) +
     ggplot2::labs(x = paste0("xsi", myScaleVal, mySuffixes[1]), y = paste0("xsi", myScaleVal, mySuffixes[2]))
   return(myPlot)
@@ -95,11 +227,14 @@ plotDif <- function(mySysToItemDifDf, myScale = "centred", mySuffixes) {
 
 #' @title sysToItemDifDf
 #'
-#' @description Creates a data frame that includes the common item parameter estimates from two (or more) system files (e.g., a DIF analysis).
+#' @description Creates a data frame that includes the common item parameter estimates from two (or more)
+#'   system files (e.g., a DIF analysis).
 #'
 #' @param listOfSysFiles A list of system files returned from conquestr::ConQuestSys
-#' @param mySuffixes a vector of strings specifying the names for the two groups being analysed, e.g., if the two system files are an analysis of boys and girls, the vector may be `c(_male", "_female")`.
-#' @param myDims A string specifying if all or specific dimensions should be included. The default is "all", Specific dimensions are specified by the label "D1" for dimensions 1 etc.
+#' @param mySuffixes a vector of strings specifying the names for the two groups being analysed,
+#'   e.g., if the two system files are an analysis of boys and girls, the vector may be `c(_male", "_female")`.
+#' @param myDims A string specifying if all or specific dimensions should be included. The default is
+#'   "all", Specific dimensions are specified by the label "D1" for dimensions 1 etc.
 #' @return A data frame object.
 #' @seealso conquestr::plotDif ()
 sysToItemDifDf <- function(listOfSysFiles, mySuffixes, myDims = "all") {
@@ -149,8 +284,8 @@ sysToItems <- function(mySys, myDims) {
 
 #' @title ItemDfStdZ
 #'
-#' @description Calculates centred and scaled item parameter estimates. 
-#'   Also calculates standardised standard errors of item parameter estimates 
+#' @description Calculates centred and scaled item parameter estimates.
+#'   Also calculates standardised standard errors of item parameter estimates
 #'   to complement scaled item parameter estimates.
 #'
 #' @param myDf a data frame.
@@ -171,12 +306,12 @@ ItemDfStdZ <- function(myDf) {
 
 #' @title ItemDfStdZMerge
 #'
-#' @description Calculates Z test on the common items from 2 data frames 
+#' @description Calculates Z test on the common items from 2 data frames
 #'   returned from `conquestr::ItemDfStdZ`.
 #'
 #' @param myDf1 a data frame.
 #' @param myDf2 a data frame.
-#' @param mySuffixes a vector of strings specifying the names for the two 
+#' @param mySuffixes a vector of strings specifying the names for the two
 #'   groups being analysed, e.g., if the two system files are an analysis of boys and girls, the vector may be `c(_male", "_female")`.
 #' @return a data frame.
 #' @keywords internal
@@ -208,9 +343,9 @@ ItemDfStdZMerge <- function(myDf1, myDf2, mySuffixes) {
 #'   categories to items and dimensions. Returns long data frame, where items are
 #'   duplicated if they are in many dimensions.
 #'
-#' @param mySys An R object of class ConQuestSys, 
+#' @param mySys An R object of class ConQuestSys,
 #'   returned by the function conquestr::ConQuestSys
-#' @param applyLabels A bool indicating whether labels 
+#' @param applyLabels A bool indicating whether labels
 #'   (e.g., dimension labels) should be appended.
 #' @return A data frame containing R the labelled B matrix.
 #' @examples
@@ -241,7 +376,7 @@ sysToBMatrixDf <- function(mySys, applyLabels = TRUE) {
     names(myTempDf)<- paste0(names(myTempDf), "_", myDimLabs$Label)
     myItemLabs <- sysToItemLabels(mySys, myWarn = FALSE)
     # this expands the DF of item labels by each element in gItemSteps
-    myItemLabsExp <- myItemLabs[rep(seq_len(nrow(myItemLabs)), unlist(mySys$gItemSteps)), ] 
+    myItemLabsExp <- myItemLabs[rep(seq_len(nrow(myItemLabs)), unlist(mySys$gItemSteps)), ]
     myTempDf$ItemCode <- as.numeric(as.character(myItemLabsExp$Code))
     for (i in seq(unlist(mySys$gItemSteps))) {
       tmpList[[i]] <- seq(unlist(mySys$gItemSteps)[i])
@@ -338,12 +473,12 @@ sysToItemLabels <- function(mySys, myWarn = TRUE) {
 #'   the conquestr::ConQuestSys function.
 #' @param myDims A string specifying which specific dimensions should be
 #'   included. The default is "D1", Specific dimensions are specified by
-#'   the label "D1" for dimensions 1 etc. 
+#'   the label "D1" for dimensions 1 etc.
 #' @param ginLabs A string specifying whether short or long gin labels should
 #'   be used. Default to "short".
-#' @param abilityType What kind of person ability estimate should be used? 
+#' @param abilityType What kind of person ability estimate should be used?
 #'   Defaults to plausible values. Alternatively WLE, MLE, EAP.
-#' @param ... Optional arguments, mostly for debugging, e.g., `setDebug = TRUE` 
+#' @param ... Optional arguments, mostly for debugging, e.g., `setDebug = TRUE`
 #'   will print temporary data frames.
 #'
 #' @return A ggplot2 object.
@@ -380,7 +515,7 @@ plotItemMap <- function(mySys, myDims = "D1", ginLabs = "short", abilityType = "
   if (abilityType == "PV") {
     if (!mySys$gPlausibleExist) {
       stop(
-        "You must have generated PVs in ConQuest to plot, 
+        "You must have generated PVs in ConQuest to plot,
         try, `estimate ! ...abilities = yes ...;`"
       )
     }
@@ -389,7 +524,7 @@ plotItemMap <- function(mySys, myDims = "D1", ginLabs = "short", abilityType = "
   if (abilityType == "EAP") {
     if (!mySys$gEAPExist) {
       stop(
-        "You must have generated EAPs in ConQuest to plot, try, 
+        "You must have generated EAPs in ConQuest to plot, try,
         `estimate ! ...abilities = yes ...;`"
       )
     }
@@ -399,7 +534,7 @@ plotItemMap <- function(mySys, myDims = "D1", ginLabs = "short", abilityType = "
   {
     if (!mySys$gWLEExist) {
       stop(
-        "You must have generated WLEs in ConQuest to plot, try, 
+        "You must have generated WLEs in ConQuest to plot, try,
         `estimate ! ...abilities = yes ...;`"
       )
     }
@@ -457,7 +592,7 @@ plotItemMap <- function(mySys, myDims = "D1", ginLabs = "short", abilityType = "
     ) +
     ggplot2::labs(x = "", y = "") +
     ggplot2::scale_y_continuous(breaks = NULL) +
-    ggplot2::coord_flip(ylim = c(-0.2, NA)) + 
+    ggplot2::coord_flip(ylim = c(-0.2, NA)) +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
 
   return(myPlot)
@@ -465,21 +600,29 @@ plotItemMap <- function(mySys, myDims = "D1", ginLabs = "short", abilityType = "
 
 
 
-#' @title plotMCC
+#' @title plotCCC
 #'
-#' @description Creates a plot of an item characteristic curve (by response category). For a dichotomous item, this will
-#'     yield a single curve, for polytomous items this will produce a curve for each response category.
-#'     Note this is not for use with `rout` files. See the generic function `plotRout` for plotting rout files.
+#' @description Creates a plot of an item characteristic curve (by response category).
+#'   For a dichotomous item, this will yield a single curve, for polytomous items this
+#'   will produce a curve for each response category.
+#'   Note this is not for use with `rout` files. See the generic function `plotRout` for plotting rout files.
 #'
-#' @param item Item parameters for a single item.
-#' @param data Two vectors of data in an _n_ by 2 matrix or data frame, where _n_ are the cases in your analysis.
-#'     The first vector should be item responses. the second vector should be estimated person abilities.
-#' @param range Lower and upper bounds to plot over (defaults to c(-6, 6) OR the 
-#'   minimum and maximum estimated ability, whichever is larger).
-#' @param e_linetype A string. Should the empirical lines be based on "bins", or "regression". Defaults to "bins"
-#' @param bins If _e\_linetype_ is "bins", how many bins should be used to chunk the empirical lines?
-#'     defaults to 6. Ignored otherwise.
+#' @param item A matrix of item parameters for a single item. Matrix should be of
+#'   the form used in `simplef`
+#' @param abilities A vector of doubles  estimated person abilities.
+#' @param responses A vector of integers giving the observed person responses to this item.
+#' @param weights A vector of doubles of sampling weights.
+#' @param groups A factor vector indicating groups.
+#' @param range Lower and upper bounds to plot over (defaults to `c(-6, 6)`).
+#' @param by A double. The increment to the sequence along `range` used to plot the model lines.
+#' @param linetype A string. Should the empirical lines be based on "bins", or "regression". Defaults to "bins"
+#' @param bins If _linetype_ is "bins", how many bins should be used to chunk the empirical lines?
+#'     defaults to 10. Ignored otherwise.
+#' @param plotZero Should the zero category be plotted?
+#'   Defaults to `FALSE` when item is dichotomous and `TRUE` otherwise.
 #' @return A ggplot2 object.
+#' @importFrom ggplot2 ggplot aes geom_line geom_point theme_bw ggplot_build labs guides guide_legend
+#' @importFrom stats complete.cases loess weighted.mean
 #' @examples
 #' myRout <- ConQuestRout()
 #' myPlot <- plotRout(myRout)
@@ -487,19 +630,285 @@ plotItemMap <- function(mySys, myDims = "D1", ginLabs = "short", abilityType = "
 #' # if you run the above example you will have an ICC plot in the object `myPlot`.
 #' plot(myPlot)
 #' }
-plotMCC <- function(item, data, range = c(-6, 6), e_linetype = "bins", bins = 6) {
+plotCCC <- function(
+    item, abilities, responses, weights = NULL, groups = NULL,
+    range = c(-6, 6), by = 0.1, linetype = "bins", bins = 10,
+    plotZero
+) {
+
+  isDebug <- FALSE
+
   # check inputs are okay
-
-  # update range if needed
-
-  # create data for model lines
-  myProbsL <- list()
-  range_s <- seq(range, by = 0.1)
-  for (i in seq(range_s)) {
-    myProbsL[[i]] <- simplep(range_s[i], item)
+  if (missing(plotZero)) {
+    if (length(item[, 1]) == 2) {
+      plotZero <- FALSE
+    } else {
+      plotZero <- TRUE
+    }
   }
-  myProbs <- (matrix(unlist(myProbsL), ncol = length(item[ , 1]), byrow = TRUE))
 
+  if (is.null(groups)) {
+    isGroups <- FALSE
+  } else {
+    isGroups <- TRUE # used in building ggplot object
+  }
+  if (is.null(weights)) weights <- rep(1, length(abilities))
+  if (is.null(groups)) groups <- factor(rep(1, length(abilities)))
+  if (
+    (length(abilities) != length(responses)) &&
+    (length(abilities) != length(groups)) &&
+    (length(abilities) != length(weights))
+  ) {
+    stop("abilities, responses, groups, and weights (if used) must be of equal length")
+  }
+  if(any(weights < 0)) stop("weights must be non-negative")
+
+  # how many missing responses and abilities?
+  NMissResp <- sum(is.na(responses))
+  NMissAbility <- sum(is.na(abilities))
+  NMissWeights <- sum(is.na(weights))
+  NMissGroups <- sum(is.na(groups))
+
+  # create data for empirical lines
+    # one series per group
+    # when linetype == "bins" for each group, there are b `bins` and for each bin there are k cats
+    # when linetype == "regress" ...?
+  if (linetype == "bins" || linetype == "regression") {
+    weightedN <- sum(weights)
+    casesInBins <- weightedN/bins # take every "casesInBins" value of ordered abilities
+    myData <- data.frame(
+      abilities = abilities,
+      responses = responses,
+      weights = weights,
+      groups = groups,
+      expectedP = NA
+    )
+
+    for (i in seq(myData$abilities)) {
+      # select the expected probability associated with the response
+      tmpExpP <- simplep(theta = myData$abilities[i], item = item)
+      thisResp <- myData$responses[i]
+      tmpExpP_resp <- tmpExpP[(thisResp+1)] # e.g., the response 0 is the first elelemt in tmpExpP
+      myData$expectedP[i] <- tmpExpP_resp
+    }
+
+    myData <- myData[complete.cases(myData), ]
+    if (isDebug) print("myData after complete cases: ")
+    if (isDebug) print(str(myData))
+
+    # order data, calc cumulative sum of weights, then workout cut points for quantiles
+    myData <- myData[order(myData$abilities) , ]
+    myData$cumSumWeight <- cumsum(myData$weights)
+    myData$bin <- NA
+    sumWt <- 0
+    thisBin <- 1
+    for (i in seq(myData$weights)) {
+      if (thisBin > bins) break
+      myData$bin[i] <- thisBin
+      sumWt <- sumWt + myData$weights[i]
+      if (sumWt > thisBin * casesInBins) thisBin <- thisBin + 1
+    }
+    myData$bin <- factor(myData$bin)
+
+    # one set of summary data per group
+    summaryDataL <- list()
+    for(g in seq(unique(myData$group))) {
+      thisGroup <- unique(myData$group)[g]
+      tData <- myData[myData$groups == thisGroup, ]
+      mySummaryData <- data.frame(
+        # this data frame is 1 row per response cat, per bin
+        bin = rep(unique(myData$bin), length(item[ , 1])),
+        cat = rep(item[ , 1], each = bins),
+        itemSampleSize = NA, # sum of weights for all cases in the item
+        avgAbility = NA, # avg ability of cases in this bin, in this resp cat
+        categorySampleSize = NA, # sum of the weights for the cat, for th group
+        avgExpP = NA, # average expected P for this category
+        avgObsProp = NA, #observed proportion of cases in this cetegory
+        group = unique(myData$group)[g] # when we collapse the list to 1 DF, this is the series indicator
+      )
+      # if (isDebug) print("mySummaryData after group")
+      # if (isDebug) print(mySummaryData)
+      for (b in seq(unique(myData$bin))) {
+        # subset myData for bin b - note that myData$bin is a factor
+        thisBin <- unique(myData$bin)[b]
+        tData_bin <- tData[tData$bin == thisBin, ]
+        # indices of rows and cols to be updated in mySummaryData[[g]] based on subset of raw data, tData_bin
+        whichRows <- (mySummaryData$bin == thisBin)
+        whichCol1 <- grep("itemSampleSize", names(mySummaryData))
+        whichCol2 <- grep("categorySampleSize", names(mySummaryData))
+        whichCol3 <- grep("avgAbility", names(mySummaryData))
+        whichCol4 <- grep("avgExpP", names(mySummaryData))
+        whichCol5 <- grep("avgObsProp", names(mySummaryData))
+        # update values based on this bin (ind of cat)
+        # if no cases in this bin for this group, skip
+        tSum <- sum(tData_bin$weights)
+        if (!is.na(tSum)) {
+          mySummaryData[whichRows , whichCol1] <-  tSum # itemSampleSize
+          mySummaryData[whichRows , whichCol3] <- weighted.mean(tData_bin$abilities, tData_bin$weights) # avgAbility (x coord for this bin)
+          #if (isDebug) print(paste0("mySummaryData after bin, ", b))
+          #if (isDebug) print(mySummaryData)
+          # now work over cats
+          # i'm a little worried about this - there is a chance there are unidentified response cats within the group
+          for (k in seq(unique(tData_bin$responses))) {
+            thisK <- unique(tData_bin$responses)[k]
+            tData_cat <- tData_bin[tData_bin$responses == thisK , ]
+            whichRows_sub <- (mySummaryData$bin == thisBin & mySummaryData$cat == thisK)
+            tSum_sub <- sum(tData_cat$weights)
+            # if no cases for this cat in this bin for this group, skip
+            if (!is.na(tSum_sub)) {
+              mySummaryData[whichRows_sub , whichCol2] <- tSum_sub # cat sample size
+              mySummaryData[whichRows_sub , whichCol4] <- weighted.mean(tData_cat$expectedP, tData_cat$weights) # avgExpectedP for this cat
+              mySummaryData[whichRows_sub , whichCol5] <- tSum_sub/tSum # avgExpectedP for this cat
+              #if (isDebug) print(paste0("mySummaryData after cat, ", k))
+              #if (isDebug) print(mySummaryData)
+            }
+          }
+        }
+      }
+      summaryDataL[[g]] <- mySummaryData
+    }
+
+    summaryData <- do.call(rbind.data.frame, summaryDataL)
+
+    # if not plotzero, chuck out the data for the zero cat
+    if (!plotZero) summaryData <- summaryData[summaryData$cat > 0 , ]
+
+    if (isDebug) {
+      # print(summaryData)
+      message("object `tmpSummaryData` created in global env")
+      .GlobalEnv$tmpSummaryData <- summaryData
+    }
+
+  } else { # end if linetype == "bins"
+    stop("linetype must be regression or bins")
+  }
+  # create plot
+  modelPlot <- plotModelCCC(item = item, range = range, by = by, plotZero = plotZero)
+  # get plot info to extract colours etc
+  g <- ggplot_build(modelPlot)
+  tCols <- unique(g$data[[1]]$colour)
+  myLineCols <- list()
+  for (i in seq(summaryData$cat)) {
+    thisCat <- summaryData$cat[i]
+    if(plotZero) thisCat <- thisCat + 1
+    myLineCols[[i]] <- tCols[(thisCat)]
+  }
+  summaryData$lineCols <- unlist(myLineCols)
+
+  modelPlot <- modelPlot + labs(colour = "Response \nCategory")
+
+  # add empirical points
+  # helper functions below
+
+  modelPlot <- modelPlot +
+    geom_point(
+      data = summaryData,
+      aes(
+        x = .data$avgAbility, y = .data$avgObsProp,
+        shape = .data$group
+      ),
+      colour = summaryData$lineCols, alpha = 0.4
+    ) +
+    guide_remove_groups(isGroups)
+
+  tmpLine <- linetype
+  modelPlot <- modelPlot +
+    geom_line_or_smooth(thisData = summaryData, thisLinetype = tmpLine) +
+    guide_remove_linetype(isGroups)
+  # add count of missing responses to plot?
+
+  return(modelPlot)
+}
+
+#' @title guide_remove_groups
+#'
+#' @description helper functions for ggplot - conditionally creates call to
+#'   `ggplot2::guides` to remove legends that involve groups when there is 
+#'   no groups in the call to `conquestr::plotCCC()`
+#'
+#' @param groups A bool indicating if there is groups in the call to `conquestr::plotCCC()`.
+#' @return a list with a function call to `ggplot2::guides`.
+#' @keywords internal
+#' @examples
+#' myExample <- guide_remove_groups(TRUE)
+guide_remove_groups <- function(groups = TRUE) {
+  # now this function is outside of `conquestr::plotCCC()` consider
+  # passing in ggplot2 object to then be returned.
+  return(
+    list(
+      if (groups) guides(shape = guide_legend("Group")),
+      if (!groups) guides(shape = "none")
+    )
+  )
+}
+
+#' @title guide_remove_linetype
+#'
+#' @description helper functions for ggplot - conditionally creates call to
+#'   `ggplot2::guides` to remove legends that involve groups when there is 
+#'   no groups in the call to `conquestr::plotCCC()`
+#'
+#' @param groups A bool indicating if there is groups in the call to `conquestr::plotCCC()`.
+#' @return a list with a call to `ggplot2::guides`.
+#' @keywords internal
+#' @examples
+#' myExample <- guide_remove_linetype(TRUE)
+guide_remove_linetype <- function(groups = TRUE) {
+  # now this function is outside of `conquestr::plotCCC()` consider
+  # passing in ggplot2 object to then be returned.
+  return(
+    list(
+      if (groups) guides(linetype = guide_legend("Group")),
+      if (!groups) guides(linetype = "none")
+    )
+  )
+}
+
+#' @title geom_line_or_smooth
+#'
+#' @description helper functions for ggplot - conditionally creates call to
+#'   `ggplot2::geom_smooth` depending on the option linetype in the call to `conquestr::plotCCC()`
+#' 
+#' @param thisData the data frame being worked on in the call to `conquestr::plotCCC()`
+#' @param thisLinetype a string, either "bins" or "regression" set in the call to `conquestr::plotCCC()`
+#' @return a list with a function call to `ggplot2::geom_line`.
+#' @keywords internal
+#' @importFrom ggplot2 geom_smooth
+#' @examples
+#' myExample <- geom_line_or_smooth()
+geom_line_or_smooth <- function(thisData, thisLinetype) {
+  if(missing(thisLinetype)) {
+    # this is to handle R CMD check NOTE: no visible binding for global variable...
+    summaryData <- avgAbility <- avgObsProp <- group <- NULL
+    return(list())
+  } 
+  return(
+    list(
+      if (thisLinetype == "bins") {
+        geom_line(
+          data = thisData,
+          aes(
+            x = avgAbility, y = avgObsProp,
+            group = interaction(cat, group), linetype = group
+          ),
+          colour = thisData$lineCols, alpha = 0.4
+        )
+      },
+      if (thisLinetype == "regression") {
+        geom_smooth(
+          data = thisData,
+          method = loess, span = 10,
+          se = FALSE,
+          aes(
+            x = avgAbility, y = avgObsProp,
+            group = interaction(cat, group), linetype = group
+          ),
+          alpha = 0.4,
+          colour = thisData$lineCols, alpha = 0.4
+        )
+      }
+    )
+  )
 }
 
 #' @title plotModelCCC
@@ -510,7 +919,7 @@ plotMCC <- function(item, data, range = c(-6, 6), e_linetype = "bins", bins = 6)
 #' @param item Item parameters for a single item.
 #' @param range Lower and upper bounds to plot over (defaults to c(-6, 6).
 #' @param by Increment to the sequence along `range``.
-#' @param plotZero Should the zero category be plotted? 
+#' @param plotZero Should the zero category be plotted?
 #'   Defaults to `FALSE` when item is dichotomous and `TRUE` otherwise.
 #' @return A ggplot2 object.
 #' @importFrom ggplot2 ggplot aes geom_line theme_bw
@@ -552,7 +961,7 @@ plotModelCCC <- function(item, range = c(-6, 6), by = 0.1, plotZero) {
   )
   myProbsDf <- as.data.frame(myProbs)
   names(myProbsDf) <- paste0("cat_", seq(length(item[, 1])))
-    myProbsDf$Theta <- myThetaRange
+  myProbsDf$Theta <- myThetaRange
 
   myProbsDfL <- myProbsDf |> pivot_longer(
     cols = matches("^cat"),
@@ -570,11 +979,11 @@ plotModelCCC <- function(item, range = c(-6, 6), by = 0.1, plotZero) {
   myProbsDfL$Category <- factor(
     myProbsDfL$Category,
     levels = myMap$label[order(myMap$level)],
-    labels = c(seq(item[, 1]))
+    labels = c(item[, 1])
   )
 
   if (!plotZero) {
-    myProbsDfL <- myProbsDfL[myProbsDfL$Category != "1", ]
+    myProbsDfL <- myProbsDfL[myProbsDfL$Category != "0", ]
   }
 
   # could name or post-process categories here (to flag "key" etc)
@@ -583,7 +992,7 @@ plotModelCCC <- function(item, range = c(-6, 6), by = 0.1, plotZero) {
   myPlot <- ggplot(
     myProbsDfL,
     aes(x = .data$Theta, y = .data$Probability)
-  ) + 
+  ) +
   geom_line(aes(colour = .data$Category)) +
   theme_bw()
 
@@ -591,14 +1000,25 @@ plotModelCCC <- function(item, range = c(-6, 6), by = 0.1, plotZero) {
 
 }
 
-#' @title plotModelExp
+#' @title plotExpected
 #'
-#' @description Creates a plot of a model-implied expected score curve.
+#' @description Creates a plot of an item- or test- expected score curve.
+#'     If ability estimates are provided, both empirical and model curves are produced.
+#'     Can optionally handle weights and groups as required.
 #'     Note this is not for use with `rout` files. See the generic function `plotRout` for plotting rout files.
 #'
-#' @param items List of one or more matricies of item parameters.
+#' @param items a _list_ of one or more matrices of item parameters. Used in producing model-implied curves.
 #' @param range Lower and upper bounds to plot over (defaults to c(-6, 6).
-#' @param by Increment to the sequence along `range``.
+#'   Used in producing model-implied curves. For empirical curves a range is chosen given the
+#'   min and max values in abilities.
+#' @param by Increment to calculate expectation along `range`. Used in producing model-implied curves.
+#' @param bins A double. Optional. How many equally sized bins should abilities be broken up into?
+#'   Used in producing empirical curves. If not provided and abilities are provided, a suitable value is chosen
+#'   given the length of abilities.
+#' @param abilities A vector of doubles. Optional.
+#' @param weights A vector of doubles. Optional.
+#' @param group A vector of type factor. Optional.
+#' @param scale A Boolean. Whether plot should be scaled such that the Y-axis ranges from 0 to 1.
 #' @return A ggplot2 object.
 #' @importFrom ggplot2 ggplot aes geom_line theme_bw
 #' @examples
@@ -610,7 +1030,10 @@ plotModelCCC <- function(item, range = c(-6, 6), by = 0.1, plotZero) {
 #'   ncol = 4, byrow=TRUE
 #' )
 #' myPlot <- plotModelExp(list(myItem))
-plotModelExp <- function(items, range = c(-6, 6), by = 0.1) {
+plotModelExp <- function(
+  items, range = c(-6, 6), by = 0.1,
+  bins = NULL, abilities = NULL, weights = NULL, group = NULL, scale = FALSE
+) {
   # check inputs are okay
   if (!is.list(items) && ncol(items[[1]]) != 4) {
     stop(
@@ -644,7 +1067,7 @@ plotModelExp <- function(items, range = c(-6, 6), by = 0.1) {
   myPlot <- ggplot(
     myExpectedDf,
     aes(x = .data$Theta, y = .data$`Expected Score`)
-  ) + 
+  ) +
   geom_line() +
   theme_bw()
 

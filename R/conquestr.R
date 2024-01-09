@@ -2,10 +2,12 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
-#' @rawNamespace exportPattern("^[[:alpha:]]+") # this exports all functions that start with an alphanumeric charachter so that every function in the package is visible (otherwise need to manually add exports to NAMESPACE)
+# this exports all functions so that every function in the package is visible 
+#    (otherwise need to manually add exports to NAMESPACE)
+#' @rawNamespace exportPattern("^[[:alpha:]]+") 
 #' @rawNamespace if (.Platform$OS.type=="windows") importFrom(utils,shortPathName)
 
-packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5.29.5")
+packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5.33.2")
 
 # for vignette or default we can access files like this: system.file("extdata", "ex1.cqc", package = "conquestr")
 # consider using this in the future https://www.tidyverse.org/blog/2018/09/processx-3.2.0/
@@ -16,7 +18,7 @@ packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5
 #'
 #' @param cqc The location of the control file (syntax) to be run.
 #' @param cqExe The path to the 'ACER ConQuest' executable. Note, if this argument is missing, conquestr
-#'    will find a local installation of ACER ConQuest by first searching the default installtion locations
+#'    will find a local installation of ACER ConQuest by first searching the default installation locations
 #'    (Program Files on Windows and Applications on Mac) then searching other local directories (Appdata
 #'    and the HOME path).
 #' @param stdout On Mac only, can be toggled to NULL (or a connection) to suppress output to R console.

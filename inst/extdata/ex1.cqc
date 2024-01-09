@@ -20,6 +20,7 @@ labels 12 "item twelve"   ! item;
 
 estimate!abilities = yes,fit=yes,stderr=quick;
 itanal ! matrixout = itan;
+show ! matrixout = show;
 
 plot icc ! gins = 1, filetype = rout >> myicc.rout;
 

@@ -6,6 +6,7 @@
 #'     The put command must use the option `compressed = no`.
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #' @seealso conquestr::ConQuestSys()
+#' @importFrom utils str
 ReadSys <- function(myFile) {
   myDebug <- FALSE
   # requires functions in R/ReadConQuestLibrary.R
@@ -14,29 +15,37 @@ ReadSys <- function(myFile) {
   if (myDebug) print(paste0("Compressed: ", Compressed))
   # insert code to check that Compressed="uncompressed" if not we can't proceed
   if (!(Compressed == "uncompressed")) {
-    close(myFile)
+    # close(myFile) # dont need to close - this is done in trycatch in call to ConQuestSys
     stop(
-      "This system file is compressed and I dont know how to handle it, 
+      "This system file is compressed and I don't know how to handle it,
       use option '! compress = no' in ACER ConQuest"
     )
   }
 
   builddate <- ReadString(myFile)           # conquest build date
   writedate <- ReadString(myFile)           # file write date
-  version <- ReadInteger(myFile)            # system file version
-  if (myDebug) print(paste0("version: ", version))
-  if (!(version >= 23))
-  {
-    close(myFile)
+  cqs_version <- ReadInteger(myFile)            # system file version
+  if(myDebug) {
+    print("print length of cqs_version\n")
+    print(length(cqs_version))
+    print("print str of cqs_version\n")
+    print(str(cqs_version))
+    print("print cqs_version\n")
+    print(paste0("version: ", cqs_version))
+  }
+  if (!(cqs_version >= 25)) {
     stop(
-      "This system file is from an old version of ACER ConQuest 
-      and cannot be read. Either recreate your system file in a newer release of 
+      "This system file is from an old version of ACER ConQuest
+      and cannot be read. Either recreate your system file in a newer release of
       ACER ConQuest or install a legacy version of conquestr"
     )
   }
 
-  gNCases <- ReadIntegerList(myFile)
-  if (myDebug) print(paste0("gNCases: ", gNCases))
+  gNCases <- ReadDoubleList(myFile)
+  if (myDebug) {
+    print(paste0("gNCases: "))
+    print(gNCases)
+  }
   gNDim <- ReadInteger(myFile)
   gNGins <- ReadInteger(myFile)
   gNPlausiblesEstimate <- ReadInteger(myFile)
@@ -250,9 +259,10 @@ ReadSys <- function(myFile) {
   if (myDebug) print(paste0("check: ", check)) # check 5
 
   gDeriv2nd <- ReadMatrix(myFile)
-  gMLEReliability <- ReadMatrix(myFile)
-  gEAPReliability <- ReadMatrix(myFile)
-  gWLEReliability <- ReadMatrix(myFile)
+  gReliability <- ReadMatrixList(myFile)
+  #gMLEReliability <- ReadMatrix(myFile)
+  #gEAPReliability <- ReadMatrix(myFile)
+  #gWLEReliability <- ReadMatrix(myFile)
   gLogLike <- ReadDouble(myFile)
   gOldLogLike <- ReadDouble(myFile)
   gBestLogLike <- ReadDouble(myFile)
@@ -284,7 +294,7 @@ ReadSys <- function(myFile) {
   gKeys <- ReadKeyList(myFile)
   gLabels <- ReadLabelList(myFile)
   gImpValue <- ReadIntegerListList(myFile)
-  gTerms <- ReadTermsList(myFile)
+  gTerms <- ReadTermsList(myFile, cqs_version)
   gExplicit <- ReadLookUpList(myFile)
   gRecodes <- ReadIRecodeList(myFile)
   gScores <- ReadIRecodeList(myFile)
@@ -529,7 +539,7 @@ ReadSys <- function(myFile) {
     Compressed = Compressed,
     builddate = builddate,
     writedate = writedate,
-    version = version,
+    cqs_version = cqs_version,
     gNCases = gNCases,
     gNDim = gNDim,
     gNGins = gNGins,
@@ -648,9 +658,10 @@ ReadSys <- function(myFile) {
     gNReg = gNReg,
     # check 5
     gDeriv2nd = gDeriv2nd,
-    gMLEReliability = gMLEReliability,
-    gEAPReliability = gEAPReliability,
-    gWLEReliability = gWLEReliability,
+    gReliability = gReliability,
+    #gMLEReliability = gMLEReliability,
+    #gEAPReliability = gEAPReliability,
+    #gWLEReliability = gWLEReliability,
     gLogLike = gLogLike,
     gOldLogLike = gOldLogLike,
     gBestLogLike = gBestLogLike,

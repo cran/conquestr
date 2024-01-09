@@ -10,7 +10,7 @@ ConQuestCall(cqc, cqExe, stdout = "")
 \item{cqc}{The location of the control file (syntax) to be run.}
 
 \item{cqExe}{The path to the 'ACER ConQuest' executable. Note, if this argument is missing, conquestr
-will find a local installation of ACER ConQuest by first searching the default installtion locations
+will find a local installation of ACER ConQuest by first searching the default installation locations
 (Program Files on Windows and Applications on Mac) then searching other local directories (Appdata
 and the HOME path).}
 

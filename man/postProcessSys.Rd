@@ -7,7 +7,7 @@
 postProcessSys(sysFile)
 }
 \arguments{
-\item{myFile}{A list of class conQuestSysFile}
+\item{sysFile}{A list of class conQuestSysFile}
 }
 \value{
 A list containing the data objects created by 'ACER ConQuest'.

@@ -10,7 +10,7 @@ genItems(n, scores = NULL, deltadots, taus = NULL, discrims = 1)
 \item{n}{How many items?}
 
 \item{scores}{When NULL it is assumed that all items have
-integer scoring, increasing for each category k, and begining from 0.
+integer scoring, increasing for each category k, and beginning from 0.
 Otherwise a list where the elements are, in order:
 \itemize{
 \item a string naming a distribution function (for example \code{runif}, \code{rnorm}) to generate random deviates
@@ -18,7 +18,7 @@ from (the scores).
 \item a list of parameters to pass to the distribution function (for example, for \code{runif}, a list of
 length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
 the function.
-\item a boolean indicating whether the scores should be forced to be increasing accross the response
+\item a boolean indicating whether the scores should be forced to be increasing across the response
 categories.
 \item optionally a vector of item numbers to apply scores too. If not provided it is assumed that all items
 will be scored.
@@ -38,7 +38,7 @@ Otherwise a list where the elements are, in order:
 \itemize{
 \item a string naming a distribution function (for example \code{runif}, \code{rnorm}) to generate random deviates
 from (the taus).
-Or the string "manual" to indicate that a user-defined list of the tau paramters will be
+Or the string "manual" to indicate that a user-defined list of the tau parameters will be
 provided.
 \item a list of parameters to pass to the distribution function (for example, for \code{runif}, a list of
 length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
@@ -62,7 +62,7 @@ Otherwise a list where the elements are, in order:
 \itemize{
 \item a string naming a distribution function (for example \code{runif}, \code{rnorm}) to generate random deviates
 from (the discriminations).
-Or the string "manual" to indicate that a user-defined list of the discrimination paramters will be
+Or the string "manual" to indicate that a user-defined list of the discrimination parameters will be
 provided.
 \item a list of parameters to pass to the distribution function (for example, for \code{runif}, a list of
 length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
@@ -78,14 +78,14 @@ have unique discriminations.
 A list of item matrices.
 }
 \description{
-Generates a list of item parameter matrcies for use in
+Generates a list of item parameter matrices for use in
 function like \code{conquestr::genResponses} and \code{conquestr::informationWrightMap}
 }
 \examples{
   myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
   myItems <- list(myItem, myItem)
   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
-  myResponses <- genResponses(rnorm(100), myItems)
+  myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
 }
 \seealso{
 \code{\link[=simplef]{simplef()}}, \link{genResponses}, \code{browseVignettes("conquestr")}

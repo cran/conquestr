@@ -7,30 +7,34 @@ vignette: >
   %\VignetteIndexEntry{Generate item responses in conquestr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: vignettes.bib
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE
 )
 ```
 
 # Introduction
 
-Given a set of item parameters and a set of abilities, it is possible to simulate a set of item responses.
-
-Users can also impose a factor structure that maps items to specific dimensions, and impose various missing data structures.
-
-Users can also permute the discrimination of items to impose misfit on the simulated data.
+Given a set of item parameters and a set of abilities, `conquestr::genResponses`
+can be used to simulate a set of item responses. 
+Users can also impose a factor structure that maps items 
+to specific dimensions, impose missing data structures, and impose various kinds
+of misfit to the model implied by perturbations to the item parameters.
 
 # Example
 
-## Simple case: unidimensional structure with Rasch-like items
+## Unidimensional structure with Rasch-like items
 
-The item parameters for a simple item are represented as:
+The item parameters for a simple item are represented as matrix:
 
-```{r slmItem}
+```{r slmItem, fig.width=7, fig.height=6}
 library(conquestr)
 myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
 colnames(myItem) <- c("k", "d", "t", "a")
@@ -38,11 +42,13 @@ print(myItem)
 plotModelCCC(myItem)
 ```
 
-where `k` is the category score, `d` is the delta dot ($\dot{\delta}$), `t` is the tau, and `a` is the 
-discrimination parameter. By convention, the first row of the item matrix is zeros.
+where `k` is the category score, `d` is the delta dot ($\dot{\delta}$), 
+`t` is the tau, and `a` is the discrimination parameter. 
+By convention, the first row of the item matrix is zeros.
 
-items are stored in lists, and a list of items can be visualised as the 
-test characteristic curve which illustrates the expected raw score give an ability, theta ($\Theta$).
+Items are stored together in lists, and a list of items can be visualised as the 
+test characteristic curve which illustrates the expected raw score give an 
+ability, theta ($\Theta$).
 
 
 ```{r slmItemList}
@@ -51,32 +57,33 @@ myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
 print(plotModelExp(myItems))
 ```
 
-In the unidminsaional case, abilities are a simple vector of abilities (for example, EAPs):
+In the unidminsaional case, abilities are a vector of doubles:
 
 ```{r slmAbils}
 myAbils <- rnorm(100)
 ```
 
-Given fixed item parameters and abilities, it I possible then to simulate item 
-responses for each case. 
-By default, there is no missing data and item response fit 
+Treating the item parameters and abilities as fixed and known, responses
+for each case can be produced.
+By default, there is no missing data and item responses fit 
 the item response model implied by the item parameters.
 The first 10 responses are shown, along with the person ability (column 3):
 
 ```{r slmResps}
-myResponses <- genResponses(myAbils, myItems)
-print(cbind(myResponses[1:10, 1:2], myAbils[1:10]))
+myResponses <- genResponses(abilities = myAbils, itemParams = myItems)
+print(head(cbind(myResponses[, 1:2], myAbils)))
 ```
 
-## More complex case: multidimensional structure with a mixture of item types
+## Multidimensional structure with a mixture of item types
 
 A polytomous item can be described by including an item matrix with more than two rows.
-An item with its own discrimination parameter can be described by including the value in the `a` column.
+An item with its own discrimination parameter can be described by including 
+the value in the `a` column.
 An item with non-integer scoring can be described by varying the value in the `k` column.
-Note that for identification purposes, the values in the `t` column should sum to zero, though this is 
-not enforced to allow for sophisticated designs. 
+Note that for identification purposes, the values in the `t` column should sum 
+to zero, though this is not enforced.
 
-```{r moreItems}
+```{r moreItems, fig.width=7, fig.height=6}
 myItemPoly <- matrix(
   c(
     0, 0.0,  0.0, 0,
@@ -112,19 +119,22 @@ plotModelCCC(myItemPoly)
 plotModelExp(myItems)
 ```
 
-The multidimensional structure of the model is defined by allocating items to dimensions by constructing a B-matrix 
-(sometimes called a scoring matrix – see Wilson, M., Zheng, X., & McGuire, L. (2012). Formulating latent growth using 
-an explanatory item response model approach. Journal of Applied Measurement, 13(1), 1–22.). The B matrix maps items 
-(rows) to dimensions (columns). Note that this is a simplified B matrix, in that it is strictly binary – any aspect of 
-increasing coefficients (for example over time) should be captured in the scoring column, `k`, within the item matrix.
+The multidimensional structure of the model is defined by allocating items to 
+dimensions by constructing a B-matrix (sometimes called a scoring matrix
+see @wilson_formulating_2012. The B matrix maps items (rows) to dimensions (columns).
+Note that this is a simplified B matrix, in that it is strictly binary – any aspect of 
+increasing coefficients (for example over time) should be captured in the 
+scoring column, `k` (or in the discrimination column, `a`), within the item matrix.
 
-Note that now that the model is multidimensional, the abilities provided should also be a matrix, rather than a vector:
-cases (rows) by dimensions (columns). Any covariance structure amongst the dimensions is encoded within the matrix 
+Note that now that the model is multidimensional, the abilities provided should 
+also be a matrix, rather than a vector: cases (rows) by dimensions (columns). 
+Any covariance structure among the dimensions is encoded within the matrix 
 of abilities.
 
-Note that one of the items does not use integer scoring. If the software to analyse the data assumes integer scoring,
-then secondary processing is required to yield traditional categorical data, and the scoring assumptions should be otherwise 
-input into the software.
+Note that one of the items does not use integer scoring. 
+If the software to analyse the data assumes integer scoring, then secondary 
+processing is required to yield traditional categorical data, 
+and the scoring assumptions should be otherwise input into the software.
 
 ```{r multiDimData}
 myBMatrix <- matrix(
@@ -142,6 +152,263 @@ myBMatrix <- matrix(
 myAbils2 <- rnorm(length(myAbils))
 myAbilsMat <- cbind(myAbils, myAbils2) # assumes expected correlation = 0
 
-myResponses <- genResponses(myAbilsMat, myItems, BMatrix = myBMatrix)
+myResponses <- genResponses(
+  abilities = myAbilsMat, itemParams = myItems, perturbR = NULL,
+  groups = NULL, BMatrix = myBMatrix
+)
+
 print(cbind(myResponses[1:10, 1:5], myAbilsMat[1:10, 1:2]))
 ```
+
+## Misfit to the response model
+
+In this example, a 6 item test is simulated. Four of the items exhibit misfit:
+items 1, 2, 3, and 6. Responses are generated for 2000 students, with abilities
+drawn from a population with mean 0 and standard deviation 2.
+
+Note that in this example, all cases are equally weighted and there are no sub-
+populations (groups). Note that this is despite a grouping variable and weight
+variable being defined in the simulated data. This is done solely for a later example
+that does use weights and groups.
+
+In this example that immediately follows, for example, 
+although the grouping variable is declared in elements of the object, `myPertubations`, 
+the call to `conquestr::genResponses` overrides this by specifying that "groups = NULL".
+Similarity, in the plots generated using `conquestr::plotCCC`, the arguments
+groups and weights are both NULL.
+
+### Specifying misfit
+
+In the code block below the misfit is specified such that:
+
+ - Item one has a "flat" (MNSQ > 1) ICC 
+   (the discrimination for each category is multiplied by 0.5)
+ - Item 2 has a "steep" (MNSQ < 1) ICC
+   (the discrimination for each category is multiplied by 1.75) and
+   a uniform shift is applied to make the item relatively easy for all students
+   by shifting the ICC down -1 units.
+- Item 3 has a "steep" (MNSQ < 1) ICC
+   (the discrimination for each category is multiplied by 1.75) and
+   a uniform shift is applied to make the item relatively easy for all students
+   by shifting the ICC down -5 units.
+- Item 6 has a "steep" (MNSQ < 1) ICC
+   (the discrimination for each category is multiplied by 2.5)
+   
+Item 3 and item 6 have very significant misfit simulated and large deviations from
+the expected score will be observed in the observed responses.
+
+
+```{r misFit, fig.width=7, fig.height=6}
+library(conquestr)
+library(ggplot2)
+library(dplyr)
+
+myN <- 2000
+myMean <- 0
+mySd <- 2
+myGroups <- c("gfit", "bfit")
+
+# abilities
+myAbilities <- rnorm(myN, myMean, mySd)
+# groups
+myData <- data.frame(
+  ability = myAbilities,
+  group = factor(sample(x = myGroups, size = myN, replace = TRUE))
+)
+# weights
+myData$weight <- ifelse(myData$group == myGroups[1], 1, 0.001)
+myData_copy <- myData # for use later
+
+# items
+myItems <- list()
+myItems[[1]] <- matrix(c(
+  0, 0, 0   , 1,
+  1, 1, -0.2, 1,
+  2, 1, 0.2 , 1
+), ncol = 4, byrow = TRUE)
+myItems[[2]] <- matrix(c(
+  0, 0 , 0   , 1,
+  1, -1, -0.4, 1,
+  2, -1, 0.4 , 1
+), ncol = 4, byrow = TRUE)
+myItems[[3]] <- matrix(c(
+  0, 0   , 0   , 1,
+  1, 1.25, -0.6, 1,
+  2, 1.25, 0.6 , 1
+), ncol = 4, byrow = TRUE)
+myItems[[4]] <- matrix(c(
+  0, 0, 0   , 1,
+  1, 2, 0.2 , 1,
+  2, 2, -0.2, 1
+), ncol = 4, byrow = TRUE)
+myItems[[5]] <- matrix(c(
+  0, 0   , 0   , 1,
+  1, -2.5, -0.2, 1,
+  2, -2.5, 0.2 , 1
+), ncol =  4, byrow = TRUE)
+myItems[[6]] <- matrix(c(
+  0, 0  , 0 , 1,
+  1, 1.5, 0 , 1
+), ncol =  4, byrow = TRUE)
+for (i in seq(myItems)) {
+  colnames(myItems[[i]]) <- c("k", "d", "t", "a")
+}
+
+
+# Specify misfit.
+myPertubations<- list()
+myPertubations[[1]] <- list()
+myPertubations[[1]] <- append(myPertubations[[1]], 1L)
+myPertubations[[1]] <- append(myPertubations[[1]], "discrimination")
+myPertubations[[1]] <- append(myPertubations[[1]],  0.50)
+myPertubations[[1]] <- append(myPertubations[[1]], 0)
+myPertubations[[1]] <- append(myPertubations[[1]], "bfit")
+names(myPertubations[[1]]) <- c("item", "type", "factor", "pivot", "group")
+
+myPertubations[[2]] <- list()
+myPertubations[[2]] <- append(myPertubations[[2]], 2L)
+myPertubations[[2]] <- append(myPertubations[[2]], "discrimination")
+myPertubations[[2]] <- append(myPertubations[[2]],  1.75)
+myPertubations[[2]] <- append(myPertubations[[2]], -1)
+myPertubations[[2]] <- append(myPertubations[[2]], "bfit")
+names(myPertubations[[2]]) <- c("item", "type", "factor", "pivot", "group")
+
+myPertubations[[3]] <- list()
+myPertubations[[3]] <- append(myPertubations[[3]], 3L)
+myPertubations[[3]] <- append(myPertubations[[3]], "discrimination")
+myPertubations[[3]] <- append(myPertubations[[3]],  1.75)
+myPertubations[[3]] <- append(myPertubations[[3]], -5)
+myPertubations[[3]] <- append(myPertubations[[3]], "bfit")
+names(myPertubations[[3]]) <- c("item", "type", "factor", "pivot", "group")
+
+myPertubations[[4]] <- list()
+myPertubations[[4]] <- append(myPertubations[[4]], 6L)
+myPertubations[[4]] <- append(myPertubations[[4]], "discrimination")
+myPertubations[[4]] <- append(myPertubations[[4]], 2.5)
+myPertubations[[4]] <- append(myPertubations[[4]], 0)
+myPertubations[[4]] <- append(myPertubations[[4]], "bfit")
+names(myPertubations[[4]]) <- c("item", "type", "factor", "pivot", "group")
+
+myResponses <- genResponses(
+  abilities = myData$ability, itemParams = myItems, perturbR = myPertubations,
+  groups = NULL
+)
+
+myResponsesDf <- data.frame(myResponses)
+names(myResponsesDf) <- paste0("item", 1:length(myItems))
+
+myData1 <- bind_cols(myData, myResponsesDf)
+myData <- myData1 
+
+myCCC_item2 <- plotCCC(
+  item = myItems[[2]], abilities = myData$ability, responses = myData$item2,
+  weights = NULL, groups = NULL, bins = 10, range = c(-4, 7)
+)
+
+myCCC_item3 <- plotCCC(
+  item = myItems[[3]], abilities = myData$ability, responses = myData$item3,
+  weights = NULL, groups = NULL, bins = 10, range = c(-4, 7)
+)
+
+```
+
+The resulting data is found in the return object `myResponses`, and a plot of the
+misfit of the generated data to the implied model can be seen in the objects
+`myCCC_item2` and `myCCC_item3`.
+
+Notice the severe misfit in item three, where the relative easiness of the 
+item 2 has been greatly exaggerated - essentially item three is made to be five
+logits easier for all cases in the data!
+
+```{r, fig.width=7, fig.height=6}
+library(gridExtra)
+grid.arrange(myCCC_item2, myCCC_item3)
+```
+
+
+### adding in groups and weights
+
+It is possible to add in group-specific misfit. That is, for a specific group, the
+relative challenge of the item is different or the the discrimination of the item is 
+different compared to the population.
+
+Further, it is possible to weigh the contribution of misfit on a case-by-case basis.
+That is, the misfit observed in the sample may represent a different proportion of
+the population that the simple number of cases observed in the sample.
+Examples may include a sub-population that is over-represented in the sample,
+but relatively small in the population. Another example may be that the misfit
+is due to some unobserved process captured in the weights (i.e. a MAR process)
+whereby the cases exhibiting misfit represent a larger or smaller proportion
+of the population that represented by the simple count of cases in the sample.
+
+Care should be taken when considering the weight of the cases in the modelling of misfit.
+It may be true, for example, that the misfit is caused by a small sub-population
+(as a proportion of the population) and therefore the relative magnitude of the
+misfit is minor (and perhaps over-stated by a simple, equally weighted analysis
+of fit) in terms of the impact of misfit on the ordering of many populations 
+(take the sample of the ordering of average abilities of counties in international
+large scale assessments). However, within a population, the absence of 
+measurement non-variance for specific sub-populations may reflect some bias 
+of significance - particularity where groups are compared or contrasted.
+
+To include weights and groups, we recreate the data using `conquestr::genResponses`,
+this time using the groups argument (and corresponding entries in our object,
+`myPertubations`). Then the misfit can be visualised by group using 
+`conquestr::plotCCC`. The data generated by `conquestr::genResponses`, can
+also be exported for use within ACER ConQuest.
+
+```{r misFit_groups, fig.width=7, fig.height=6}
+myResponses <- genResponses(
+  abilities = myData_copy$ability, itemParams = myItems, perturbR = myPertubations,
+  groups = myData_copy$group
+)
+
+myResponsesDf <- data.frame(myResponses)
+names(myResponsesDf) <- paste0("item", 1:length(myItems))
+
+myData2 <- bind_cols(myData_copy, myResponsesDf)
+myData <- myData2 # overwrites previous examples
+
+```
+
+Example 1: Here there is poor fitting group with equal weights to the good fitting
+group. In this case population-level fit statistics would be poor and reflect what 
+is observed in this plot. Note the plot would look like this no matter whether 
+weights are taken into account as the expectation is identical for each group
+and the plot draws the observed responses.
+
+```{r misFit_groups_noWeights, fig.width=7, fig.height=6}
+myCCC_item3a <- plotCCC(
+  item = myItems[[3]], abilities = myData$ability, responses = myData$item3,
+  weights = myData$weight, groups = myData$group, bins = 10, range = c(-4, 7)
+)
+plot(myCCC_item3a)
+```
+
+Example 2: the same case as above, except the poor fitting group is now weighted down
+to be 1000 times less influential that the good fitting group. In this case, 
+if the groups are _not_ plotted the poor fit is not observed in aggregate.
+
+```{r misFit_noGroups_withWeights, fig.width=7, fig.height=6}
+myCCC_item3b <- plotCCC(
+  item = myItems[[3]], abilities = myData$ability, responses = myData$item3,
+  weights = myData$weight, groups = NULL, bins = 10, range = c(-4, 7)
+)
+plot(myCCC_item3b)
+```
+
+Example 3: the same case as above, except the poor fitting group is _not_ weighted down
+and is equally contributing to the fit. In this case, 
+if the groups are _not_ plotted the poor fit is now observed in aggregate as
+the bad fit is contributing more information that it represents in the population.
+
+```{r misFit_noGroups_noWeights, fig.width=7, fig.height=6}
+myCCC_item3c <- plotCCC(
+  item = myItems[[3]], abilities = myData$ability, responses = myData$item3,
+  weights = NULL, groups = NULL, bins = 10, range = c(-4, 7)
+)
+plot(myCCC_item3c)
+```
+
+## References
+

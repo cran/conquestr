@@ -11,15 +11,18 @@ theta_ll(theta, responses, itemParams)
 
 \item{responses}{a vector of item responses (used in a call to \code{pX}).}
 
-\item{params}{a list of item designs (each used in a call to \code{simplef}). Must be of same length as \code{responses}.}
+\item{itemParams}{a list of item designs (each used in a call to \code{simplef}).
+Must be of same length as \code{responses}.}
 }
 \value{
 a double, the log of the likelihood at theta..
 }
 \description{
-returns the log of the likelihood of theta, given a vector of item responses, item parameters.
-Note that this is the simple ll - it is the continuing product of the response probabilities. It
-includes a hack, that will nudge the raw response to the first item to adjust for zeros and perfects.
+returns the log of the likelihood of theta, given a vector of
+item responses, item parameters.
+Note that this is the simple ll - it is the continuing product of the
+response probabilities. It includes a hack, that will nudge the raw
+response to the first item to adjust for zeros and perfects.
 This should be updated to work with adjusted raw scores instead...
 }
 \keyword{internal}
