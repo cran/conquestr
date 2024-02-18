@@ -88,5 +88,5 @@ function like \code{conquestr::genResponses} and \code{conquestr::informationWri
   myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
 }
 \seealso{
-\code{\link[=simplef]{simplef()}}, \link{genResponses}, \code{browseVignettes("conquestr")}
+\code{\link[=simplef]{simplef()}}, \code{\link[=genResponses]{genResponses()}}, \code{browseVignettes("conquestr")}
 }

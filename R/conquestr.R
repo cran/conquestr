@@ -74,7 +74,9 @@ ConQuestCall <- function(cqc, cqExe, stdout = "") {
 #' @description Read an ''ACER ConQuest'' system file created by a `put` command in 'ACER ConQuest'.
 #' The system file must not be compressed. Use the option `compressed=no`` in the put command within 'ACER ConQuest'.
 #'
-#' @param myCqs The location of an uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest' > 4.30.2.
+#' @param myCqs The location of an uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest' > 4.35.
+#' @param isMini A boolean, set to TRUE if the system file is a _mini_ system file created by 'ACER ConQuest'
+#'   command put with option "mini = yes".
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #' @examples
 #' mySysData <- ConQuestSys()
@@ -83,7 +85,7 @@ ConQuestCall <- function(cqc, cqExe, stdout = "") {
 #' # if you run the above example this will return your original 'ACER ConQuest' syntax.
 #' cat(unlist(myEx1SysData$gCommandHistory))
 #' }
-ConQuestSys <- function(myCqs) {
+ConQuestSys <- function(myCqs, isMini = FALSE) {
 
   if (missing(myCqs))
   {
@@ -107,10 +109,34 @@ ConQuestSys <- function(myCqs) {
   myMode <- "rb"
   #if (Sys.info()["sysname"] == "Linux") myMode <- "w+b"
   myFile <- file(myCqs, myMode)
-  #r <-invisible(ReadSys(myFile))
+
+  # is this a compressed file?
+  compressedString <- tryCatch(
+    {
+       ReadString(myFile)
+    },
+    error = function(e) {
+      e$message <- paste0("System file is compressed. Decompressing ... ")
+      message(e)
+    },
+    finally = {
+      # close and reopen file - rewind is discouraged for Win in man
+      close(myFile)
+      myFile <- file(myCqs, myMode)
+    }
+  )
+  
+  if (is.null(compressedString)) {
+    compressedString <- "compressed"
+    myFile <- DecompressSys(myFile)
+    message(
+      "decompression complete"
+    )
+  }
+    
   r <- tryCatch(
     {
-      invisible(conquestr::ReadSys(myFile))
+      invisible(conquestr::ReadSys(myFile, isMini))
     },
     error = function(e) {
       close(myFile)

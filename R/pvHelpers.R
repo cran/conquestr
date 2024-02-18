@@ -1,10 +1,10 @@
 #' @title pvMeanVar
 #'
 #' @description Applies the law of total variance (EVEs law)
-#'     to calculate the mean and varinace of a set of PVs for one dimension.
+#'     to calculate the mean and variance of a set of PVs for one dimension.
 #'
 #' @param myData A matrix of PVs for one dimension: m PVs by n cases.
-#' @return A list containing the mean and variaince of the PVs.
+#' @return A list containing the mean and variance of the PVs.
 pvMeanVar <- function(myData)
 {
   nPvs <- ncol(myData)
@@ -22,7 +22,7 @@ pvMeanVar <- function(myData)
   pvVw <- mean(tmpMeanVarPvs[2, ]) # mean of PV variances
 
   # variance
-  pvVb <- (1/(nPvs-1)) * sum((tmpMeanVarPvs[1, ] - pvM)^2) # between variaince
+  pvVb <- (1/(nPvs-1)) * sum((tmpMeanVarPvs[1, ] - pvM)^2) # between variance
   pvV <- (1+(1/nPvs)) * pvVb + pvVw
   # if (!covar == "") myResults[[i]]["level"] <- paste0(covar, ": ", myLevels[i])
   myResults <- list()

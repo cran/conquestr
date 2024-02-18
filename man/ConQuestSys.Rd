@@ -4,10 +4,13 @@
 \alias{ConQuestSys}
 \title{ConQuestSys}
 \usage{
-ConQuestSys(myCqs)
+ConQuestSys(myCqs, isMini = FALSE)
 }
 \arguments{
-\item{myCqs}{The location of an uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest' > 4.30.2.}
+\item{myCqs}{The location of an uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest' > 4.35.}
+
+\item{isMini}{A boolean, set to TRUE if the system file is a \emph{mini} system file created by 'ACER ConQuest'
+command put with option "mini = yes".}
 }
 \value{
 A list containing the data objects created by 'ACER ConQuest'.

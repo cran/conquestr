@@ -1,30 +1,81 @@
+#' @title DecompressSys
+#'
+#' @description Internal function to decompress an 'ACER ConQuest' system file
+#'   that has been compressed using zlib.
+#' @param myFile An connection to a compressed  'ACER ConQuest' system file
+#'   created by the `put` command in 'ACER ConQuest'.`
+#' @return A connection to an uncompressed system file in the users temp dir.
+#' @seealso conquestr::ConQuestSys()
+#' @importFrom zlib zlib decompressobj decompress
+DecompressSys <- function(myFile) {
+  chunkSize <- 16384
+  myOut <- raw(0)
+  # chunkN <- 0 # debug
+  while (TRUE) {
+    thisChunk <- readBin(myFile, what=raw(), n=chunkSize)
+    if (length(thisChunk)==0) {
+      break
+    } else {
+      # chunkN <- chunkN + 1 # debug
+      myOut <- c(myOut, thisChunk)
+    }
+  }
+  close(myFile) # we dont need this file any more
+
+  decompressor <- zlib$decompressobj(zlib$MAX_WBITS)
+  
+  myStarts <- seq(1, length(myOut), by = chunkSize)
+  
+  for (i in myStarts) {
+    tmpEnd <- i + chunkSize - 1
+    if (tmpEnd > length(myOut)) tmpEnd <- length(myOut)
+    chunk <- myOut[i:tmpEnd]
+    decompressed_chunk <- decompressor$decompress(chunk)
+    if (i == 1) {
+      tmpHeader <- c(as.raw(c(0x0C, 0x00, 0x00, 0x00)), charToRaw("uncompressed"))
+      decompressed_data <- tmpHeader
+      decompressed_data <- c(decompressed_data, decompressed_chunk)
+    } else {
+      decompressed_data <- c(decompressed_data, decompressed_chunk)
+    }
+  }
+  # Flush the decompressor buffer
+  decompressed_data <- c(decompressed_data, decompressor$flush())
+
+  myFile_name <- tempfile()
+  myFile <- file(myFile_name, open = "wb")
+  writeBin(decompressed_data, myFile)
+  close(myFile)
+  myFile <- file(myFile_name, open = "rb")
+  
+  return(myFile)
+}
+
+
+
 #' @title ReadSys
 #'
 #' @description Internal function to read an 'ACER ConQuest' system file.
-#'     Called by conquestr::ConQuestSys.
-#' @param myFile An 'ACER ConQuest' system file created by the `put` command in 'ACER ConQuest'.
-#'     The put command must use the option `compressed = no`.
+#'   Called by conquestr::ConQuestSys.
+#' @param myFile An connection to an 'ACER ConQuest' system file created by the
+#'  `put` command in 'ACER ConQuest'.
+#'   If the file is compressed, and uncompressed temporary file is created.
+#' @param isMini A boolean, set to TRUE if the system file is a _mini_ system file created by 'ACER ConQuest'
+#'   command put with option "mini = yes".
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #' @seealso conquestr::ConQuestSys()
 #' @importFrom utils str
-ReadSys <- function(myFile) {
+ReadSys <- function(myFile, isMini) {
   myDebug <- FALSE
   # requires functions in R/ReadConQuestLibrary.R
 
-  Compressed <- ReadString(myFile)
-  if (myDebug) print(paste0("Compressed: ", Compressed))
-  # insert code to check that Compressed="uncompressed" if not we can't proceed
-  if (!(Compressed == "uncompressed")) {
-    # close(myFile) # dont need to close - this is done in trycatch in call to ConQuestSys
-    stop(
-      "This system file is compressed and I don't know how to handle it,
-      use option '! compress = no' in ACER ConQuest"
-    )
-  }
+  # add trycatch here? if fail, spit error "needs to be uncomp..."
+  compressedString <- ReadString(myFile)
+  if (myDebug) print(paste0("Compressed: ", compressedString))
 
   builddate <- ReadString(myFile)           # conquest build date
   writedate <- ReadString(myFile)           # file write date
-  cqs_version <- ReadInteger(myFile)            # system file version
+  cqs_version <- ReadInteger(myFile)        # system file version
   if(myDebug) {
     print("print length of cqs_version\n")
     print(length(cqs_version))
@@ -49,6 +100,35 @@ ReadSys <- function(myFile) {
   gNDim <- ReadInteger(myFile)
   gNGins <- ReadInteger(myFile)
   gNPlausiblesEstimate <- ReadInteger(myFile)
+  # ----- here is first entry into  cmd_GetPutMini------------------------------
+  if (isMini) {
+    if (myDebug) print("into isMini conditional")
+    tmpSystemFile <- ReadSysMini(
+      myFile = myFile, 
+      Dimensions = gNDim, 
+      N = gNCases[[1]], 
+      NPlausibles = gNPlausiblesEstimate,
+      isDebug = myDebug
+    )
+
+  systemFile <- list(
+    compressedString = compressedString,
+    builddate = builddate,
+    writedate = writedate,
+    cqs_version = cqs_version,
+    gNCases = gNCases,
+    gNDim = gNDim,
+    gNGins = gNGins,
+    gNPlausiblesEstimate = gNPlausiblesEstimate
+  )
+  
+  systemFile <- append(systemFile, tmpSystemFile)
+  
+  # return the list with all the stuff in it
+  class(systemFile) <- append(class(systemFile), "conQuestSysFileMini")
+  return(systemFile)
+  }
+
   gMLEExist <- ReadBoolean(myFile)
   gWLEExist <- ReadBoolean(myFile)
   gEAPExist <- ReadBoolean(myFile)
@@ -388,7 +468,7 @@ ReadSys <- function(myFile) {
 
   check <- ReadInteger(myFile)
   if (myDebug) print(paste0("check: ", check)) # check 7
-
+  
   if (!gPairWise) {
     gAllCaseEstimates <- ReadAllCaseEstimates(
       myFile = myFile,
@@ -396,6 +476,7 @@ ReadSys <- function(myFile) {
       N = gNCases[[1]],
       NPlausibles = gNPlausiblesEstimate
     )
+    # TODO: close this?
 
     check <- ReadInteger(myFile)
     if (myDebug) print(paste0("check: ", check)) # check 8
@@ -536,7 +617,7 @@ ReadSys <- function(myFile) {
 
   # put all the stuff into a list
   systemFile <- list(
-    Compressed = Compressed,
+    compressedString = compressedString,
     builddate = builddate,
     writedate = writedate,
     cqs_version = cqs_version,
@@ -544,6 +625,10 @@ ReadSys <- function(myFile) {
     gNDim = gNDim,
     gNGins = gNGins,
     gNPlausiblesEstimate = gNPlausiblesEstimate,
+    # then if mini...
+    # {
+    #  
+    #}
     gMLEExist = gMLEExist,
     gWLEExist = gWLEExist,
     gEAPExist = gEAPExist,
@@ -776,4 +861,42 @@ ReadSys <- function(myFile) {
   class(systemFile) <- append(class(systemFile), "conQuestSysFile")
   return(systemFile)
 
+}
+
+
+#' @title ReadSysMini
+#'
+#' @description Internal function to read an 'ACER ConQuest' system file.
+#'   Called by conquestr::ConQuestSys.
+#' @param myFile An 'ACER ConQuest' _mini_ system file created by the `put` 
+#'   command in 'ACER ConQuest' with the option "mini = yes".
+#'   The put command must use the option `compressed = no`.
+#' @param Dimensions .
+#' @param N .
+#' @param NPlausibles .
+#' @param isDebug .
+#' @return A list containing the data objects created by 'ACER ConQuest'.
+#' @seealso conquestr::ConQuestSys()
+#' @importFrom utils str
+ReadSysMini <- function(myFile, Dimensions, N, NPlausibles, isDebug) {
+
+  miniList <- list()
+  if (isDebug) print("before ReadAllCaseEstimates")
+  miniList[["gAllCaseEstimates"]] <- ReadAllCaseEstimates(
+      myFile = myFile,
+      Dimensions = Dimensions,
+      N = N,
+      NPlausibles = NPlausibles
+  )
+  if (isDebug) print("after ReadAllCaseEstimates")
+  miniList[["gParam"]] <- ReadParametersList(myFile)
+  miniList[["gBeta"]] <- ReadMatrix(myFile)
+  miniList[["gVariance"]] <- ReadMatrix(myFile)
+  miniList[["gXsi"]] <- ReadMatrix(myFile)
+  miniList[["gTau"]] <- ReadMatrix(myFile)
+  miniList[["gLConstraint"]] <- ReadInteger(myFile)
+  miniList[["gSConstraint"]] <- ReadInteger(myFile)
+  miniList[["gScore"]] <- ReadBoolean(myFile)
+
+  return(miniList)
 }

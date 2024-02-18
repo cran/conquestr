@@ -58,14 +58,38 @@
 #'   * optionally a vector of items to apply a unique discrimination to. Otherwise it is assumed that all items
 #'     have unique discriminations.
 #' @return A list of item matrices.
-#' @seealso [conquestr::simplef()], [conquestr::genResponses], `browseVignettes("conquestr")`
+#' @seealso [conquestr::simplef()], [conquestr::genResponses()], `browseVignettes("conquestr")`
 #' @examples
 #'   myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
 #'   myItems <- list(myItem, myItem)
 #'   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
 #'   myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
-#' @importFrom stats runif
+#' @importFrom stats runif rnorm
 genItems <- function(n, scores = NULL, deltadots, taus = NULL, discrims = 1) {
+  # TODO: check inputs are valid
+
+  resultList <- list()
+
+  if (is.null(taus)) {
+    isDicho <- TRUE
+  } else {
+    isDicho <- FALSE
+    # later need to check that this is true!
+    # after we draw the taus, check that there is > 2 resp cats per item
+  }
+
+  if (deltadots[[1]] == "runif") {
+    myMin <- deltadots[[2]][1]
+    myMax <- deltadots[[2]][2]
+    myDeltaD <- runif(n, myMin, myMax)
+  } else if (deltadots[[1]] == "rnorm") {
+    myMu <- deltadots[[2]][1]
+    mySd <- deltadots[[2]][2]
+    myDeltaD <- rnorm(n, myMu, mySd)
+  } else {
+    stop ('only "runif", and "rnorm" currently supported')
+  }
+
   return(NULL)
 }
 
@@ -1038,4 +1062,47 @@ getItemMatrix <- function(responses, itemParams, ...) {
   myMles <- as.data.frame(myMles)
   names(myMles) <- c("raw_score", "max_score", "est", "se")
   return(myMles)
+}
+
+#' @title writeImportXsi
+#'
+#' @description Writes a fixed width text file in the format required for the 
+#'   ACER ConQuest command and argument `import anchor_xsi`. Can also be used
+#'   for initial values, though caution should be used with the interpretation 
+#'   of the argument `lconstraint` which should relate to the model of interest 
+#'   ACER ConQuest
+#' 
+#'   Currently only works with implicit variables. Explicit variables may be added
+#'   in the future. 
+#'
+#' @param items a list of item matrices
+#' @param bmatix either the integer 1L for a unidimensional model, or
+#'   a matrix, items by dimensions with 1L representing that the item in on this
+#'   dimension, and a 0 otherwise.
+#' @param lconstraint the identification constraint in use, one of "none", "items",
+#'   or "cases".
+#' @param file a path and filename to write file to disk.
+#' #' @return invisibly returns path of file written to disk)
+#' @seealso [conquestr::simplef()], [conquestr::genResponses()], `browseVignettes("conquestr")`
+#' @examples
+#'   myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
+#'   myItems <- list(myItem, myItem)
+#'   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
+#'   myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
+writeImportXsi <- function(items, bmatix = 1L, lconstraint = "none", file) {
+  # TODO: check inputs are valid
+  if(!is.list(items)) stop("'items' must be of class list")
+  if(missing((file))) stop("'file' must be delcared")
+
+  myXsiFile <- list()
+  myXsiFile[["deltaDots"]] <- list()
+  myXsiFile[["steps"]] <- list()
+  
+  for (i in length(items)) {
+    # colate delta dots
+    myXsiFile[["deltaDots"]][[i]] <- items[[i]][ncol(items[[i]]) , 2]
+  }
+  
+
+  return(NULL)
 }

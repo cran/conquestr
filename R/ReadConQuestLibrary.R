@@ -937,18 +937,20 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
 #' @keywords internal
 ReadAllCaseEstimates <- function(myFile,Dimensions,N,NPlausibles)
 {
-    V <- list()
-    chainLen <- ReadInteger(myFile) # the chain length can be updated by subsequent calls to estimate, gNPlausibles is not the number of PVs in the last run
-    for (i in seq_len(N))
-    {
-        V[[i]] <-ReadEstimatesRecord(
-            myFile = myFile,
-            Dimensions = Dimensions,
-            NPlausibles = chainLen,
-            n = i
-        )
-    }
-    return(V)
+  V <- list()
+  # the chain length can be updated by subsequent calls to estimate, 
+  # gNPlausibles is not the number of PVs in the last run
+  chainLen <- ReadInteger(myFile)
+  for (i in seq_len(N))
+  {
+    V[[i]] <- ReadEstimatesRecord(
+      myFile = myFile,
+      Dimensions = Dimensions,
+      NPlausibles = chainLen,
+      n = i
+    )
+  }
+  return(V)
 }
 
 #' @title ReadDataRecord

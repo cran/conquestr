@@ -12,7 +12,7 @@
 
 <meta name="author" content="Dan Cloney, Dave Jeffries" />
 
-<meta name="date" content="2024-01-05" />
+<meta name="date" content="2024-02-18" />
 
 <title>Data cleaning function in conquestr</title>
 
@@ -564,7 +564,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Data cleaning function in conquestr</h1>
 <h4 class="author">Dan Cloney, Dave Jeffries</h4>
-<h4 class="date">2024-01-05</h4>
+<h4 class="date">2024-02-18</h4>
 
 
 
@@ -713,7 +713,7 @@ M
 0.30
 </td>
 <td style="text-align:center;">
-<span style="     color: black !important;">-0.07</span>
+&lt;span style=” color: black !important;” &gt;-0.07&lt;/span&gt;
 </td>
 <td style="text-align:center;">
 -2.29
@@ -742,7 +742,7 @@ a
 15.12
 </td>
 <td style="text-align:center;">
-<span style="     color: red !important;">0.06</span>
+&lt;span style=” color: red !important;” &gt;0.06&lt;/span&gt;
 </td>
 <td style="text-align:center;">
 1.77
@@ -771,7 +771,7 @@ b
 7.31
 </td>
 <td style="text-align:center;">
-<span style="     color: black !important;">-0.2</span>
+&lt;span style=” color: black !important;” &gt;-0.2&lt;/span&gt;
 </td>
 <td style="text-align:center;">
 -6.39
@@ -800,7 +800,7 @@ c
 22.42
 </td>
 <td style="text-align:center;">
-<span style="     color: black !important;">-0.32</span>
+&lt;span style=” color: black !important;” &gt;-0.32&lt;/span&gt;
 </td>
 <td style="text-align:center;">
 -10.59
@@ -829,7 +829,7 @@ d
 54.85
 </td>
 <td style="text-align:center;">
-<span style="     color: black !important;">0.34</span>
+&lt;span style=” color: black !important;” &gt;0.34&lt;/span&gt;
 </td>
 <td style="text-align:center;">
 11.33
@@ -850,99 +850,53 @@ d
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co"># print summary</span></span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>myEx1Sys_itanal_f[[<span class="fu">length</span>(myEx1Sys_itanal_f)]] <span class="co"># the last object is always the summary</span></span></code></pre></div>
 <table>
-<caption>
-Item Analysis Summary Statistics
-</caption>
+<caption>Item Analysis Summary Statistics</caption>
 <thead>
-<tr>
-<th style="text-align:left;">
-Statistic
-</th>
-<th style="text-align:right;">
-Value
-</th>
+<tr class="header">
+<th align="left">Statistic</th>
+<th align="right">Value</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align:left;">
-Percent Missing
-</td>
-<td style="text-align:right;">
-0.00
-</td>
+<tr class="odd">
+<td align="left">Percent Missing</td>
+<td align="right">0.00</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-N
-</td>
-<td style="text-align:right;">
-999.00
-</td>
+<tr class="even">
+<td align="left">N</td>
+<td align="right">999.00</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Mean
-</td>
-<td style="text-align:right;">
-8.44
-</td>
+<tr class="odd">
+<td align="left">Mean</td>
+<td align="right">8.44</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-SD
-</td>
-<td style="text-align:right;">
-2.40
-</td>
+<tr class="even">
+<td align="left">SD</td>
+<td align="right">2.40</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Variance
-</td>
-<td style="text-align:right;">
-5.78
-</td>
+<tr class="odd">
+<td align="left">Variance</td>
+<td align="right">5.78</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Skew
-</td>
-<td style="text-align:right;">
--0.60
-</td>
+<tr class="even">
+<td align="left">Skew</td>
+<td align="right">-0.60</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Kurtosis
-</td>
-<td style="text-align:right;">
--0.20
-</td>
+<tr class="odd">
+<td align="left">Kurtosis</td>
+<td align="right">-0.20</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Standard error of mean
-</td>
-<td style="text-align:right;">
-0.08
-</td>
+<tr class="even">
+<td align="left">Standard error of mean</td>
+<td align="right">0.08</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Standard error of measurement
-</td>
-<td style="text-align:right;">
-1.43
-</td>
+<tr class="odd">
+<td align="left">Standard error of measurement</td>
+<td align="right">1.43</td>
 </tr>
-<tr>
-<td style="text-align:left;">
-Alpha
-</td>
-<td style="text-align:right;">
-0.64
-</td>
+<tr class="even">
+<td align="left">Alpha</td>
+<td align="right">0.64</td>
 </tr>
 </tbody>
 </table>

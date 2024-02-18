@@ -4,11 +4,15 @@
 \alias{ReadSys}
 \title{ReadSys}
 \usage{
-ReadSys(myFile)
+ReadSys(myFile, isMini)
 }
 \arguments{
-\item{myFile}{An 'ACER ConQuest' system file created by the \code{put} command in 'ACER ConQuest'.
-The put command must use the option \code{compressed = no}.}
+\item{myFile}{An connection to an 'ACER ConQuest' system file created by the
+\code{put} command in 'ACER ConQuest'.
+If the file is compressed, and uncompressed temporary file is created.}
+
+\item{isMini}{A boolean, set to TRUE if the system file is a \emph{mini} system file created by 'ACER ConQuest'
+command put with option "mini = yes".}
 }
 \value{
 A list containing the data objects created by 'ACER ConQuest'.

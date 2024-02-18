@@ -10,9 +10,9 @@ pvMeanVar(myData)
 \item{myData}{A matrix of PVs for one dimension: m PVs by n cases.}
 }
 \value{
-A list containing the mean and variaince of the PVs.
+A list containing the mean and variance of the PVs.
 }
 \description{
 Applies the law of total variance (EVEs law)
-to calculate the mean and varinace of a set of PVs for one dimension.
+to calculate the mean and variance of a set of PVs for one dimension.
 }

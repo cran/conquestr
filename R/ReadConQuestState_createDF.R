@@ -20,9 +20,17 @@
 #'   myData <- getCqData(mySys)
 #'   myDataDf <- getCqDataDf(myData)
 getCqDataDf <-function(cqData) {
-  if (!"cqData" %in% class(cqData))
-  {
+
+  isCqData <- any(grepl("^cqData", class(cqData)))
+  isMini <- any(grepl("Mini$", class(cqData)))
+
+  if (!isCqData) {
     stop("'cqData' must be a list created by 'conquestr::getCqData'")
+  }
+
+  if (isMini) {
+    myConQuestData <- cqData[["Estimates"]]
+    return(myConQuestData)
   }
 
   tmpRespData <- cqData[["Responses"]]
@@ -35,12 +43,14 @@ getCqDataDf <-function(cqData) {
       print(
         "converting gResponseData from long to wide has thrown a warning.
         This is usually caused by duplicate PIDs in the response data.
-        Some data loss may have occured"
+        Some data loss may have occurred"
       )
       (reshape(tmpRespData, timevar = "Item", idvar = "Pid", direction = "wide"))
     },
     # finally, do this
-    finally = { } # don't need anything here as reshape will always return the result from reshape
+    #   don't need anything here as reshape will 
+    #   always return the result from reshape
+    finally = { } 
   )
   # reorder resp data cols
   tmpColNames <- names(tmpRespData)
@@ -119,26 +129,33 @@ getCqDataDf <-function(cqData) {
 #'   mySys <- ConQuestSys()
 #'   myData <- getCqData(mySys)
 getCqData <- function(mySys) {
-  if (!"conQuestSysFile" %in% class(mySys)) {
-    stop("'mySys' must be a ConQuest system file object created by 'conquestr::ConQuestSys'")
+  
+  isSysFile <- any(grepl("^conQuestSysFile", class(mySys)))
+  isMini <- any(grepl("Mini$", class(mySys)))
+
+  if (!isSysFile) {
+    stop("
+      'mySys' must be a ConQuest system file object created by 
+      'conquestr::ConQuestSys'"
+    )
   }
   tmpList <- list()
 
-  # get person IDs
-  gPIDLookUpDf <- getCqPid(mySys)
-  # get responses
-  gResponseDataDf <- getCqResp(mySys)
   # get case ests
-  gAllCaseEstimatesDf <- getCqEsts(mySys)
-  # get weight and regression vars
-  gYDataDf <- getCqYData(mySys)
-
-  tmpList[["PID"]] <- gPIDLookUpDf
-  tmpList[["Responses"]] <- gResponseDataDf
-  tmpList[["Estimates"]] <- gAllCaseEstimatesDf
-  tmpList[["Regression"]] <- gYDataDf
-
-  class(tmpList) <- append(class(tmpList), "cqData")
+  tmpList[["Estimates"]] <- getCqEsts(mySys)
+  if (!isMini) {
+    # get person IDs
+    tmpList[["PID"]] <- getCqPid(mySys)
+    # get responses
+    tmpList[["Responses"]] <- getCqResp(mySys)
+    # get weight and regression vars
+    tmpList[["Regression"]] <- getCqYData(mySys)
+  }
+  if (isMini) {
+    class(tmpList) <- append(class(tmpList), "cqDataMini")
+  } else {
+    class(tmpList) <- append(class(tmpList), "cqData")
+  }
   return(tmpList)
 }
 

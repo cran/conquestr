@@ -1,3 +1,45 @@
+# CHANGES IN conquestr VERSION 1.3.0
+
+## NEW FEATURES
+
+* added support for reading compressed system files.
+
+## MAJOR CHANGES
+
+* 
+
+## Bug fixes
+
+* 
+
+# CHANGES IN conquestr VERSION 1.2.0
+
+## NEW FEATURES
+
+* added support for reading "mini" system file.
+
+## MAJOR CHANGES
+
+* 
+
+## Bug fixes
+
+* 
+
+# CHANGES IN conquestr VERSION 1.1.1
+
+## NEW FEATURES
+
+* added support for plotting item characteristics curves, see e.g., `plotCCC`
+
+
+## MAJOR CHANGES
+
+* 
+## Bug fixes
+
+* 
+
 # CHANGES IN conquestr VERSION 1.0.0
 
 ## NEW FEATURES
