@@ -39,14 +39,19 @@ Each element of the list should contain, in order:
 \item item number (int). Which item in \code{itemParams} is affected,
 \item type of perturbation (string) to apply. One of
 \itemize{
-\item "discrimination" - increasing or decreases the discrimination
-\item ...more to come, like "shift"
+\item "discrimination" - increases or decreases the discrimination of the item
+at a location specified by the user.
+\item "shift" - increases or decreases the location of the item as to create a
+uniform shift in the CCC.
+\item ...more to come,
 }
-\item perturbation factor (double). When the type is "discrimination", this defines
+\item scoring perturbation factor (double). When the type is "discrimination", this defines
 the scale that the discrimination is increased or decreased. For example, if
 the item has discrimination of 1, and the perturbation factor is 1.2, the
 resulting probabilities will be calculated assuming the discrimination
-is 1 * 1.2 = 1.2.
+is 1 * 1.2 = 1.2. Note that is the value given here is 1, than this kind of
+perturbation is the same as "shift".
+When the type is "shift" this value is always ignored.
 \item pivot point (double), When the type is "discrimination", this defines the
 location  around which the perturbation is applied relative to
 the delta dot. That is, when the type is "discrimination" and the
@@ -56,7 +61,9 @@ and probabilities below the pivot point will be underestimated
 (generated responses will lower than expectation). When the pivot point
 is 0, this calculation happens at the item location parameter (e.g., at the
 category boundary).
-\item group (string). The group found in \verb{groups that should be perturbed. note that is }groups\verb{is not used in call to}genResponses` than this
+When the type is "shift", this is the value added to the item location (delta dot)
+as to create a uniform shift (DIF) for the group.
+\item group (string). The group found in \verb{groups that should be perturbed. note that if }groups\verb{is not used in call to}genResponses` than this
 value is ignored and all cases' responses are perturbed.
 }}
 }

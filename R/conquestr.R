@@ -2,12 +2,12 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
-# this exports all functions so that every function in the package is visible 
+# this exports all functions so that every function in the package is visible
 #    (otherwise need to manually add exports to NAMESPACE)
-#' @rawNamespace exportPattern("^[[:alpha:]]+") 
+#' @rawNamespace exportPattern("^[[:alpha:]]+")
 #' @rawNamespace if (.Platform$OS.type=="windows") importFrom(utils,shortPathName)
 
-packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5.33.2")
+packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5.40.0")
 
 # for vignette or default we can access files like this: system.file("extdata", "ex1.cqc", package = "conquestr")
 # consider using this in the future https://www.tidyverse.org/blog/2018/09/processx-3.2.0/
@@ -125,7 +125,7 @@ ConQuestSys <- function(myCqs, isMini = FALSE) {
       myFile <- file(myCqs, myMode)
     }
   )
-  
+
   if (is.null(compressedString)) {
     compressedString <- "compressed"
     myFile <- DecompressSys(myFile)
@@ -133,7 +133,7 @@ ConQuestSys <- function(myCqs, isMini = FALSE) {
       "decompression complete"
     )
   }
-    
+
   r <- tryCatch(
     {
       invisible(conquestr::ReadSys(myFile, isMini))

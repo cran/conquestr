@@ -143,9 +143,9 @@ getCqData <- function(mySys) {
 
   # get case ests
   tmpList[["Estimates"]] <- getCqEsts(mySys)
+  # get person IDs
+  tmpList[["PID"]] <- getCqPid(mySys)
   if (!isMini) {
-    # get person IDs
-    tmpList[["PID"]] <- getCqPid(mySys)
     # get responses
     tmpList[["Responses"]] <- getCqResp(mySys)
     # get weight and regression vars

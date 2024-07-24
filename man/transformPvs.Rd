@@ -4,28 +4,20 @@
 \alias{transformPvs}
 \title{transformPvs}
 \usage{
-transformPvs(x, mT = 0, sdT = 1, weights, data, addToDf = FALSE, debug = TRUE)
+transformPvs(data, mT = 0, sdT = 1, weights = 1)
 }
 \arguments{
-\item{x}{A concatenated vector of varnames in data, PV1, PV2, ..., PVm.}
+\item{data}{A data frame or matrix that contains the PVs}
 
 \item{mT}{The desired mean of the PVs}
 
 \item{sdT}{The desired sd of the PVs}
 
-\item{weights}{The name of the weight variable in 'data' used to
-caulculate the mean and SD accross the PVs}
-
-\item{data}{The data frame that contains the PVs and weights.}
-
-\item{addToDf}{A Boolean, if TRUE, the transformed PVs are coerced
-into the DF, data, with name data$x_T (not yet implmented).}
-
-\item{debug}{A temporary flag to spit-out objects to global env for chekcing.
-Will be removed when pushed to CRAN}
+\item{weights}{a vector of weights, the same length as \code{data[1]} used to
+calculate the mean and SD across the PVs}
 }
 \value{
-a List of transofrmed PVs with as many elements as PVs were listed in 'x'.
+a List of transformed PVs with as many elements as PVs were listed in 'x'.
 }
 \description{
 Helper function to Transform PVs onto a new metric

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Dan Cloney" />
 
-<meta name="date" content="2024-02-18" />
+<meta name="date" content="2024-07-24" />
 
 <title>Introduction to conquestr</title>
 
@@ -51,7 +51,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Introduction to conquestr</h1>
 <h4 class="author">Dan Cloney</h4>
-<h4 class="date">2024-02-18</h4>
+<h4 class="date">2024-07-24</h4>
 
 
 
@@ -451,8 +451,8 @@ is read into the R object <code>myExSys</code>.</p>
 <span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="fu">str</span>(myExSys)</span>
 <span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; List of 211</span></span>
 <span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt;  $ compressedString       : chr &quot;uncompressed&quot;</span></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;  $ builddate              : chr &quot;Aug 24 2023&quot;</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;  $ writedate              : chr &quot;Mon Aug 28 09:35:51 2023\n&quot;</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;  $ builddate              : chr &quot;Jul 23 2024&quot;</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;  $ writedate              : chr &quot;Tue Jul 23 15:06:15 2024\n&quot;</span></span>
 <span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;  $ cqs_version            : int 26</span></span>
 <span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;  $ gNCases                :List of 11</span></span>
 <span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1000</span></span>
@@ -493,163 +493,175 @@ is read into the R object <code>myExSys</code>.</p>
 <span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
 <span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
 <span id="cb4-62"><a href="#cb4-62" tabindex="-1"></a><span class="co">#&gt;  $ gXsi                   : num [1:12, 1] -0.704 -1.251 -1.092 -0.231 0.111 ...</span></span>
-<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a><span class="co">#&gt;  $ gOldXsi                : num [1:12, 1] -0.704 -1.251 -1.092 -0.231 0.111 ...</span></span>
-<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a><span class="co">#&gt;  $ gBestXsi               : num [1:12, 1] -0.704 -1.251 -1.092 -0.231 0.111 ...</span></span>
-<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a><span class="co">#&gt;  $ gTau                   : logi [1, 1] NA</span></span>
-<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a><span class="co">#&gt;  $ gOldTau                : logi [1, 1] NA</span></span>
-<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a><span class="co">#&gt;  $ gBestTau               : logi [1, 1] NA</span></span>
-<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a><span class="co">#&gt;  $ gQuickErrorsXsi        : num [1:12, 1] 0.00513 0.00605 0.00572 0.00479 0.00476 ...</span></span>
-<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a><span class="co">#&gt;  $ gQuickErrorsTau        : logi [1, 1] NA</span></span>
-<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a><span class="co">#&gt;  $ gQuickErrorsSigma      : num [1, 1] 0.0015</span></span>
+<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:12] &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...</span></span>
+<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a><span class="co">#&gt;  $ gOldXsi                : num [1:12, 1] -0.704 -1.251 -1.092 -0.231 0.111 ...</span></span>
+<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:12] &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...</span></span>
+<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a><span class="co">#&gt;  $ gBestXsi               : num [1:12, 1] -0.704 -1.251 -1.092 -0.231 0.111 ...</span></span>
 <span id="cb4-71"><a href="#cb4-71" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
-<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:12] &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...</span></span>
 <span id="cb4-73"><a href="#cb4-73" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-74"><a href="#cb4-74" tabindex="-1"></a><span class="co">#&gt;  $ gQuickErrorsBeta       : num [1, 1] 0.000866</span></span>
-<span id="cb4-75"><a href="#cb4-75" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
-<span id="cb4-76"><a href="#cb4-76" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-77"><a href="#cb4-77" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-78"><a href="#cb4-78" tabindex="-1"></a><span class="co">#&gt;  $ gMasterTheta           : num [1:2000, 1] -0.368 -0.215 0.851 0.244 -0.151 ...</span></span>
-<span id="cb4-79"><a href="#cb4-79" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
-<span id="cb4-80"><a href="#cb4-80" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:2000] &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...</span></span>
-<span id="cb4-81"><a href="#cb4-81" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-82"><a href="#cb4-82" tabindex="-1"></a><span class="co">#&gt;  $ gTheta                 : num [1:2000, 1] -0.5293 -0.3871 0.6049 0.0401 -0.3274 ...</span></span>
+<span id="cb4-74"><a href="#cb4-74" tabindex="-1"></a><span class="co">#&gt;  $ gTau                   : logi [1, 1] NA</span></span>
+<span id="cb4-75"><a href="#cb4-75" tabindex="-1"></a><span class="co">#&gt;  $ gOldTau                : logi [1, 1] NA</span></span>
+<span id="cb4-76"><a href="#cb4-76" tabindex="-1"></a><span class="co">#&gt;  $ gBestTau               : logi [1, 1] NA</span></span>
+<span id="cb4-77"><a href="#cb4-77" tabindex="-1"></a><span class="co">#&gt;  $ gQuickErrorsXsi        : num [1:12, 1] 0.00513 0.00605 0.00572 0.00479 0.00476 ...</span></span>
+<span id="cb4-78"><a href="#cb4-78" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb4-79"><a href="#cb4-79" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:12] &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...</span></span>
+<span id="cb4-80"><a href="#cb4-80" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-81"><a href="#cb4-81" tabindex="-1"></a><span class="co">#&gt;  $ gQuickErrorsTau        : logi [1, 1] NA</span></span>
+<span id="cb4-82"><a href="#cb4-82" tabindex="-1"></a><span class="co">#&gt;  $ gQuickErrorsSigma      : num [1, 1] 0.0015</span></span>
 <span id="cb4-83"><a href="#cb4-83" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
-<span id="cb4-84"><a href="#cb4-84" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:2000] &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...</span></span>
+<span id="cb4-84"><a href="#cb4-84" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
 <span id="cb4-85"><a href="#cb4-85" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-86"><a href="#cb4-86" tabindex="-1"></a><span class="co">#&gt;  $ gVariance              : num [1, 1] 0.865</span></span>
+<span id="cb4-86"><a href="#cb4-86" tabindex="-1"></a><span class="co">#&gt;  $ gQuickErrorsBeta       : num [1, 1] 0.000866</span></span>
 <span id="cb4-87"><a href="#cb4-87" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
 <span id="cb4-88"><a href="#cb4-88" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
 <span id="cb4-89"><a href="#cb4-89" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-90"><a href="#cb4-90" tabindex="-1"></a><span class="co">#&gt;  $ gOldVariance           : num [1, 1] 0.865</span></span>
+<span id="cb4-90"><a href="#cb4-90" tabindex="-1"></a><span class="co">#&gt;  $ gMasterTheta           : num [1:2000, 1] 0.69 0.679 0.89 0.15 -0.626 ...</span></span>
 <span id="cb4-91"><a href="#cb4-91" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
-<span id="cb4-92"><a href="#cb4-92" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-92"><a href="#cb4-92" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:2000] &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...</span></span>
 <span id="cb4-93"><a href="#cb4-93" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-94"><a href="#cb4-94" tabindex="-1"></a><span class="co">#&gt;  $ gBestVariance          : num [1, 1] 0.865</span></span>
+<span id="cb4-94"><a href="#cb4-94" tabindex="-1"></a><span class="co">#&gt;  $ gTheta                 : num [1:2000, 1] 0.455 0.445 0.641 -0.047 -0.769 ...</span></span>
 <span id="cb4-95"><a href="#cb4-95" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
-<span id="cb4-96"><a href="#cb4-96" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-96"><a href="#cb4-96" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:2000] &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...</span></span>
 <span id="cb4-97"><a href="#cb4-97" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-98"><a href="#cb4-98" tabindex="-1"></a><span class="co">#&gt;  $ gHistoWeights          : logi [1, 1] NA</span></span>
-<span id="cb4-99"><a href="#cb4-99" tabindex="-1"></a><span class="co">#&gt;  $ gOldHisto              : logi [1, 1] NA</span></span>
-<span id="cb4-100"><a href="#cb4-100" tabindex="-1"></a><span class="co">#&gt;  $ gBestHisto             : logi [1, 1] NA</span></span>
-<span id="cb4-101"><a href="#cb4-101" tabindex="-1"></a><span class="co">#&gt;  $ gYBeta                 : num [1, 1] 0</span></span>
-<span id="cb4-102"><a href="#cb4-102" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
-<span id="cb4-103"><a href="#cb4-103" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : NULL</span></span>
+<span id="cb4-98"><a href="#cb4-98" tabindex="-1"></a><span class="co">#&gt;  $ gVariance              : num [1, 1] 0.865</span></span>
+<span id="cb4-99"><a href="#cb4-99" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb4-100"><a href="#cb4-100" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-101"><a href="#cb4-101" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-102"><a href="#cb4-102" tabindex="-1"></a><span class="co">#&gt;  $ gOldVariance           : num [1, 1] 0.865</span></span>
+<span id="cb4-103"><a href="#cb4-103" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
 <span id="cb4-104"><a href="#cb4-104" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-105"><a href="#cb4-105" tabindex="-1"></a><span class="co">#&gt;  $ gWtFactor              :List of 4</span></span>
-<span id="cb4-106"><a href="#cb4-106" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1</span></span>
-<span id="cb4-107"><a href="#cb4-107" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1</span></span>
-<span id="cb4-108"><a href="#cb4-108" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1</span></span>
-<span id="cb4-109"><a href="#cb4-109" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1</span></span>
-<span id="cb4-110"><a href="#cb4-110" tabindex="-1"></a><span class="co">#&gt;  $ gSuffXsi               : num [1:12, 1] -644 -743 -716 -548 -476 -764 -776 -766 -852 -776 ...</span></span>
-<span id="cb4-111"><a href="#cb4-111" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
-<span id="cb4-112"><a href="#cb4-112" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : NULL</span></span>
-<span id="cb4-113"><a href="#cb4-113" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-114"><a href="#cb4-114" tabindex="-1"></a><span class="co">#&gt;  $ gSuffTau               : logi [1, 1] NA</span></span>
-<span id="cb4-115"><a href="#cb4-115" tabindex="-1"></a><span class="co">#&gt;  $ gModelText             : chr &quot;item&quot;</span></span>
-<span id="cb4-116"><a href="#cb4-116" tabindex="-1"></a><span class="co">#&gt;  $ gFormatText            : chr &quot; pid 1-5 responses 12-23 v1 12 v2 15&quot;</span></span>
-<span id="cb4-117"><a href="#cb4-117" tabindex="-1"></a><span class="co">#&gt;  $ gRegressionText        : chr &quot;&quot;</span></span>
-<span id="cb4-118"><a href="#cb4-118" tabindex="-1"></a><span class="co">#&gt;  $ gGroupText             : chr &quot;v1&quot;</span></span>
-<span id="cb4-119"><a href="#cb4-119" tabindex="-1"></a><span class="co">#&gt;  $ gOSSCP                 : num [1, 1] 0</span></span>
-<span id="cb4-120"><a href="#cb4-120" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
-<span id="cb4-121"><a href="#cb4-121" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-122"><a href="#cb4-122" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-123"><a href="#cb4-123" tabindex="-1"></a><span class="co">#&gt;  $ gLOSSCP                : logi [1, 1] NA</span></span>
-<span id="cb4-124"><a href="#cb4-124" tabindex="-1"></a><span class="co">#&gt;  $ gLSSCP                 : logi [1, 1] NA</span></span>
-<span id="cb4-125"><a href="#cb4-125" tabindex="-1"></a><span class="co">#&gt;  $ gFullSSCP              : logi [1, 1] NA</span></span>
-<span id="cb4-126"><a href="#cb4-126" tabindex="-1"></a><span class="co">#&gt;  $ gFullSums              : logi [1, 1] NA</span></span>
-<span id="cb4-127"><a href="#cb4-127" tabindex="-1"></a><span class="co">#&gt;  $ gMinAlpha              : num 0</span></span>
-<span id="cb4-128"><a href="#cb4-128" tabindex="-1"></a><span class="co">#&gt;  $ gModelEstimated        : logi TRUE</span></span>
-<span id="cb4-129"><a href="#cb4-129" tabindex="-1"></a><span class="co">#&gt;  $ gIntegrationMethod     :&#39;data.frame&#39;: 7 obs. of  2 variables:</span></span>
-<span id="cb4-130"><a href="#cb4-130" tabindex="-1"></a><span class="co">#&gt;   ..$ gIntegrationMethod    : int [1:7] 1 2 3 4 5 6 7</span></span>
-<span id="cb4-131"><a href="#cb4-131" tabindex="-1"></a><span class="co">#&gt;   ..$ gIntegrationMethodText: chr [1:7] &quot;Bock Aitkin&quot; &quot;Monte Carlo&quot; &quot;Gauss-Hermite Quadrature&quot; &quot;Joint Maximum Likelihood&quot; ...</span></span>
-<span id="cb4-132"><a href="#cb4-132" tabindex="-1"></a><span class="co">#&gt;  $ gPopulation            : int 1</span></span>
-<span id="cb4-133"><a href="#cb4-133" tabindex="-1"></a><span class="co">#&gt;  $ gSeeds                 : int 2</span></span>
-<span id="cb4-134"><a href="#cb4-134" tabindex="-1"></a><span class="co">#&gt;  $ gMaxSinceBests         : int 100</span></span>
-<span id="cb4-135"><a href="#cb4-135" tabindex="-1"></a><span class="co">#&gt;  $ gInnerLoopss           : int 10</span></span>
-<span id="cb4-136"><a href="#cb4-136" tabindex="-1"></a><span class="co">#&gt;  $ gWarningss             : logi TRUE</span></span>
-<span id="cb4-137"><a href="#cb4-137" tabindex="-1"></a><span class="co">#&gt;  $ gEstsToLog             : logi TRUE</span></span>
-<span id="cb4-138"><a href="#cb4-138" tabindex="-1"></a><span class="co">#&gt;  $ gKeepLast              : logi FALSE</span></span>
-<span id="cb4-139"><a href="#cb4-139" tabindex="-1"></a><span class="co">#&gt;  $ gAddExtension          : logi TRUE</span></span>
-<span id="cb4-140"><a href="#cb4-140" tabindex="-1"></a><span class="co">#&gt;  $ gMLEMax                : num 15</span></span>
-<span id="cb4-141"><a href="#cb4-141" tabindex="-1"></a><span class="co">#&gt;  $ gPlotWinMax            : int 100</span></span>
-<span id="cb4-142"><a href="#cb4-142" tabindex="-1"></a><span class="co">#&gt;  $ gZero                  : num 0.3</span></span>
-<span id="cb4-143"><a href="#cb4-143" tabindex="-1"></a><span class="co">#&gt;  $ gRespMiss              : int 2</span></span>
-<span id="cb4-144"><a href="#cb4-144" tabindex="-1"></a><span class="co">#&gt;  $ gDatafileName          : chr &quot;ex1.dat&quot;</span></span>
-<span id="cb4-145"><a href="#cb4-145" tabindex="-1"></a><span class="co">#&gt;  $ gDatafileFormats       : int 0</span></span>
-<span id="cb4-146"><a href="#cb4-146" tabindex="-1"></a><span class="co">#&gt;  $ gDatafileNameDisplay   : chr &quot;ex1.dat&quot;</span></span>
-<span id="cb4-147"><a href="#cb4-147" tabindex="-1"></a><span class="co">#&gt;  $ gStopReason            : int 2</span></span>
-<span id="cb4-148"><a href="#cb4-148" tabindex="-1"></a><span class="co">#&gt;  $ gImplicit              :List of 2</span></span>
-<span id="cb4-149"><a href="#cb4-149" tabindex="-1"></a><span class="co">#&gt;   ..$ Name  :List of 1</span></span>
-<span id="cb4-150"><a href="#cb4-150" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;item&quot;</span></span>
-<span id="cb4-151"><a href="#cb4-151" tabindex="-1"></a><span class="co">#&gt;   ..$ Levels:List of 1</span></span>
-<span id="cb4-152"><a href="#cb4-152" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : int 12</span></span>
-<span id="cb4-153"><a href="#cb4-153" tabindex="-1"></a><span class="co">#&gt;  $ gNImpValue             : int 12</span></span>
-<span id="cb4-154"><a href="#cb4-154" tabindex="-1"></a><span class="co">#&gt;  $ gPIDVar                : int 0</span></span>
-<span id="cb4-155"><a href="#cb4-155" tabindex="-1"></a><span class="co">#&gt;  $ gModelVariables        :List of 2</span></span>
-<span id="cb4-156"><a href="#cb4-156" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
-<span id="cb4-157"><a href="#cb4-157" tabindex="-1"></a><span class="co">#&gt;   ..$ IV:List of 1</span></span>
-<span id="cb4-158"><a href="#cb4-158" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : int 0</span></span>
-<span id="cb4-159"><a href="#cb4-159" tabindex="-1"></a><span class="co">#&gt;  $ gNRec                  : int 1</span></span>
-<span id="cb4-160"><a href="#cb4-160" tabindex="-1"></a><span class="co">#&gt;  $ gResponseLookUp        :List of 2</span></span>
-<span id="cb4-161"><a href="#cb4-161" tabindex="-1"></a><span class="co">#&gt;   ..$ VarNumber: int -2</span></span>
-<span id="cb4-162"><a href="#cb4-162" tabindex="-1"></a><span class="co">#&gt;   ..$ Value    :List of 2</span></span>
-<span id="cb4-163"><a href="#cb4-163" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;0&quot;</span></span>
-<span id="cb4-164"><a href="#cb4-164" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;1&quot;</span></span>
-<span id="cb4-165"><a href="#cb4-165" tabindex="-1"></a><span class="co">#&gt;  $ gPreKeyLookUp          :List of 2</span></span>
-<span id="cb4-166"><a href="#cb4-166" tabindex="-1"></a><span class="co">#&gt;   ..$ VarNumber: int -2</span></span>
-<span id="cb4-167"><a href="#cb4-167" tabindex="-1"></a><span class="co">#&gt;   ..$ Value    :List of 6</span></span>
-<span id="cb4-168"><a href="#cb4-168" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;M&quot;</span></span>
-<span id="cb4-169"><a href="#cb4-169" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;a&quot;</span></span>
-<span id="cb4-170"><a href="#cb4-170" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;b&quot;</span></span>
-<span id="cb4-171"><a href="#cb4-171" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;c&quot;</span></span>
-<span id="cb4-172"><a href="#cb4-172" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;d&quot;</span></span>
-<span id="cb4-173"><a href="#cb4-173" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;e&quot;</span></span>
-<span id="cb4-174"><a href="#cb4-174" tabindex="-1"></a><span class="co">#&gt;  $ gNDataRecords          : int 11989</span></span>
-<span id="cb4-175"><a href="#cb4-175" tabindex="-1"></a><span class="co">#&gt;  $ gFacetVariables        :List of 2</span></span>
-<span id="cb4-176"><a href="#cb4-176" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
-<span id="cb4-177"><a href="#cb4-177" tabindex="-1"></a><span class="co">#&gt;   ..$ IV: list()</span></span>
-<span id="cb4-178"><a href="#cb4-178" tabindex="-1"></a><span class="co">#&gt;  $ gRegressionVariables   :List of 2</span></span>
-<span id="cb4-179"><a href="#cb4-179" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
-<span id="cb4-180"><a href="#cb4-180" tabindex="-1"></a><span class="co">#&gt;   ..$ IV: list()</span></span>
-<span id="cb4-181"><a href="#cb4-181" tabindex="-1"></a><span class="co">#&gt;  $ gGroupVariables        :List of 2</span></span>
-<span id="cb4-182"><a href="#cb4-182" tabindex="-1"></a><span class="co">#&gt;   ..$ XV:List of 1</span></span>
-<span id="cb4-183"><a href="#cb4-183" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : int 1</span></span>
-<span id="cb4-184"><a href="#cb4-184" tabindex="-1"></a><span class="co">#&gt;   ..$ IV: list()</span></span>
-<span id="cb4-185"><a href="#cb4-185" tabindex="-1"></a><span class="co">#&gt;  $ gWeightVariable        :List of 2</span></span>
-<span id="cb4-186"><a href="#cb4-186" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
-<span id="cb4-187"><a href="#cb4-187" tabindex="-1"></a><span class="co">#&gt;   ..$ IV: list()</span></span>
-<span id="cb4-188"><a href="#cb4-188" tabindex="-1"></a><span class="co">#&gt;  $ gTDFileV               :List of 2</span></span>
-<span id="cb4-189"><a href="#cb4-189" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
-<span id="cb4-190"><a href="#cb4-190" tabindex="-1"></a><span class="co">#&gt;   ..$ IV:List of 1</span></span>
-<span id="cb4-191"><a href="#cb4-191" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : int 0</span></span>
-<span id="cb4-192"><a href="#cb4-192" tabindex="-1"></a><span class="co">#&gt;  $ gValidC                : list()</span></span>
-<span id="cb4-193"><a href="#cb4-193" tabindex="-1"></a><span class="co">#&gt;  $ gFileRebuildNeeded     : logi FALSE</span></span>
-<span id="cb4-194"><a href="#cb4-194" tabindex="-1"></a><span class="co">#&gt;  $ gAMatrixImportFileName : chr &quot;&quot;</span></span>
-<span id="cb4-195"><a href="#cb4-195" tabindex="-1"></a><span class="co">#&gt;  $ gCMatrixImportFileName : chr &quot;&quot;</span></span>
-<span id="cb4-196"><a href="#cb4-196" tabindex="-1"></a><span class="co">#&gt;  $ gHistoryFileName       : chr &quot;&quot;</span></span>
-<span id="cb4-197"><a href="#cb4-197" tabindex="-1"></a><span class="co">#&gt;  $ gTitle                 : chr &quot;ConQuest: Generalised Item Response Modelling Software&quot;</span></span>
-<span id="cb4-198"><a href="#cb4-198" tabindex="-1"></a><span class="co">#&gt;  $ gStoreInRAM            : logi FALSE</span></span>
-<span id="cb4-199"><a href="#cb4-199" tabindex="-1"></a><span class="co">#&gt;  $ gSubmitMode            : logi TRUE</span></span>
-<span id="cb4-200"><a href="#cb4-200" tabindex="-1"></a><span class="co">#&gt;  $ gMaxCats               : int 2</span></span>
-<span id="cb4-201"><a href="#cb4-201" tabindex="-1"></a><span class="co">#&gt;  $ gConvergenceOK         : logi FALSE</span></span>
-<span id="cb4-202"><a href="#cb4-202" tabindex="-1"></a><span class="co">#&gt;  $ gParameterConvCriterion: num 1e-04</span></span>
-<span id="cb4-203"><a href="#cb4-203" tabindex="-1"></a><span class="co">#&gt;  $ gDevianceConvCriterion : num 1e-04</span></span>
-<span id="cb4-204"><a href="#cb4-204" tabindex="-1"></a><span class="co">#&gt;  $ gFitDraws              : int 5</span></span>
-<span id="cb4-205"><a href="#cb4-205" tabindex="-1"></a><span class="co">#&gt;  $ gMaxIterations         : int 1000</span></span>
-<span id="cb4-206"><a href="#cb4-206" tabindex="-1"></a><span class="co">#&gt;  $ gAccuracy              : int 15</span></span>
-<span id="cb4-207"><a href="#cb4-207" tabindex="-1"></a><span class="co">#&gt;  $ gPVNodes               : int 2000</span></span>
-<span id="cb4-208"><a href="#cb4-208" tabindex="-1"></a><span class="co">#&gt;  $ gFitNodes              : int 2000</span></span>
-<span id="cb4-209"><a href="#cb4-209" tabindex="-1"></a><span class="co">#&gt;  $ gIteration             : int 23</span></span>
-<span id="cb4-210"><a href="#cb4-210" tabindex="-1"></a><span class="co">#&gt;   [list output truncated]</span></span>
-<span id="cb4-211"><a href="#cb4-211" tabindex="-1"></a><span class="co">#&gt;  - attr(*, &quot;class&quot;)= chr [1:2] &quot;list&quot; &quot;conQuestSysFile&quot;</span></span>
-<span id="cb4-212"><a href="#cb4-212" tabindex="-1"></a></span>
-<span id="cb4-213"><a href="#cb4-213" tabindex="-1"></a><span class="co"># tidy up</span></span>
-<span id="cb4-214"><a href="#cb4-214" tabindex="-1"></a><span class="fu">file.remove</span>(</span>
-<span id="cb4-215"><a href="#cb4-215" tabindex="-1"></a>  <span class="fu">list.files</span>(myTmpDir, <span class="at">all.files =</span> <span class="cn">TRUE</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>, <span class="at">pattern =</span> <span class="st">&quot;^myi|^myS|ex1&quot;</span>),</span>
-<span id="cb4-216"><a href="#cb4-216" tabindex="-1"></a>  <span class="at">recursive=</span><span class="cn">TRUE</span></span>
-<span id="cb4-217"><a href="#cb4-217" tabindex="-1"></a>)</span>
-<span id="cb4-218"><a href="#cb4-218" tabindex="-1"></a><span class="co">#&gt; [1] TRUE TRUE</span></span>
-<span id="cb4-219"><a href="#cb4-219" tabindex="-1"></a><span class="fu">setwd</span>(oldWd)</span></code></pre></div>
+<span id="cb4-105"><a href="#cb4-105" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-106"><a href="#cb4-106" tabindex="-1"></a><span class="co">#&gt;  $ gBestVariance          : num [1, 1] 0.865</span></span>
+<span id="cb4-107"><a href="#cb4-107" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb4-108"><a href="#cb4-108" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-109"><a href="#cb4-109" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-110"><a href="#cb4-110" tabindex="-1"></a><span class="co">#&gt;  $ gHistoWeights          : logi [1, 1] NA</span></span>
+<span id="cb4-111"><a href="#cb4-111" tabindex="-1"></a><span class="co">#&gt;  $ gOldHisto              : logi [1, 1] NA</span></span>
+<span id="cb4-112"><a href="#cb4-112" tabindex="-1"></a><span class="co">#&gt;  $ gBestHisto             : logi [1, 1] NA</span></span>
+<span id="cb4-113"><a href="#cb4-113" tabindex="-1"></a><span class="co">#&gt;  $ gYBeta                 : num [1, 1] 0</span></span>
+<span id="cb4-114"><a href="#cb4-114" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb4-115"><a href="#cb4-115" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-116"><a href="#cb4-116" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-117"><a href="#cb4-117" tabindex="-1"></a><span class="co">#&gt;  $ gWtFactor              :List of 4</span></span>
+<span id="cb4-118"><a href="#cb4-118" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1</span></span>
+<span id="cb4-119"><a href="#cb4-119" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1</span></span>
+<span id="cb4-120"><a href="#cb4-120" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1</span></span>
+<span id="cb4-121"><a href="#cb4-121" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1</span></span>
+<span id="cb4-122"><a href="#cb4-122" tabindex="-1"></a><span class="co">#&gt;  $ gSuffXsi               : num [1:12, 1] -644 -743 -716 -548 -476 -764 -776 -766 -852 -776 ...</span></span>
+<span id="cb4-123"><a href="#cb4-123" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb4-124"><a href="#cb4-124" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : NULL</span></span>
+<span id="cb4-125"><a href="#cb4-125" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-126"><a href="#cb4-126" tabindex="-1"></a><span class="co">#&gt;  $ gSuffTau               : logi [1, 1] NA</span></span>
+<span id="cb4-127"><a href="#cb4-127" tabindex="-1"></a><span class="co">#&gt;  $ gModelText             : chr &quot;item&quot;</span></span>
+<span id="cb4-128"><a href="#cb4-128" tabindex="-1"></a><span class="co">#&gt;  $ gFormatText            : chr &quot; pid 1-5 responses 12-23 v1 12 v2 15&quot;</span></span>
+<span id="cb4-129"><a href="#cb4-129" tabindex="-1"></a><span class="co">#&gt;  $ gRegressionText        : chr &quot;&quot;</span></span>
+<span id="cb4-130"><a href="#cb4-130" tabindex="-1"></a><span class="co">#&gt;  $ gGroupText             : chr &quot;v1&quot;</span></span>
+<span id="cb4-131"><a href="#cb4-131" tabindex="-1"></a><span class="co">#&gt;  $ gOSSCP                 : num [1, 1] 999</span></span>
+<span id="cb4-132"><a href="#cb4-132" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
+<span id="cb4-133"><a href="#cb4-133" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-134"><a href="#cb4-134" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
+<span id="cb4-135"><a href="#cb4-135" tabindex="-1"></a><span class="co">#&gt;  $ gLOSSCP                : logi [1, 1] NA</span></span>
+<span id="cb4-136"><a href="#cb4-136" tabindex="-1"></a><span class="co">#&gt;  $ gLSSCP                 : logi [1, 1] NA</span></span>
+<span id="cb4-137"><a href="#cb4-137" tabindex="-1"></a><span class="co">#&gt;  $ gFullSSCP              : logi [1, 1] NA</span></span>
+<span id="cb4-138"><a href="#cb4-138" tabindex="-1"></a><span class="co">#&gt;  $ gFullSums              : logi [1, 1] NA</span></span>
+<span id="cb4-139"><a href="#cb4-139" tabindex="-1"></a><span class="co">#&gt;  $ gMinAlpha              : num 0</span></span>
+<span id="cb4-140"><a href="#cb4-140" tabindex="-1"></a><span class="co">#&gt;  $ gModelEstimated        : logi TRUE</span></span>
+<span id="cb4-141"><a href="#cb4-141" tabindex="-1"></a><span class="co">#&gt;  $ gIntegrationMethod     :&#39;data.frame&#39;: 7 obs. of  2 variables:</span></span>
+<span id="cb4-142"><a href="#cb4-142" tabindex="-1"></a><span class="co">#&gt;   ..$ gIntegrationMethod    : int [1:7] 1 2 3 4 5 6 7</span></span>
+<span id="cb4-143"><a href="#cb4-143" tabindex="-1"></a><span class="co">#&gt;   ..$ gIntegrationMethodText: chr [1:7] &quot;Bock Aitkin&quot; &quot;Monte Carlo&quot; &quot;Gauss-Hermite Quadrature&quot; &quot;Joint Maximum Likelihood&quot; ...</span></span>
+<span id="cb4-144"><a href="#cb4-144" tabindex="-1"></a><span class="co">#&gt;  $ gPopulation            : int 1</span></span>
+<span id="cb4-145"><a href="#cb4-145" tabindex="-1"></a><span class="co">#&gt;  $ gSeeds                 : int 5</span></span>
+<span id="cb4-146"><a href="#cb4-146" tabindex="-1"></a><span class="co">#&gt;  $ gMaxSinceBests         : int 100</span></span>
+<span id="cb4-147"><a href="#cb4-147" tabindex="-1"></a><span class="co">#&gt;  $ gInnerLoopss           : int 10</span></span>
+<span id="cb4-148"><a href="#cb4-148" tabindex="-1"></a><span class="co">#&gt;  $ gWarningss             : logi TRUE</span></span>
+<span id="cb4-149"><a href="#cb4-149" tabindex="-1"></a><span class="co">#&gt;  $ gEstsToLog             : logi TRUE</span></span>
+<span id="cb4-150"><a href="#cb4-150" tabindex="-1"></a><span class="co">#&gt;  $ gKeepLast              : logi FALSE</span></span>
+<span id="cb4-151"><a href="#cb4-151" tabindex="-1"></a><span class="co">#&gt;  $ gAddExtension          : logi TRUE</span></span>
+<span id="cb4-152"><a href="#cb4-152" tabindex="-1"></a><span class="co">#&gt;  $ gMLEMax                : num 15</span></span>
+<span id="cb4-153"><a href="#cb4-153" tabindex="-1"></a><span class="co">#&gt;  $ gPlotWinMax            : int 100</span></span>
+<span id="cb4-154"><a href="#cb4-154" tabindex="-1"></a><span class="co">#&gt;  $ gZero                  : num 0.3</span></span>
+<span id="cb4-155"><a href="#cb4-155" tabindex="-1"></a><span class="co">#&gt;  $ gRespMiss              : int 2</span></span>
+<span id="cb4-156"><a href="#cb4-156" tabindex="-1"></a><span class="co">#&gt;  $ gDatafileName          : chr &quot;ex1.dat&quot;</span></span>
+<span id="cb4-157"><a href="#cb4-157" tabindex="-1"></a><span class="co">#&gt;  $ gDatafileFormats       : int 0</span></span>
+<span id="cb4-158"><a href="#cb4-158" tabindex="-1"></a><span class="co">#&gt;  $ gDatafileNameDisplay   : chr &quot;ex1.dat&quot;</span></span>
+<span id="cb4-159"><a href="#cb4-159" tabindex="-1"></a><span class="co">#&gt;  $ gStopReason            : int 2</span></span>
+<span id="cb4-160"><a href="#cb4-160" tabindex="-1"></a><span class="co">#&gt;  $ gImplicit              :List of 2</span></span>
+<span id="cb4-161"><a href="#cb4-161" tabindex="-1"></a><span class="co">#&gt;   ..$ Name  :List of 1</span></span>
+<span id="cb4-162"><a href="#cb4-162" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;item&quot;</span></span>
+<span id="cb4-163"><a href="#cb4-163" tabindex="-1"></a><span class="co">#&gt;   ..$ Levels:List of 1</span></span>
+<span id="cb4-164"><a href="#cb4-164" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : int 12</span></span>
+<span id="cb4-165"><a href="#cb4-165" tabindex="-1"></a><span class="co">#&gt;  $ gNImpValue             : int 12</span></span>
+<span id="cb4-166"><a href="#cb4-166" tabindex="-1"></a><span class="co">#&gt;  $ gPIDVar                : int 0</span></span>
+<span id="cb4-167"><a href="#cb4-167" tabindex="-1"></a><span class="co">#&gt;  $ gModelVariables        :List of 2</span></span>
+<span id="cb4-168"><a href="#cb4-168" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
+<span id="cb4-169"><a href="#cb4-169" tabindex="-1"></a><span class="co">#&gt;   ..$ IV:List of 1</span></span>
+<span id="cb4-170"><a href="#cb4-170" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : int 0</span></span>
+<span id="cb4-171"><a href="#cb4-171" tabindex="-1"></a><span class="co">#&gt;  $ gNRec                  : int 1</span></span>
+<span id="cb4-172"><a href="#cb4-172" tabindex="-1"></a><span class="co">#&gt;  $ gResponseLookUp        :List of 2</span></span>
+<span id="cb4-173"><a href="#cb4-173" tabindex="-1"></a><span class="co">#&gt;   ..$ VarNumber: int -2</span></span>
+<span id="cb4-174"><a href="#cb4-174" tabindex="-1"></a><span class="co">#&gt;   ..$ Value    :List of 2</span></span>
+<span id="cb4-175"><a href="#cb4-175" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;0&quot;</span></span>
+<span id="cb4-176"><a href="#cb4-176" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;1&quot;</span></span>
+<span id="cb4-177"><a href="#cb4-177" tabindex="-1"></a><span class="co">#&gt;  $ gPreKeyLookUp          :List of 2</span></span>
+<span id="cb4-178"><a href="#cb4-178" tabindex="-1"></a><span class="co">#&gt;   ..$ VarNumber: int -2</span></span>
+<span id="cb4-179"><a href="#cb4-179" tabindex="-1"></a><span class="co">#&gt;   ..$ Value    :List of 6</span></span>
+<span id="cb4-180"><a href="#cb4-180" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;M&quot;</span></span>
+<span id="cb4-181"><a href="#cb4-181" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;a&quot;</span></span>
+<span id="cb4-182"><a href="#cb4-182" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;b&quot;</span></span>
+<span id="cb4-183"><a href="#cb4-183" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;c&quot;</span></span>
+<span id="cb4-184"><a href="#cb4-184" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;d&quot;</span></span>
+<span id="cb4-185"><a href="#cb4-185" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;e&quot;</span></span>
+<span id="cb4-186"><a href="#cb4-186" tabindex="-1"></a><span class="co">#&gt;  $ gNDataRecords          : int 11989</span></span>
+<span id="cb4-187"><a href="#cb4-187" tabindex="-1"></a><span class="co">#&gt;  $ gFacetVariables        :List of 2</span></span>
+<span id="cb4-188"><a href="#cb4-188" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
+<span id="cb4-189"><a href="#cb4-189" tabindex="-1"></a><span class="co">#&gt;   ..$ IV: list()</span></span>
+<span id="cb4-190"><a href="#cb4-190" tabindex="-1"></a><span class="co">#&gt;  $ gRegressionVariables   :List of 2</span></span>
+<span id="cb4-191"><a href="#cb4-191" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
+<span id="cb4-192"><a href="#cb4-192" tabindex="-1"></a><span class="co">#&gt;   ..$ IV: list()</span></span>
+<span id="cb4-193"><a href="#cb4-193" tabindex="-1"></a><span class="co">#&gt;  $ gGroupVariables        :List of 2</span></span>
+<span id="cb4-194"><a href="#cb4-194" tabindex="-1"></a><span class="co">#&gt;   ..$ XV:List of 1</span></span>
+<span id="cb4-195"><a href="#cb4-195" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : int 1</span></span>
+<span id="cb4-196"><a href="#cb4-196" tabindex="-1"></a><span class="co">#&gt;   ..$ IV: list()</span></span>
+<span id="cb4-197"><a href="#cb4-197" tabindex="-1"></a><span class="co">#&gt;  $ gWeightVariable        :List of 2</span></span>
+<span id="cb4-198"><a href="#cb4-198" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
+<span id="cb4-199"><a href="#cb4-199" tabindex="-1"></a><span class="co">#&gt;   ..$ IV: list()</span></span>
+<span id="cb4-200"><a href="#cb4-200" tabindex="-1"></a><span class="co">#&gt;  $ gTDFileV               :List of 2</span></span>
+<span id="cb4-201"><a href="#cb4-201" tabindex="-1"></a><span class="co">#&gt;   ..$ XV: list()</span></span>
+<span id="cb4-202"><a href="#cb4-202" tabindex="-1"></a><span class="co">#&gt;   ..$ IV:List of 1</span></span>
+<span id="cb4-203"><a href="#cb4-203" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : int 0</span></span>
+<span id="cb4-204"><a href="#cb4-204" tabindex="-1"></a><span class="co">#&gt;  $ gValidC                : list()</span></span>
+<span id="cb4-205"><a href="#cb4-205" tabindex="-1"></a><span class="co">#&gt;  $ gFileRebuildNeeded     : logi FALSE</span></span>
+<span id="cb4-206"><a href="#cb4-206" tabindex="-1"></a><span class="co">#&gt;  $ gAMatrixImportFileName : chr &quot;&quot;</span></span>
+<span id="cb4-207"><a href="#cb4-207" tabindex="-1"></a><span class="co">#&gt;  $ gCMatrixImportFileName : chr &quot;&quot;</span></span>
+<span id="cb4-208"><a href="#cb4-208" tabindex="-1"></a><span class="co">#&gt;  $ gHistoryFileName       : chr &quot;&quot;</span></span>
+<span id="cb4-209"><a href="#cb4-209" tabindex="-1"></a><span class="co">#&gt;  $ gTitle                 : chr &quot;ConQuest: Generalised Item Response Modelling Software&quot;</span></span>
+<span id="cb4-210"><a href="#cb4-210" tabindex="-1"></a><span class="co">#&gt;  $ gStoreInRAM            : logi FALSE</span></span>
+<span id="cb4-211"><a href="#cb4-211" tabindex="-1"></a><span class="co">#&gt;  $ gSubmitMode            : logi TRUE</span></span>
+<span id="cb4-212"><a href="#cb4-212" tabindex="-1"></a><span class="co">#&gt;  $ gMaxCats               : int 2</span></span>
+<span id="cb4-213"><a href="#cb4-213" tabindex="-1"></a><span class="co">#&gt;  $ gConvergenceOK         : logi FALSE</span></span>
+<span id="cb4-214"><a href="#cb4-214" tabindex="-1"></a><span class="co">#&gt;  $ gParameterConvCriterion: num 1e-04</span></span>
+<span id="cb4-215"><a href="#cb4-215" tabindex="-1"></a><span class="co">#&gt;  $ gDevianceConvCriterion : num 1e-04</span></span>
+<span id="cb4-216"><a href="#cb4-216" tabindex="-1"></a><span class="co">#&gt;  $ gFitDraws              : int 5</span></span>
+<span id="cb4-217"><a href="#cb4-217" tabindex="-1"></a><span class="co">#&gt;  $ gMaxIterations         : int 1000</span></span>
+<span id="cb4-218"><a href="#cb4-218" tabindex="-1"></a><span class="co">#&gt;  $ gAccuracy              : int 15</span></span>
+<span id="cb4-219"><a href="#cb4-219" tabindex="-1"></a><span class="co">#&gt;  $ gPVNodes               : int 2000</span></span>
+<span id="cb4-220"><a href="#cb4-220" tabindex="-1"></a><span class="co">#&gt;  $ gFitNodes              : int 2000</span></span>
+<span id="cb4-221"><a href="#cb4-221" tabindex="-1"></a><span class="co">#&gt;  $ gIteration             : int 23</span></span>
+<span id="cb4-222"><a href="#cb4-222" tabindex="-1"></a><span class="co">#&gt;   [list output truncated]</span></span>
+<span id="cb4-223"><a href="#cb4-223" tabindex="-1"></a><span class="co">#&gt;  - attr(*, &quot;class&quot;)= chr [1:2] &quot;list&quot; &quot;conQuestSysFile&quot;</span></span>
+<span id="cb4-224"><a href="#cb4-224" tabindex="-1"></a></span>
+<span id="cb4-225"><a href="#cb4-225" tabindex="-1"></a><span class="co"># tidy up</span></span>
+<span id="cb4-226"><a href="#cb4-226" tabindex="-1"></a><span class="fu">file.remove</span>(</span>
+<span id="cb4-227"><a href="#cb4-227" tabindex="-1"></a>  <span class="fu">list.files</span>(myTmpDir, <span class="at">all.files =</span> <span class="cn">TRUE</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>, <span class="at">pattern =</span> <span class="st">&quot;^myi|^myS|ex1&quot;</span>),</span>
+<span id="cb4-228"><a href="#cb4-228" tabindex="-1"></a>  <span class="at">recursive=</span><span class="cn">TRUE</span></span>
+<span id="cb4-229"><a href="#cb4-229" tabindex="-1"></a>)</span>
+<span id="cb4-230"><a href="#cb4-230" tabindex="-1"></a><span class="co">#&gt; [1] TRUE TRUE</span></span>
+<span id="cb4-231"><a href="#cb4-231" tabindex="-1"></a><span class="fu">setwd</span>(oldWd)</span></code></pre></div>
 </div>
 <div id="read-in-a-conquest-system-file" class="section level2">
 <h2>Read in a ConQuest system file</h2>

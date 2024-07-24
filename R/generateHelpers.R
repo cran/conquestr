@@ -117,13 +117,18 @@ genItems <- function(n, scores = NULL, deltadots, taus = NULL, discrims = 1) {
 #'
 #'  * item number (int). Which item in `itemParams` is affected,
 #'  * type of perturbation (string) to apply. One of
-#'     * "discrimination" - increasing or decreases the discrimination
-#'     * ...more to come, like "shift"
-#'  * perturbation factor (double). When the type is "discrimination", this defines
-#'    the scale that the discrimination is increased or decreased. For example, if
-#'    the item has discrimination of 1, and the perturbation factor is 1.2, the
-#'    resulting probabilities will be calculated assuming the discrimination
-#'    is 1 * 1.2 = 1.2.
+#'     * "discrimination" - increases or decreases the discrimination of the item
+#'        at a location specified by the user.
+#'     * "shift" - increases or decreases the location of the item as to create a 
+#'       uniform shift in the CCC.
+#'     * ...more to come,
+#'  * scoring perturbation factor (double). When the type is "discrimination", this defines
+#'      the scale that the discrimination is increased or decreased. For example, if
+#'      the item has discrimination of 1, and the perturbation factor is 1.2, the
+#'      resulting probabilities will be calculated assuming the discrimination
+#'      is 1 * 1.2 = 1.2. Note that is the value given here is 1, than this kind of
+#'      perturbation is the same as "shift".
+#'      When the type is "shift" this value is always ignored.
 #'  * pivot point (double), When the type is "discrimination", this defines the
 #'      location  around which the perturbation is applied relative to
 #'      the delta dot. That is, when the type is "discrimination" and the
@@ -133,9 +138,11 @@ genItems <- function(n, scores = NULL, deltadots, taus = NULL, discrims = 1) {
 #'      (generated responses will lower than expectation). When the pivot point
 #'      is 0, this calculation happens at the item location parameter (e.g., at the
 #'      category boundary).
+#'      When the type is "shift", this is the value added to the item location (delta dot)
+#'      as to create a uniform shift (DIF) for the group.
 #'  * group (string). The group found in `groups that should be perturbed.
-#'    note that is `groups` is not used in call to `genResponses` than this
-#'    value is ignored and all cases' responses are perturbed.
+#'      note that if `groups` is not used in call to `genResponses` than this
+#'      value is ignored and all cases' responses are perturbed.
 #'
 #' @return A matrix, `n` cases by `i` items, of scored item responses.
 #' @seealso [conquestr::simplef()], `browseVignettes("conquestr")`
@@ -194,10 +201,21 @@ genResponses <- function(
       if (!is.integer(tmpI)) {
         stop(
           paste0(
-            "item number in perturbR must be integer, problem with item ",
+            "item number in perturbR must be integer, problem with element ",
             i,
-            " and value: ",
+            " in list of perturbations and the value: ",
             tmpI
+          )
+        )
+      }
+      if (!perturbR[[i]][2] %in% c("discrimination", "shift")) {
+        stop(
+          paste0(
+            "type of perturbation must be one of 'discrimination' or 'shift', 
+            problem with element ",
+            i,
+            " in list of perturbations and value: ",
+            perturbR[[i]][2]
           )
         )
       }
@@ -336,13 +354,24 @@ perturbResp <- function(ability, item, group, perturbation) {
   if (!caseIsInGroup) {
     thisResp <- itemResp(ability, item)
   } else {
-    tmpI <- item
-    nCats <- length(tmpI[ , 2])
-    tFac <- as.numeric(perturbation[3])
-    tPivot <- as.numeric(perturbation[4])
-    tmpI[, 4] <- tmpI[, 4] * tFac
-    tmpI[(2:nCats), 2] <- tmpI[(2:nCats), 2] + tPivot
-    thisResp <- itemResp(ability, tmpI)
+    # work through the allowed perturbation types
+    if (perturbation[2] == "discrimination") {
+      tmpI <- item
+      nCats <- length(tmpI[ , 2])
+      tFac <- as.numeric(perturbation[3])
+      tPivot <- as.numeric(perturbation[4])
+      tmpI[, 4] <- tmpI[, 4] * tFac
+      tmpI[(2:nCats), 2] <- tmpI[(2:nCats), 2] + tPivot
+      thisResp <- itemResp(ability, tmpI)
+    } 
+    if (perturbation[2] == "shift") {
+      tmpI <- item
+      nCats <- length(tmpI[ , 2])
+      # any value in perturbation[3] is ignored
+      tPivot <- as.numeric(perturbation[4])
+      tmpI[(2:nCats), 2] <- tmpI[(2:nCats), 2] + tPivot
+      thisResp <- itemResp(ability, tmpI)
+    } 
   }
   return(thisResp)
 }

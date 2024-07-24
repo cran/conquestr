@@ -6,6 +6,7 @@
 \alias{plotRout.InformationWithLatentDist}
 \alias{plotRout.ICC}
 \alias{plotRout.MCC}
+\alias{plotRout.TCC}
 \alias{plotRout.default}
 \title{plotRout}
 \usage{
@@ -18,6 +19,8 @@ plotRout(myRout, ...)
 \method{plotRout}{ICC}(myRout, ...)
 
 \method{plotRout}{MCC}(myRout, ...)
+
+\method{plotRout}{TCC}(myRout, ...)
 
 \method{plotRout}{default}(myRout, ...)
 }

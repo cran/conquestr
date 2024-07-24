@@ -12,7 +12,7 @@
 
 <meta name="author" content="Dan Cloney, Dave Jeffries" />
 
-<meta name="date" content="2024-02-18" />
+<meta name="date" content="2024-07-24" />
 
 <title>Data cleaning function in conquestr</title>
 
@@ -275,7 +275,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -564,7 +564,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Data cleaning function in conquestr</h1>
 <h4 class="author">Dan Cloney, Dave Jeffries</h4>
-<h4 class="date">2024-02-18</h4>
+<h4 class="date">2024-07-24</h4>
 
 
 
@@ -609,16 +609,16 @@ in the system file from your analysis.</p>
 <span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a><span class="co">#&gt; 5        d     0   104 10.4104104 -0.23879800      -7.764760 2.023005e-14</span></span>
 <span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a><span class="co">#&gt; 6        e     0   175 17.5175175 -0.21543829      -6.966112 5.910417e-12</span></span>
 <span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a><span class="co">#&gt;   Ability mean (D1) Ability SD (D1)</span></span>
-<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="co">#&gt; 1        -0.9778615       1.1485739</span></span>
-<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="co">#&gt; 2         0.3183998       0.8235452</span></span>
-<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co">#&gt; 3        -0.5141873       0.6828969</span></span>
-<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co">#&gt; 4        -0.8910703       0.8930940</span></span>
-<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">#&gt; 5        -0.6142279       0.7431202</span></span>
-<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co">#&gt; 6        -0.4341192       0.7988059</span></span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a><span class="co">#&gt; 1        -0.9823725       1.0094503</span></span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a><span class="co">#&gt; 2         0.3334871       0.8216688</span></span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co">#&gt; 3        -0.5375707       0.9964098</span></span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="co">#&gt; 4        -0.7459999       0.7851521</span></span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">#&gt; 5        -0.6836101       0.6972879</span></span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co">#&gt; 6        -0.4694728       0.7085121</span></span>
 <span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a><span class="co">#&gt; $item_rest_total</span></span>
-<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co">#&gt; item-total  item-rest   obs_mean   exp_mean   adj_mean </span></span>
-<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a><span class="co">#&gt;  0.6059588  0.4552091  0.6446446  0.6466206  0.6461786</span></span></code></pre></div>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co">#&gt; item-total  item-rest   obs_mean   exp_mean   adj_mean  delta_dot </span></span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a><span class="co">#&gt;  0.6059588  0.4552091  0.6446446  0.6468243  0.6467947 -0.7040703</span></span></code></pre></div>
 <p>Following the item-specific list objects, the last element of the
 list returned by <code>getCqItanal</code> contains summary statistics
 for the full set of items. The summary statistics include raw and latent
@@ -722,10 +722,10 @@ M
 0.02
 </td>
 <td style="text-align:center;">
--1.16
+-1.09
 </td>
 <td style="text-align:center;">
-1.82
+1.42
 </td>
 </tr>
 <tr>
@@ -751,10 +751,10 @@ a
 0.08
 </td>
 <td style="text-align:center;">
--0.11
+-0.07
 </td>
 <td style="text-align:center;">
-0.83
+0.76
 </td>
 </tr>
 <tr>
@@ -780,10 +780,10 @@ b
 0.00
 </td>
 <td style="text-align:center;">
--0.56
+-0.64
 </td>
 <td style="text-align:center;">
-0.79
+0.76
 </td>
 </tr>
 <tr>
@@ -809,10 +809,10 @@ c
 0.00
 </td>
 <td style="text-align:center;">
--0.57
+-0.51
 </td>
 <td style="text-align:center;">
-0.75
+0.79
 </td>
 </tr>
 <tr>
@@ -838,7 +838,7 @@ d
 0.00
 </td>
 <td style="text-align:center;">
-0.36
+0.33
 </td>
 <td style="text-align:center;">
 0.85

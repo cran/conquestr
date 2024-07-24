@@ -663,6 +663,11 @@ getCqItanalSummary <- function(itan) {
     itemObsMean <- as.numeric(itan[[i]]$item_rest_total[names(itan[[i]]$item_rest_total) == "obs_mean"])
     itemExpMean <- as.numeric(itan[[i]]$item_rest_total[names(itan[[i]]$item_rest_total) == "exp_mean"])
     itemAdjMean <- as.numeric(itan[[i]]$item_rest_total[names(itan[[i]]$item_rest_total) == "adj_mean"])
+    # note that since ConQuest 5.40.0 the item delta dot has been added to this data structure
+    if (length(itan[[i]]$item_rest_total) > 5) {
+      itemDeltaDot <- as.numeric(itan[[i]]$item_rest_total[names(itan[[i]]$item_rest_total) == "delta_dot"])
+    }
+    
 
     sumList[[i]]["item_label"] <- itemLab
     sumList[[i]]["N"] <- itemN
@@ -672,6 +677,7 @@ getCqItanalSummary <- function(itan) {
     sumList[[i]]["obs_mean"] <- itemObsMean
     sumList[[i]]["exp_mean"] <- itemExpMean
     sumList[[i]]["adj_mean"] <- itemAdjMean
+    if (exists("itemDeltaDot")) sumList[[i]]["delta_dot"] <- itemDeltaDot
 
     tmpResult <- matrix(unlist(sumList[[i]]), ncol = length(sumList[[i]]))
     if (i == 1) {

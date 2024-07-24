@@ -229,6 +229,48 @@ plotRout.MCC <- function(myRout, ...) {
 
 #' @rdname plotRout
 #' @export
+plotRout.TCC <- function(myRout, ...) {
+
+  # create df of series
+  myRoutDf <- routPointsToDf(myRout)
+  myNumSeries <- max(as.numeric(myRoutDf$Series))
+  if (myNumSeries == 3) myRoutDf <- myRoutDf[ myRoutDf$Series != "1", ]
+
+  # colour pallette
+  myColours <- data.frame(
+    myInt = c(0:8),
+    myHex = c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6")
+  )
+
+  myRoutDf <- merge(myRoutDf, myColours, by.x = "PointColour", by.y = "myInt", all.x = TRUE)
+  myRoutDf <- merge(myRoutDf, myColours, by.x = "LineColour", by.y = "myInt", all.x = TRUE)
+  names(myRoutDf)[names(myRoutDf) == "myHex.x"] <- "myHex_point"
+  names(myRoutDf)[names(myRoutDf) == "myHex.y"] <- "myHex_line"
+#  # plot
+  myPlot <- ggplot2::ggplot(myRoutDf, ggplot2::aes(x = .data$x, y = .data$y)) +
+    ggplot2::geom_line(ggplot2::aes(linetype = .data$LineStyle, colour = .data$`myHex_line`)) +
+    ggplot2::geom_point(
+      data = subset(myRoutDf, as.logical(myRoutDf$DrawPoints)), 
+      ggplot2::aes(colour = .data$`myHex_point`)
+    ) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(legend.position = "bottom") + # put legend in bottom of plot
+    ggplot2::theme(legend.text = ggplot2::element_text(size=8)) +
+    ggplot2::labs(
+      title = myRout$GraphTitleText,
+      x = myRout$xAxisLabelText,
+      y = myRout$yAxisLabelText,
+      subtitle = myRout$GraphSubTitleText,
+      caption = ifelse(myRout$FitLabelText == "", # no fit available
+        myRout$DifficultyLabelText,
+        paste0(myRout$DifficultyLabelText, " , ", myRout$FitLabelText)
+      )
+    )
+  return(myPlot)
+}
+
+#' @rdname plotRout
+#' @export
 plotRout.default <- function(myRout, ...) {
 
   print("current class of Rout file not supported - using default method")
@@ -253,6 +295,9 @@ plotRout.default <- function(myRout, ...) {
 
   return(myPlot)
 }
+
+
+
 
 # library(ggplot2)
 #
