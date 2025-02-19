@@ -39,7 +39,7 @@ myDelta <- 1.5
 a <- 1.5
 k <- 3
 itemParamX <- seq(0, k-1, 1)
-itemParamD <- rep(myDelta, k)
+itemParamD <- c(0, rep(myDelta, k-1))
 itemParamT <- c(0, -0.5, 0.5)
 itemParamA <- rep(a, k)
 itemParam <- cbind(itemParamX, itemParamD, itemParamT, itemParamA)

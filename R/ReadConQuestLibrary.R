@@ -1,5 +1,5 @@
 #' @title ReadDouble
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadDouble <- function(myFile)
@@ -8,7 +8,7 @@ ReadDouble <- function(myFile)
 }
 
 #' @title ReadDoubleList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadDoubleList <- function(myFile)
@@ -23,7 +23,7 @@ ReadDoubleList <- function(myFile)
 }
 
 #' @title ReadInteger
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadInteger <- function(myFile) {
@@ -31,7 +31,7 @@ ReadInteger <- function(myFile) {
 }
 
 #' @title ReadBoolean
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadBoolean <- function(myFile)
@@ -40,25 +40,24 @@ ReadBoolean <- function(myFile)
 }
 
 #' @title ReadString
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
-ReadString <- function(myFile)
-{
-    String <- ""
-    L <- readBin(myFile, integer(), endian = "little", size = 4, n = 1)
-     if (L == 0)
-     {
-       return(String)
-     } else {
-       String <- readCharSafe(myFile, L)
-       return(String)
-     }
-
+ReadString <- function(myFile) {
+  isDebug <- FALSE
+  String <- ""
+  L <- readBin(myFile, integer(), endian = "little", size = 4, n = 1)
+  if (isDebug) message(paste0("created `L` in `ReadString`: ", L))
+  if (L == 0) {
+    return(String)
+  } else {
+    String <- readCharSafe(myFile, L)
+    return(String)
+  }
 }
 
 #' @title ReadIntegerList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadIntegerList <- function(myFile)
@@ -73,7 +72,7 @@ ReadIntegerList <- function(myFile)
 }
 
 #' @title ReadIntegerListList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadIntegerListList <- function(myFile)
@@ -93,17 +92,17 @@ ReadIntegerListList <- function(myFile)
 #' @keywords internal
 ReadBooleanList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <- ReadBoolean(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadBoolean(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadStringList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadStringList <- function(myFile)
@@ -117,8 +116,29 @@ ReadStringList <- function(myFile)
   return(Value)
 }
 
+#' @title ReadNamedStringList
+#' @param myFile An 'ACER ConQuest' system file.
+#' @return A data frame
+#' @keywords internal
+ReadNamedStringList <- function(myFile)
+{
+  N <- ReadInteger(myFile)
+  NamesL <- list()
+  DataL <- list()
+  for (i in seq_len(N))
+  {
+    NamesL[[i]] <- ReadString(myFile)
+    DataL[[i]] <- ReadString(myFile)
+  }
+  Value <- data.frame(
+    names = unlist(NamesL),
+    data = unlist(DataL)
+  )
+  return(Value)
+}
+
 #' @title ReadBitSet
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadBitSet <- function(myFile)
@@ -146,7 +166,7 @@ ReadBitSet <- function(myFile)
 }
 
 #' @title ReadMatrix
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadMatrix <- function(myFile)
@@ -172,7 +192,7 @@ ReadMatrix <- function(myFile)
 }
 
 #' @title ReadMatrixList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadMatrixList <- function(myFile)
@@ -186,7 +206,7 @@ ReadMatrixList <- function(myFile)
 }
 
 #' @title ReadImplicitVar
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadImplicitVar <- function(myFile)
@@ -208,7 +228,7 @@ ReadImplicitVar <- function(myFile)
 }
 
 #' @title ReadVarList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadVarList <- function(myFile)
@@ -231,7 +251,7 @@ ReadVarList <- function(myFile)
 }
 
 #' @title ReadLookUp
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadLookUp <- function(myFile)
@@ -249,7 +269,7 @@ ReadLookUp <- function(myFile)
 }
 
 #' @title ReadLookUpList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadLookUpList <- function(myFile)
@@ -264,7 +284,7 @@ ReadLookUpList <- function(myFile)
 }
 
 #' @title ReadBandDefine
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadBandDefine <- function(myFile)
@@ -279,7 +299,7 @@ ReadBandDefine <- function(myFile)
 }
 
 #' @title ReadBandDefinesList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadBandDefinesList <- function(myFile)
@@ -295,7 +315,7 @@ ReadBandDefinesList <- function(myFile)
 
 
 #' @title ReadAnchor
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadAnchor <- function(myFile)
@@ -310,7 +330,7 @@ ReadAnchor <- function(myFile)
 }
 
 #' @title ReadAnchorList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadAnchorList <- function(myFile)
@@ -325,7 +345,7 @@ ReadAnchorList <- function(myFile)
 }
 
 #' @title ReadVariable
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadVariable <- function(myFile)
@@ -383,7 +403,7 @@ ReadVariable <- function(myFile)
 }
 
 #' @title ReadVariableList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadVariableList <- function(myFile)
@@ -398,7 +418,7 @@ ReadVariableList <- function(myFile)
 }
 
 #' @title ReadResponse
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadResponse <- function(myFile)
@@ -421,7 +441,7 @@ ReadResponse <- function(myFile)
 }
 
 #' @title ReadResponseList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadResponseList <- function(myFile)
@@ -452,7 +472,7 @@ ReadKey <- function(myFile)
 }
 
 #' @title ReadKeyList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadKeyList <- function(myFile)
@@ -467,7 +487,7 @@ ReadKeyList <- function(myFile)
 }
 
 #' @title ReadLabel
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadLabel <- function(myFile)
@@ -491,7 +511,7 @@ ReadLabel <- function(myFile)
 }
 
 #' @title ReadLabelList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadLabelList <- function(myFile)
@@ -506,7 +526,7 @@ ReadLabelList <- function(myFile)
 }
 
 #' @title ReadTerms
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadTerms <- function(myFile, cqs_version) {
@@ -541,7 +561,7 @@ ReadTerms <- function(myFile, cqs_version) {
 }
 
 #' @title ReadTermsList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadTermsList <- function(myFile, cqs_version)
@@ -555,7 +575,7 @@ ReadTermsList <- function(myFile, cqs_version)
 }
 
 #' @title ReadVarInfo
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadVarInfo <- function(myFile)
@@ -568,7 +588,7 @@ ReadVarInfo <- function(myFile)
 }
 
 #' @title ReadCodeList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadCodeList <- function(myFile)
@@ -581,7 +601,7 @@ ReadCodeList <- function(myFile)
 }
 
 #' @title ReadIRecode
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadIRecode <- function(myFile)
@@ -605,7 +625,7 @@ ReadIRecode <- function(myFile)
 }
 
 #' @title ReadIRecodeList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadIRecodeList <- function(myFile)
@@ -620,7 +640,7 @@ ReadIRecodeList <- function(myFile)
 }
 
 #' @title ReadParameters
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadParameters <- function(myFile)
@@ -634,7 +654,7 @@ ReadParameters <- function(myFile)
 }
 
 #' @title ReadParametersList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadParametersList <- function(myFile)
@@ -649,7 +669,7 @@ ReadParametersList <- function(myFile)
 }
 
 #' @title ReadCategorise
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadCategorise <- function(myFile)
@@ -664,7 +684,7 @@ ReadCategorise <- function(myFile)
 }
 
 #' @title ReadCategoriseList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadCategoriseList <- function(myFile)
@@ -679,7 +699,7 @@ ReadCategoriseList <- function(myFile)
 }
 
 #' @title ReadFit
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadFit <- function(myFile)
@@ -702,7 +722,7 @@ ReadFit <- function(myFile)
 }
 
 #' @title ReadFitList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadFitList <- function(myFile)
@@ -723,7 +743,7 @@ ReadFitList <- function(myFile)
 }
 
 #' @title ReadRegression
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadRegression <- function(myFile)
@@ -736,7 +756,7 @@ ReadRegression <- function(myFile)
 }
 
 #' @title ReadRegressionListLeg
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadRegressionListLeg <- function(myFile)
@@ -751,7 +771,7 @@ ReadRegressionListLeg <- function(myFile)
 }
 
 #' @title ReadRegressionList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadRegressionList <- function(myFile)
@@ -770,7 +790,7 @@ ReadRegressionList <- function(myFile)
 }
 
 #' @title ReadItemSet
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadItemSet <- function(myFile)
@@ -783,7 +803,7 @@ ReadItemSet <- function(myFile)
 }
 
 #' @title ReadItemSetList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadItemSetList <- function(myFile)
@@ -798,14 +818,14 @@ ReadItemSetList <- function(myFile)
 }
 
 #' @title ReadHistory
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadHistory <- function(myFile)
 {
-    N <- ReadInteger(myFile)
-    RunNo <- list()
-    Iter <- list()
+  N <- ReadInteger(myFile)
+  RunNo <- list()
+  Iter <- list()
   Likelihood <- list()
   Beta <- list()
   WithinVariance <- list()
@@ -818,13 +838,13 @@ ReadHistory <- function(myFile)
     myTmpInt <- ReadInteger(myFile)
     RunNo[[i]] <- myTmpInt
     Iter[[i]] <- ReadInteger(myFile)
-        Likelihood[[i]] <-ReadDouble(myFile)
-       Beta[[i]] <-ReadMatrix(myFile)
-       WithinVariance[[i]] <-ReadMatrix(myFile)
-    Xsi[[i]] <-ReadMatrix(myFile)
-    Tau[[i]] <-ReadMatrix(myFile)
-    RanTermVariance[[i]] <-ReadMatrix(myFile)
-    BetweenVariance[[i]] <-ReadMatrix(myFile)
+    Likelihood[[i]] <- ReadDouble(myFile)
+    Beta[[i]] <- ReadMatrix(myFile)
+    WithinVariance[[i]] <- ReadMatrix(myFile)
+    Xsi[[i]] <- ReadMatrix(myFile)
+    Tau[[i]] <- ReadMatrix(myFile)
+    RanTermVariance[[i]] <- ReadMatrix(myFile)
+    BetweenVariance[[i]] <- ReadMatrix(myFile)
   }
   V <- list(RunNo, Iter,Likelihood,Beta,WithinVariance,Xsi,Tau,RanTermVariance,BetweenVariance)
   names(V)<-c("RunNo", "Iter","Likelihood","Beta","Variance","Xsi","Tau","RanTermVariance","BetweenVariance")
@@ -832,7 +852,7 @@ ReadHistory <- function(myFile)
 }
 
 #' @title ReadEstimatesRecord
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param Dimensions An integer representation of 'ACER ConQuest' object gNDim.
 #' @param NPlausibles An integer representation of 'ACER ConQuest' object gNPlausibles.
 #' @param n An integer representation of 'ACER ConQuest' object gNCases.
@@ -929,7 +949,7 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
 }
 
 #' @title ReadAllCaseEstimates
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param Dimensions An integer representation of 'ACER ConQuest' object gNDim.
 #' @param N An integer representation of 'ACER ConQuest' object gNCases
 #' @param NPlausibles An integer representation of 'ACER ConQuest' object gNPlausibles.
@@ -954,7 +974,7 @@ ReadAllCaseEstimates <- function(myFile,Dimensions,N,NPlausibles)
 }
 
 #' @title ReadDataRecord
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadDataRecord <- function(myFile)
@@ -970,7 +990,7 @@ ReadDataRecord <- function(myFile)
 }
 
 #' @title ReadAllResponseData
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param N An integer representation of 'ACER ConQuest' object gNCases.
 #' @return A list
 #' @keywords internal
@@ -985,7 +1005,7 @@ ReadAllResponseData <- function(myFile,N)
 }
 
 #' @title ReadADesignMatrices
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param Columns An integer representation of 'ACER ConQuest' object gNParameters.
 #' @param Items An integer representation of 'ACER ConQuest' object gNGins.
 #' @param ItemSteps An integer representation of 'ACER ConQuest' object gItemSteps.
@@ -1018,7 +1038,7 @@ ReadADesignMatrices <- function(myFile,Columns,Items,ItemSteps)
 }
 
 #' @title ReadBDesignMatrices
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param Items An integer representation of 'ACER ConQuest' object gNGins.
 #' @param ItemSteps An integer representation of 'ACER ConQuest' object gItemSteps.
 #' @return A list
@@ -1041,7 +1061,7 @@ ReadBDesignMatrices <- function(myFile,ItemSteps,Items)
 }
 
 #' @title ReadCDesignMatrices
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param Dimensions An integer representation of 'ACER ConQuest' object gNDim.
 #' @param Items An integer representation of 'ACER ConQuest' object gNGins.
 #' @param ItemSteps An integer representation of 'ACER ConQuest' object gItemSteps.
@@ -1078,7 +1098,7 @@ ReadCDesignMatrices <- function(myFile,Dimensions,ItemSteps,Items)
 }
 
 #' @title ReadYOneCase
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param NReg An integer representing the number of regressors in the model, a representation of 'ACER ConQuest' object gNReg.
 #' @return A list
 #' @keywords internal
@@ -1096,7 +1116,7 @@ ReadYOneCase <- function(myFile,NReg)
 }
 
 #' @title ReadAllY
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param N An integer representation of 'ACER ConQuest' object gNCases
 #' @param NReg An integer representing the number of regressors in the model, a representation of 'ACER ConQuest' object gNReg.
 #' @keywords internal
@@ -1111,7 +1131,7 @@ ReadAllY <- function(myFile,N,NReg)
 }
 
 #' @title ReadGroupsOneCase
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param GroupVariables A list of group variables for this case.
 #' @param AllVariables A list of variables for this case.
 #' @param CaseNum An integer representing the case number used in the lookup tables.
@@ -1153,7 +1173,7 @@ ReadGroupsOneCase <- function(myFile, GroupVariables, AllVariables, CaseNum)
 }
 
 #' @title ReadAllGroupsData
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @param N An integer representation of 'ACER ConQuest' object gNCases.
 #' @param GroupVariables A list of group variables.
 #' @param AllVariables A list of variables.
@@ -1177,7 +1197,7 @@ ReadAllGroupsData <- function(myFile,N,GroupVariables,AllVariables)
 }
 
 #' @title ReadMatrixVars
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadMatrixVars <- function(myFile)
@@ -1195,7 +1215,7 @@ ReadMatrixVars <- function(myFile)
 }
 
 #' @title ReadPoint
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadPoint <- function(myFile)
@@ -1210,7 +1230,7 @@ ReadPoint <- function(myFile)
 }
 
 #' @title ReadSeries
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadSeries <- function(myFile)
@@ -1265,7 +1285,7 @@ ReadSeries <- function(myFile)
 }
 
 #' @title ReadGraph
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadGraph <- function(myFile)
@@ -1326,7 +1346,7 @@ ReadGraph <- function(myFile)
     }
 
 #' @title ReadRandomStructure
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadRandomStructure <- function(myFile)
@@ -1344,7 +1364,7 @@ ReadRandomStructure <- function(myFile)
 }
 
 #' @title ReadGExportOptions
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list of a single ExportOption (e.g., used in ExportXsi())
 #' @keywords internal
 ReadGExportOptions <- function(myFile)
@@ -1359,7 +1379,7 @@ ReadGExportOptions <- function(myFile)
 }
 
 #' @title ReadGExportOptionsList
-#' @param myFile An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.
+#' @param myFile An 'ACER ConQuest' system file.
 #' @return A list of ExportOptions
 #' @keywords internal
 ReadGExportOptionsList <- function(myFile)

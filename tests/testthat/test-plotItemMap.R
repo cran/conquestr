@@ -1,5 +1,5 @@
-# call conquest to create rout object the default is an ICC
-mySys <- conquestr::ConQuestSys()
+# call conquestr to create default system file 
+mySys <- suppressMessages(conquestr::ConQuestSys())
 MyItemMap <- conquestr::plotItemMap(mySys)
 
 # Rout tests

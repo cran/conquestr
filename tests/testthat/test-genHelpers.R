@@ -5,6 +5,14 @@ myDeltaDots <- data.frame(
   delta = rnorm(10)
 )
 
+# numeric "id" should be cast to Integer internally
+myDeltaDotsBad <- data.frame(
+  id = c(1L:10),
+  itemid = paste0("item", 1:10),
+  delta = rnorm(10)
+)
+
+
 MyBadTaus <- data.frame(
   # there is no item 22 in myDeltaDots
   id = c(2L, 22L),
@@ -35,6 +43,10 @@ test_that(
     )
     expect_type(
       myGoodItemList <- makeItemList(deltaDot = myDeltaDots, tau = MyGoodTaus),
+      "list"
+    )
+    expect_type(
+      myItemListCastIdToInt <- makeItemList(deltaDot = myDeltaDotsBad, tau = MyGoodTaus),
       "list"
     )
     expect_equal(length(myGoodItemList_dich), length(myDeltaDots$id))

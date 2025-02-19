@@ -1,3 +1,36 @@
+# CHANGES IN conquestr VERSION 1.4.4
+
+## NEW FEATURES
+
+* Added support reading uncompressed system files in markdown and shiny workflows 
+  previously, the function that worked out if a system file was compressed threw
+  an invisible error that would break, for example, knitr workflows. 
+* Added support for polytomies and scores in genItems.
+* added support for itanals that include groups.
+
+## MAJOR CHANGES
+
+* conquesrt::getCqItan now returns a list of list of lists. The top level
+  list is the return object. Each element of this list is a group from the itanal.
+  In most use cases this is "all cases" and the length of this list is 1. Therefore,
+  to get the 4th item analysis table for the first group is now accessed 
+  by `returnObject[[1]][[4]]` instead of `returnObject[[4]]`
+
+
+# CHANGES IN conquestr VERSION 1.4.0
+
+## NEW FEATURES
+
+* added support for ACER ConQuest system file v27 (ConQuest V5.40.14)
+* added gTokenList
+
+# CHANGES IN conquestr VERSION 1.3.6
+
+## NEW FEATURES
+
+* added support for long labels in history files. See `?conquestr::getCqHistory`.
+* added gYBetaAll - the regression mean for the cases.
+
 # CHANGES IN conquestr VERSION 1.3.0
 
 ## NEW FEATURES

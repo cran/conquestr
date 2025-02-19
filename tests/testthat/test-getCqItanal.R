@@ -1,8 +1,8 @@
-# call conquest to create rout object the default is an ICC
-mySysTest <- conquestr::ConQuestSys()
+# call conquestr to create itan from default system file
+mySysTest <- suppressMessages(conquestr::ConQuestSys())
 myItn <- conquestr::getCqItanal(mySysTest)
-myTestItnTable <- myItn[[10]]$table
-myTestItnSum <- myItn[[13]]
+myTestItnTable <- myItn[[1]][[10]]$table
+myTestItnSum <- myItn[[1]][[13]]
 
 # Rout tests
 test_that("Rout file is of correct type", {

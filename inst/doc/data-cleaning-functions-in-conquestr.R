@@ -15,7 +15,7 @@ myEx1Sys <- ConQuestSys()
 myEx1Sys_itanal <- getCqItanal(myEx1Sys)
 
 # show unformatted list objects for first item
-print(myEx1Sys_itanal[[1]])
+print(myEx1Sys_itanal[[1]][[1]])
 
 
 ## -----------------------------------------------------------------------------
@@ -36,9 +36,9 @@ ptBisFlag <- 0.0 # highlight if non-key ptBis r is MORE than this value
 myEx1Sys_itanal_f <- fmtCqItanal(myEx1Sys_itanal, ptBisFlag = ptBisFlag, textColHighlight = "red")
 
 # print table
-myEx1Sys_itanal_f[[4]]$table
+myEx1Sys_itanal_f[[1]][[4]]
 
 # print summary
-myEx1Sys_itanal_f[[length(myEx1Sys_itanal_f)]] # the last object is always the summary
+myEx1Sys_itanal_f[[1]][[length(myEx1Sys_itanal_f[[1]])]] # the last object is always the summary
 
 

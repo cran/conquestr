@@ -4,19 +4,29 @@
 \alias{getCqHist}
 \title{getCqHist}
 \usage{
-getCqHist(myCqs)
+getCqHist(myCqs, labelParams = FALSE)
 }
 \arguments{
-\item{myCqs}{A system file.}
+\item{myCqs}{An ACER ConQuest system file created using the conquest
+command, \href{https://conquestmanual.acer.org/s4-00.html#put}{put}.}
+
+\item{labelParams}{A boolean. When true, and if long (user)
+parameter labels are available, replace default history column names
+(e.g., "Xsi1") with user labels (e.g., "Item one").
+Currently only available for Xsi and Tau.}
 }
 \value{
 A data frame.
 }
 \description{
-creates a data frame representation of the iteration history for all parameters.
+creates a data frame representation of the iteration history
+for all parameters.
 }
 \examples{
-\dontrun{
-getCqHist(ConQuestSys())
+myHist <- getCqHist(ConQuestSys(), labelParams = TRUE)
+str(myHist)
 }
+\seealso{
+\code{\link[=getCqChain]{getCqChain()}} which is a wrapper for this function
+to use with models estimated by Markov chain Monte Carlo (MCMC) methods.
 }

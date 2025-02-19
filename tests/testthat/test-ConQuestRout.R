@@ -1,5 +1,5 @@
 # call conquest to create rout object the default is an ICC
-myRoutTest <- conquestr::ConQuestRout()
+myRoutTest <- suppressMessages(conquestr::ConQuestRout())
 myRoutDfTest <- conquestr::routPointsToDf(myRoutTest)
 myRoutPlot <- conquestr::plotRout(myRoutTest)
 

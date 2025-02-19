@@ -20,19 +20,39 @@ library("conquestr")
 
 # Introduction
 
-This vignette demonstrates how to use _conquestr_ to integrate 'ACER ConQuest' item analysis output into a markdown-based analysis and reporting workflow. In the examples provided we also illustrate how _conquestr_ can support the analyst to visualise and communicate 'ACER ConQuest' test and item analysis in a user-friendly way through various functions for producing conditioanlly formatted tables of statistics that are germane to psychometric analysis.
+This vignette demonstrates how to use _conquestr_ to integrate 'ACER ConQuest' 
+item analysis output into a markdown-based analysis and reporting workflow. 
+In the examples provided we also illustrate how _conquestr_ can support the 
+analyst to visualise and communicate 'ACER ConQuest' test and item analysis in 
+a user-friendly way through various functions for producing conditioanlly 
+formatted tables of statistics that are germane to psychometric analysis.
 
-The basic approach involves using _conquestr_ to read in and process the `itanal` objects stored in an 'ACER ConQuest' system file. This workflow can be used when an 'ACER ConQuest' analysis is performed outside of the R environment to produce a system file. It is also easy to extend this workflow to perform end-to-end analysis and reporting by calling 'ACER ConQuest' from with _conquestr_ to produce the relevant system file (see the function `ConQuestCall`).
+The basic approach involves using _conquestr_ to read in and process the `itanal` 
+objects stored in an 'ACER ConQuest' system file. 
+This workflow can be used when an 'ACER ConQuest' analysis is performed outside 
+of the R environment to produce a system file. 
+It is also easy to extend this workflow to perform end-to-end analysis and 
+reporting by calling 'ACER ConQuest' from with _conquestr_ to produce the 
+relevant system file (see the function `ConQuestCall`).
 
-To keep this illustration relatively simple, a short test consisting of 12 multiple-choice items is analysed with a unidimensional Rasch model using Marginal Maximum Likelihood estimation.
+To keep this illustration relatively simple, a short test consisting of 12 
+multiple-choice items is analysed with a unidimensional Rasch model using 
+Marginal Maximum Likelihood estimation.
 
 # Get itanal from a system file
 
 conquestr has a built in system file that we will use for this example.
 
-The function `getCqItanal` will return a list of lists, each list relating to one generalised item from an 'ACER ConQuest' `itanal` output. The list for each item contains the following information: (1) the item name according to the item label, (2) a table of item category statistics for the item, and (3) the item-total and item-rest correlations for the item.
+The function `getCqItanal` will return a list of list of lists, each list relating 
+to one generalised item from an 'ACER ConQuest' `itanal` output. 
+The list for each item contains the following information: 
 
-Note that you must use `matrixout` in your 'ACER ConQuest' call to `itanal` to ensure that these objects are available in the system file from your analysis.
+(1) the item name according to the item label, 
+(2) a table of item category statistics for the item, and 
+(3) the item-total and item-rest correlations for the item.
+
+Note that you must use `matrixout` in your 'ACER ConQuest' call to `itanal` to 
+ensure that these objects are available in the system file from your analysis.
 
 ```{r}
 
@@ -43,19 +63,31 @@ myEx1Sys <- ConQuestSys()
 myEx1Sys_itanal <- getCqItanal(myEx1Sys)
 
 # show unformatted list objects for first item
-print(myEx1Sys_itanal[[1]])
+print(myEx1Sys_itanal[[1]][[1]])
 
 ```
 
-Following the item-specific list objects, the last element of the list returned by `getCqItanal` contains summary statistics for the full set of items. The summary statistics include raw and latent score distribution statistics and Cronbach's coefficient $\alpha$.
+Following the item-specific list objects, the last element of the list returned 
+by `getCqItanal` contains summary statistics for the full set of items. 
+The summary statistics include raw and latent score distribution statistics and 
+Cronbach's coefficient $\alpha$.
 
 # Create formatted itanal tables for a report
 
-So far, we have shown how to access the test and item analysis statistics that are available through the itanal command in 'ACER ConQuest' and we have shown these without any formatting. One of the many benefits of integrating 'ACER ConQuest' output into a markdown document is to permit automated conditional formatting of item analysis output. In this section we show how this conditional formatting can be set up.
+So far, we have shown how to access the test and item analysis statistics that 
+are available through the itanal command in 'ACER ConQuest' and we have shown 
+these without any formatting. One of the many benefits of integrating 
+'ACER ConQuest' output into a markdown document is to permit automated 
+conditional formatting of item analysis output. 
+In this section we show how this conditional formatting can be set up.
 
 ## Set up criteria for conditional formatting
 
-Pre-specifying criteria for conditionally formatting item analysis output is a key step in an automated workflow. Any number of metrics from the item analysis can be specified for conditional formatting. Several of these can be passed to _conquestr_ functions as will be illustrated in the following sections.
+Pre-specifying criteria for conditionally formatting item analysis output is a 
+key step in an automated workflow. Any number of metrics from the item analysis 
+can be specified for conditional formatting. 
+Several of these can be passed to _conquestr_ functions as will be illustrated 
+in the following sections.
 
 ```{r}
 
@@ -73,7 +105,10 @@ ptBisFlag <- 0.0 # highlight if non-key ptBis r is MORE than this value
 
 ## An example of an html itanal table for item categories
 
-The function `fmtCqItanal` will return a formated version of the itanal object that we read in earlier.  Presently this function will apply coloured text to any distractor point biserial correlation that is larger than `r ptBisFlag`. The following example shows the output for the fourth item in the current item analysis.
+The function `fmtCqItanal` will return a formated version of the itanal object 
+that we read in earlier.  Presently this function will apply coloured text to 
+any distractor point biserial correlation that is larger than `r ptBisFlag`. 
+The following example shows the output for the fourth item in the current item analysis.
 
 ```{r}
 
@@ -81,15 +116,18 @@ The function `fmtCqItanal` will return a formated version of the itanal object t
 myEx1Sys_itanal_f <- fmtCqItanal(myEx1Sys_itanal, ptBisFlag = ptBisFlag, textColHighlight = "red")
 
 # print table
-myEx1Sys_itanal_f[[4]]$table
+myEx1Sys_itanal_f[[1]][[4]]$table
 
 # print summary
-myEx1Sys_itanal_f[[length(myEx1Sys_itanal_f)]] # the last object is always the summary
+myEx1Sys_itanal_f[[1]][[length(myEx1Sys_itanal_f[[1]])]] # the last object is always the summary
 
 ```
 
 # Conclusion
 
-This short vignette has illustrated how to access and display itanal output from an 'ACER ConQuest' analysis using _conquestr_. Future vignettes will demonstrate basic and advanced plotting and the production of publication quality item analysis technical reports.
+This short vignette has illustrated how to access and display itanal output 
+from an 'ACER ConQuest' analysis using _conquestr_. Future vignettes will 
+demonstrate basic and advanced plotting and the production of publication 
+quality item analysis technical reports.
 
 

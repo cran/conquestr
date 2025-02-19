@@ -12,7 +12,7 @@
 
 <meta name="author" content="Dan Cloney" />
 
-<meta name="date" content="2024-07-24" />
+<meta name="date" content="2025-02-19" />
 
 <title>Introduction to conquestr</title>
 
@@ -62,7 +62,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Introduction to conquestr</h1>
 <h4 class="author">Dan Cloney</h4>
-<h4 class="date">2024-07-24</h4>
+<h4 class="date">2025-02-19</h4>
 
 
 
@@ -449,11 +449,11 @@ is read into the R object <code>myExSys</code>.</p>
 <span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a></span>
 <span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co"># see the content of the sysfile</span></span>
 <span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="fu">str</span>(myExSys)</span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; List of 211</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; List of 212</span></span>
 <span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt;  $ compressedString       : chr &quot;uncompressed&quot;</span></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;  $ builddate              : chr &quot;Jul 23 2024&quot;</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;  $ writedate              : chr &quot;Tue Jul 23 15:06:15 2024\n&quot;</span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;  $ cqs_version            : int 26</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;  $ builddate              : chr &quot;Oct 17 2024&quot;</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;  $ writedate              : chr &quot;Mon Oct 28 16:17:17 2024\n&quot;</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;  $ cqs_version            : int 27</span></span>
 <span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;  $ gNCases                :List of 11</span></span>
 <span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1000</span></span>
 <span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt;   ..$ : num 1000</span></span>
@@ -543,7 +543,7 @@ is read into the R object <code>myExSys</code>.</p>
 <span id="cb4-110"><a href="#cb4-110" tabindex="-1"></a><span class="co">#&gt;  $ gHistoWeights          : logi [1, 1] NA</span></span>
 <span id="cb4-111"><a href="#cb4-111" tabindex="-1"></a><span class="co">#&gt;  $ gOldHisto              : logi [1, 1] NA</span></span>
 <span id="cb4-112"><a href="#cb4-112" tabindex="-1"></a><span class="co">#&gt;  $ gBestHisto             : logi [1, 1] NA</span></span>
-<span id="cb4-113"><a href="#cb4-113" tabindex="-1"></a><span class="co">#&gt;  $ gYBeta                 : num [1, 1] 0</span></span>
+<span id="cb4-113"><a href="#cb4-113" tabindex="-1"></a><span class="co">#&gt;  $ gYBetaAll              : num [1, 1] 0</span></span>
 <span id="cb4-114"><a href="#cb4-114" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
 <span id="cb4-115"><a href="#cb4-115" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
 <span id="cb4-116"><a href="#cb4-116" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>

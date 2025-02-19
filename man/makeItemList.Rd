@@ -81,9 +81,9 @@ Otherwise a data.frame or matrix defining the discrimination parameter for each 
 If a data frame, column labels should be "id", "itemid", "step", "discrim".
 If step is NA and there is only one entry for an item "itemid", the discrimination is
 assumed to be constant for all response categories with the item.
-This is the case for names models like the GPCM and 2PL models, and can be a short
+This is the case for named models like the GPCM and 2PL models, and can be a short
 hand way of defining the discrimination without specifying all categories.
-When discrimination varies across scoring categories, the bock-nominal model is implied.
+When discrimination varies across scoring categories, the Bock-nominal model is implied.
 In the case of discrimination varying across scoring categories, all categories must be
 defined.
 

@@ -7,7 +7,7 @@
 ReadAllResponseData(myFile, N)
 }
 \arguments{
-\item{myFile}{An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
+\item{myFile}{An 'ACER ConQuest' system file.}
 
 \item{N}{An integer representation of 'ACER ConQuest' object gNCases.}
 }

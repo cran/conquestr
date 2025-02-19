@@ -86,7 +86,9 @@ ConQuestCall <- function(cqc, cqExe, stdout = "") {
 #' cat(unlist(myEx1SysData$gCommandHistory))
 #' }
 ConQuestSys <- function(myCqs, isMini = FALSE) {
-
+  isDebug <- FALSE
+  if (isDebug) message("Begin call to `ConQuestSys`")
+  if (isDebug) message("  Check if `myCqs` is provided")
   if (missing(myCqs))
   {
     message("no system file provided, loading the example system file instead")
@@ -106,18 +108,21 @@ ConQuestSys <- function(myCqs, isMini = FALSE) {
     )
   }
 
+  if (isDebug) message("    Set `myMode` to `rb`")
   myMode <- "rb"
   #if (Sys.info()["sysname"] == "Linux") myMode <- "w+b"
   myFile <- file(myCqs, myMode)
 
+  if (isDebug) message("    Check if  `myCqs` is compressed")
   # is this a compressed file?
   compressedString <- tryCatch(
     {
+       if (isDebug) message("    begin `ReadString(myFile)`")
        ReadString(myFile)
     },
     error = function(e) {
-      e$message <- paste0("System file is compressed. Decompressing ... ")
-      message(e)
+      # this is blank to ensure an error is not proc'd as this interferes with 
+      # workflows that use knitr or shiny that break on error
     },
     finally = {
       # close and reopen file - rewind is discouraged for Win in man
@@ -125,12 +130,14 @@ ConQuestSys <- function(myCqs, isMini = FALSE) {
       myFile <- file(myCqs, myMode)
     }
   )
+  if (isDebug) message("    End check if  `myCqs` is compressed")
 
   if (is.null(compressedString)) {
+    message("System file is compressed. Decompressing ... ")
     compressedString <- "compressed"
     myFile <- DecompressSys(myFile)
     message(
-      "decompression complete"
+      "complete"
     )
   }
 
@@ -154,14 +161,17 @@ ConQuestSys <- function(myCqs, isMini = FALSE) {
 
 #' @title ConQuestRout
 #'
-#' @description Read an ''ACER ConQuest'' rout file created by a `plot` command in 'ACER ConQuest'.
+#' @description Read an 'ACER ConQuest' rout file (a binary file) 
+#'   created by a [`plot`](https://conquestmanual.acer.org/s4-00.html#commandPlot) 
+#'   command in 'ACER ConQuest'.
 #'
-#' @param myRout The location of an 'ACER ConQuest' rout file created by 'ACER ConQuest'
-#' @return A list containing the data objects created by 'ACER ConQuest' plot command.
+#' @param myRout The path to the binary rout file.
+#' @return A list containing the data objects to recreate 'ACER ConQuest' plots.
 #' @examples
 #' myPlot <- ConQuestRout()
 #' \dontrun{
-#' # if you run the above example you will have the points from a plot ICC command.
+#' # the default example is an ICC plot from Example 1 
+#' # <https://conquestmanual.acer.org/s2-00.html#s2-02>.
 #' str(myPlot)
 #' }
 ConQuestRout <- function(myRout) {

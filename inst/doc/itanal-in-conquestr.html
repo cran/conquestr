@@ -12,7 +12,7 @@
 
 <meta name="author" content="Nathan Zoanetti, Dan Cloney" />
 
-<meta name="date" content="2024-07-24" />
+<meta name="date" content="2025-02-19" />
 
 <title>Item analysis tables in conquestr</title>
 
@@ -286,7 +286,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -564,7 +564,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Item analysis tables in conquestr</h1>
 <h4 class="author">Nathan Zoanetti, Dan Cloney</h4>
-<h4 class="date">2024-07-24</h4>
+<h4 class="date">2025-02-19</h4>
 
 
 
@@ -593,12 +593,15 @@ model using Marginal Maximum Likelihood estimation.</p>
 <h1>Get itanal from a system file</h1>
 <p>conquestr has a built in system file that we will use for this
 example.</p>
-<p>The function <code>getCqItanal</code> will return a list of lists,
-each list relating to one generalised item from an ‘ACER ConQuest’
-<code>itanal</code> output. The list for each item contains the
-following information: (1) the item name according to the item label,
-(2) a table of item category statistics for the item, and (3) the
-item-total and item-rest correlations for the item.</p>
+<p>The function <code>getCqItanal</code> will return a list of list of
+lists, each list relating to one generalised item from an ‘ACER
+ConQuest’ <code>itanal</code> output. The list for each item contains
+the following information:</p>
+<ol style="list-style-type: decimal">
+<li>the item name according to the item label,</li>
+<li>a table of item category statistics for the item, and</li>
+<li>the item-total and item-rest correlations for the item.</li>
+</ol>
 <p>Note that you must use <code>matrixout</code> in your ‘ACER ConQuest’
 call to <code>itanal</code> to ensure that these objects are available
 in the system file from your analysis.</p>
@@ -611,9 +614,9 @@ in the system file from your analysis.</p>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>myEx1Sys_itanal <span class="ot">&lt;-</span> <span class="fu">getCqItanal</span>(myEx1Sys)</span>
 <span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a></span>
 <span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co"># show unformatted list objects for first item</span></span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="fu">print</span>(myEx1Sys_itanal[[<span class="dv">1</span>]])</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="fu">print</span>(myEx1Sys_itanal[[<span class="dv">1</span>]][[<span class="dv">1</span>]])</span>
 <span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; $name</span></span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;item:1 (item one)&quot;</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;item:1 (item one) group:All Cases&quot;</span></span>
 <span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt; $table</span></span>
 <span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt;   Category Score Count    Percent      Pt Bis Pt Bis t stat.  Pt Bis sig.</span></span>
@@ -677,10 +680,10 @@ fourth item in the current item analysis.</p>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>myEx1Sys_itanal_f <span class="ot">&lt;-</span> <span class="fu">fmtCqItanal</span>(myEx1Sys_itanal, <span class="at">ptBisFlag =</span> ptBisFlag, <span class="at">textColHighlight =</span> <span class="st">&quot;red&quot;</span>)</span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># print table</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>myEx1Sys_itanal_f[[<span class="dv">4</span>]]<span class="sc">$</span>table</span></code></pre></div>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>myEx1Sys_itanal_f[[<span class="dv">1</span>]][[<span class="dv">4</span>]]<span class="sc">$</span>table</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
-Item category statistics for: item:4 (item four)
+Item category statistics for: item:4 (item four) group:All Cases
 </caption>
 <thead>
 <tr>
@@ -863,7 +866,7 @@ d
 </table>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co"># print summary</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>myEx1Sys_itanal_f[[<span class="fu">length</span>(myEx1Sys_itanal_f)]] <span class="co"># the last object is always the summary</span></span></code></pre></div>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>myEx1Sys_itanal_f[[<span class="dv">1</span>]][[<span class="fu">length</span>(myEx1Sys_itanal_f[[<span class="dv">1</span>]])]] <span class="co"># the last object is always the summary</span></span></code></pre></div>
 <table>
 <caption>Item Analysis Summary Statistics</caption>
 <thead>

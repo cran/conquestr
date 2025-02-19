@@ -176,7 +176,7 @@ ReadSys <- function(myFile, isMini) {
   gHistoWeights <- ReadMatrix(myFile)
   gOldHisto <- ReadMatrix(myFile)
   gBestHisto <- ReadMatrix(myFile)
-  gYBeta <- ReadMatrix(myFile)
+  gYBetaAll <- ReadMatrix(myFile)
 
     # debugging block - creates objects in global env in case this funtion fails before it creates the system file object at the end
     # gFilterTemp<<- gFilter; print("gFilterTemp is available for debugging") # debug
@@ -201,7 +201,7 @@ ReadSys <- function(myFile, isMini) {
     # gHistoWeightsTemp<<- gHistoWeights; print("gHistoWeightsTemp is available for debugging") # debug
     # gOldHistoTemp<<- gOldHisto; print("gOldHistoTemp is available for debugging") # debug
     # gBestHistoTemp<<- gBestHisto; print("gBestHistoTemp is available for debugging") # debug
-    # gYBetaTemp<<- gYBeta; print("gYBetaTemp is available for debugging") # debug
+    # AllTemp<<- gYBetaAll; print("gYBetaAllTemp is available for debugging") # debug
 
   check <- ReadInteger(myFile)
   if (myDebug) print(paste0("check: ", check)) # check 2
@@ -564,6 +564,12 @@ ReadSys <- function(myFile, isMini) {
   check <- ReadInteger(myFile)
   if (myDebug) print(paste0("check: ", check)) # check 12
 
+  if (cqs_version >=27) {
+    gTokenList <- ReadNamedStringList(myFile)
+    if (myDebug) print(str(gTokenList))
+  } else {
+    gTokenList <- NULL
+  }
   gMatrixList <- ReadMatrixVars(myFile)
 
   check <- ReadInteger(myFile)
@@ -658,7 +664,7 @@ ReadSys <- function(myFile, isMini) {
     gHistoWeights = gHistoWeights,
     gOldHisto = gOldHisto,
     gBestHisto = gBestHisto,
-    gYBeta = gYBeta,
+    gYBetaAll = gYBetaAll,
     # check 2
     gWtFactor = gWtFactor,
     gSuffXsi = gSuffXsi,
@@ -825,6 +831,7 @@ ReadSys <- function(myFile, isMini) {
     # check 11
     gResponseData = gResponseData,
     # check 12
+    gTokenList = gTokenList,
     gMatrixList = gMatrixList,
     gXsiParameterLabels = gXsiParameterLabels,
     gTauParameterLabels = gTauParameterLabels,

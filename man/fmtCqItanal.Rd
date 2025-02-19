@@ -6,6 +6,7 @@
 \usage{
 fmtCqItanal(
   cqItanal,
+  groups = "all",
   itemNumber = "all",
   ptBisFlag = 0,
   textColHighlight = "red",
@@ -14,6 +15,8 @@ fmtCqItanal(
 }
 \arguments{
 \item{cqItanal}{An ACER ConQuest itanal list object returned by function \code{getCqItanal}.}
+
+\item{groups}{a vector of group levels to include in the format.}
 
 \item{itemNumber}{a vector of generalised item numbers to format.}
 

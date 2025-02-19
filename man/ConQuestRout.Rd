@@ -7,18 +7,21 @@
 ConQuestRout(myRout)
 }
 \arguments{
-\item{myRout}{The location of an 'ACER ConQuest' rout file created by 'ACER ConQuest'}
+\item{myRout}{The path to the binary rout file.}
 }
 \value{
-A list containing the data objects created by 'ACER ConQuest' plot command.
+A list containing the data objects to recreate 'ACER ConQuest' plots.
 }
 \description{
-Read an ''ACER ConQuest'' rout file created by a \code{plot} command in 'ACER ConQuest'.
+Read an 'ACER ConQuest' rout file (a binary file)
+created by a \href{https://conquestmanual.acer.org/s4-00.html#commandPlot}{\code{plot}}
+command in 'ACER ConQuest'.
 }
 \examples{
 myPlot <- ConQuestRout()
 \dontrun{
-# if you run the above example you will have the points from a plot ICC command.
+# the default example is an ICC plot from Example 1 
+# <https://conquestmanual.acer.org/s2-00.html#s2-02>.
 str(myPlot)
 }
 }

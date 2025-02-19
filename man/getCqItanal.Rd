@@ -4,14 +4,20 @@
 \alias{getCqItanal}
 \title{getCqItanal}
 \usage{
-getCqItanal(sysFile, matrixPrefix = "", isDebug = FALSE)
+getCqItanal(sysFile, matrixPrefix = NULL, isDebug = FALSE)
 }
 \arguments{
 \item{sysFile}{An ACER ConQuest system file.}
 
-\item{matrixPrefix}{to define which itanal to process}
+\item{matrixPrefix}{The name of the itanal analysis defined in ACER ConQuest.
+For example, in ACER ConQuest syntax \verb{itanal ! matrixout = itan, ... ;}
+the value of \code{matrixPrefix} is "itan".
+Note, this is required as an ACER ConQuest system file can contain outputs
+from several calls to \emph{itanal}. A common use, for example, is to call \emph{itanal}
+for an overall analysis, and a second call to \emph{itanal} for group-level
+analysis.}
 
-\item{isDebug}{report debug output}
+\item{isDebug}{A boolean to toggle on or off debug output}
 }
 \value{
 A list.

@@ -7,7 +7,7 @@
 ReadBDesignMatrices(myFile, ItemSteps, Items)
 }
 \arguments{
-\item{myFile}{An uncompressed 'ACER ConQuest' system file created by 'ACER ConQuest'.}
+\item{myFile}{An 'ACER ConQuest' system file.}
 
 \item{ItemSteps}{An integer representation of 'ACER ConQuest' object gItemSteps.}
 

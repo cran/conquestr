@@ -1,98 +1,3 @@
-#' @title genItems
-#'
-#' @description Generates a list of item parameter matrices for use in
-#'   function like `conquestr::genResponses` and `conquestr::informationWrightMap`
-#'
-#' @param n How many items?
-#' @param scores When NULL it is assumed that all items have
-#'   integer scoring, increasing for each category k, and beginning from 0.
-#'   Otherwise a list where the elements are, in order:
-#'   * a string naming a distribution function (for example `runif`, `rnorm`) to generate random deviates
-#'     from (the scores).
-#'   * a list of parameters to pass to the distribution function (for example, for `runif`, a list of
-#'     length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
-#'     the function.
-#'   * a boolean indicating whether the scores should be forced to be increasing across the response
-#'     categories.
-#'   * optionally a vector of item numbers to apply scores too. If not provided it is assumed that all items
-#'     will be scored.
-#' @param deltadots A list where the elements are, in order:
-#'   * a string naming a distribution function (for example `runif`, `rnorm`) to generate random deviates
-#'     from (the delta dots).
-#'   * a list of parameters to pass to the distribution function (for example, for `runif`, a list of
-#'     length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
-#'     the function.
-#' @param taus When NULL all items are assumed to be dichotomies.
-#'   Otherwise a list where the elements are, in order:
-#'   * a string naming a distribution function (for example `runif`, `rnorm`) to generate random deviates
-#'     from (the taus).
-#'     Or the string "manual" to indicate that a user-defined list of the tau parameters will be
-#'     provided.
-#'   * a list of parameters to pass to the distribution function (for example, for `runif`, a list of
-#'     length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
-#'     the function. if the first element in `taus` is "manual" this should be a list of taus to be used
-#'     this must be of the correct dimensions - for example, if there are 2 polytomous items being generated,
-#'     each with 3 response categories (k), then the list should be of length 2: 2 * (k-  2) =  2 * (3 - 2) =
-#'     2 taus. This is because there are k-1 taus per item, and the last tau is always constrained to be the negative
-#'     sum of the rest for identification purposes.
-#'   * a Boolean indicating whether the taus should be forced to be increasing across the response
-#'     category boundaries (that is, enforce that no item exhibits disordered thresholds).
-#'   * optionally a vector of item numbers to produce taus for. If not provided it is assumed that all items
-#'     are polytomous.
-#'   * optionally a vector of response categories to apply to each item. For example if the user indicates that
-#'     5 items are polytomous, then a vector of length 5 where the first elements describes the count of response
-#'     categories for the first polytomous item, the second element describes the count of response
-#'     categories for the second polytomous item, and so on
-#' @param discrims When NULL all items are assumed to have constant discrimination equal to 1.
-#'   Otherwise a list where the elements are, in order:
-#'   * a string naming a distribution function (for example `runif`, `rnorm`) to generate random deviates
-#'     from (the discriminations).
-#'     Or the string "manual" to indicate that a user-defined list of the discrimination parameters will be
-#'     provided.
-#'   * a list of parameters to pass to the distribution function (for example, for `runif`, a list of
-#'     length 2 defining "min" and "max"). This list is assumed to be in order to be directly passed into
-#'     the function.
-#'   * a Boolean indicating whether the discriminations are constant within items or whether each response category
-#'     within an item will have its own score should be forced to be increasing across the response
-#'     category boundaries (that is, this can be one way of specifying the Bock Nominal model).
-#'   * optionally a vector of items to apply a unique discrimination to. Otherwise it is assumed that all items
-#'     have unique discriminations.
-#' @return A list of item matrices.
-#' @seealso [conquestr::simplef()], [conquestr::genResponses()], `browseVignettes("conquestr")`
-#' @examples
-#'   myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
-#'   myItems <- list(myItem, myItem)
-#'   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
-#'   myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
-#' @importFrom stats runif rnorm
-genItems <- function(n, scores = NULL, deltadots, taus = NULL, discrims = 1) {
-  # TODO: check inputs are valid
-
-  resultList <- list()
-
-  if (is.null(taus)) {
-    isDicho <- TRUE
-  } else {
-    isDicho <- FALSE
-    # later need to check that this is true!
-    # after we draw the taus, check that there is > 2 resp cats per item
-  }
-
-  if (deltadots[[1]] == "runif") {
-    myMin <- deltadots[[2]][1]
-    myMax <- deltadots[[2]][2]
-    myDeltaD <- runif(n, myMin, myMax)
-  } else if (deltadots[[1]] == "rnorm") {
-    myMu <- deltadots[[2]][1]
-    mySd <- deltadots[[2]][2]
-    myDeltaD <- rnorm(n, myMu, mySd)
-  } else {
-    stop ('only "runif", and "rnorm" currently supported')
-  }
-
-  return(NULL)
-}
-
 #' @title genResponses
 #'
 #' @description Generates response vectors for `n` cases to `i` items given
@@ -555,7 +460,7 @@ cnvrtItemParam <- function(item, from = "muraki", to = "conquest", D = 1) {
 #' a <- 1.5
 #' k <- 3
 #' itemParamX <- seq(0, k-1, 1)
-#' itemParamD <- rep(myDelta, k)
+#' itemParamD <- c(0, rep(myDelta, k-1))
 #' itemParamT <- c(0, -0.5, 0.5)
 #' itemParamA <- rep(a, k)
 #' itemParam <- cbind(itemParamX, itemParamD, itemParamT, itemParamA)
@@ -797,9 +702,9 @@ theta_ll <- function(theta, responses, itemParams) {
 #'    If a data frame, column labels should be "id", "itemid", "step", "discrim".
 #'    If step is NA and there is only one entry for an item "itemid", the discrimination is
 #'    assumed to be constant for all response categories with the item.
-#'    This is the case for names models like the GPCM and 2PL models, and can be a short
+#'    This is the case for named models like the GPCM and 2PL models, and can be a short
 #'    hand way of defining the discrimination without specifying all categories.
-#'    When discrimination varies across scoring categories, the bock-nominal model is implied.
+#'    When discrimination varies across scoring categories, the Bock-nominal model is implied.
 #'    In the case of discrimination varying across scoring categories, all categories must be
 #'    defined.
 #'
@@ -880,7 +785,7 @@ makeItemList <- function(scores = NULL, deltaDot, tau = NULL, discrim = 1) {
 
   # error checking
   if (!inherits(myDlt, "data.frame") || !inherits(myTau, "data.frame")) {
-    stop("deltaDot and tau must be data frames or matricies")
+    stop("deltaDot and tau must be data frames or matrices")
   }
   if (any(!c("id", "delta") %in% names(myDlt))) {
     stop("'deltaDot' must contain the column labels 'id' and 'delta'")
@@ -889,13 +794,28 @@ makeItemList <- function(scores = NULL, deltaDot, tau = NULL, discrim = 1) {
     stop("'tau' must contain the column labels 'id', 'step', and 'tau'")
   }
   if (inherits(myDlt, "data.frame")) {
-    if (!is.numeric(myDlt$delta)) stop("in `deltaDot`, 'delta' must be numeric")
-    if (!is.integer(myDlt$id)) stop("in `deltaDot`, 'id' must be an integer")
+    if (!is.numeric(myDlt$delta)) {
+      myDlt$delta <- as.numeric(myDlt$delta)
+      if (!is.numeric(myDlt$delta)) stop("in `deltaDot`, 'delta' must be numeric")
+    }
+    if (!is.integer(myDlt$id)) {
+      myDlt$id <- as.integer(myDlt$id)
+      if (!is.integer(myDlt$id)) stop("in `deltaDot`, 'id' must be an integer")
+    } 
   }
   if (inherits(myTau, "data.frame")) {
-    if (!is.numeric(myTau$tau)) stop("in `tau`, 'tau' must be numeric")
-    if (!is.integer(myTau$id)) stop("in `tau`, 'id' must be an integer")
-    if (!is.integer(myTau$step)) stop("in `tau`, 'step' must be an integer")
+    if (!is.numeric(myTau$tau)) {
+      myTau$tau <- as.numeric(myTau$tau)
+      if (!is.numeric(myTau$tau)) stop("in `tau`, 'tau' must be numeric")
+    }
+    if (!is.integer(myTau$id)) {
+      myTau$id <- as.integer(myTau$id)
+      if (!is.integer(myTau$id)) stop("in `tau`, 'id' must be an integer")
+    } 
+    if (!is.integer(myTau$step)) {
+      myTau$step <- as.integer(myTau$step)
+      if (!is.integer(myTau$step)) stop("in `tau`, 'step' must be an integer")
+    }
     # remember that tau can be all NA, so double check this too
     if (!all(tau$id %in% myDlt$id) && !all(is.na(tau$id))) stop(
       paste0(
@@ -1022,6 +942,178 @@ makeItemList <- function(scores = NULL, deltaDot, tau = NULL, discrim = 1) {
   return(myItems)
 }
 
+#' @title makeItemDfs
+#'
+#' @description takes in a list of item matrices and returns a list of data frames
+#'    each representing the parameters given in the matrices. The return object is 
+#'    suitable to pass into `conquestr::makeItemList` to construct a lit of matrices
+#'    where each matrix represent one item's set of item parameters. The structure of the
+#'    matrix is the same as used in `conquestr::simplef`
+#'    (a matrix of k categories by four (category score, delta dot, tau, discrimination)).
+#'    A common use for this function is turn a list of item matrices into a flat data 
+#'    structure.
+#'
+#' @param itemList a list of item matrices. The structure of each
+#'    matrix is the same as used in `conquestr::simplef`
+#'    (a matrix of k categories by four (category score, delta dot, tau, discrimination)).
+#' 
+#'
+#' @return a list.
+#' @examples
+#' nItems <- 10
+#' myItemsDeltaDot <- data.frame(
+#'   id= seq(nItems),
+#'   itemid= NA,
+#'   delta = runif (nItems, -4, 1) # nItems items in range -4,1
+#' )
+#' myItemsList <- conquestr::makeItemList(deltaDot = myItemsDeltaDot)
+makeItemDfs <- function(itemList) {
+  # used for internal debugging
+  isDebug <- FALSE
+
+  # return object
+  myItems <- list()
+
+  # set up
+  anyPolyItems <- FALSE
+  firstPolyItem <- 0
+
+  if (missing(itemList) || !is.list(itemList)) {
+   stop("'itemList' must be a list of item matrices")
+  }
+
+  for (i in seq(itemList)) {
+    if (!is.matrix(itemList[[i]])) stop("elements of 'itemList' must be matrices")
+    if (nrow(itemList[[i]]) < 2) stop("elements of 'itemList' must have at least 2 rows")
+    if (ncol(itemList[[i]]) != 4) stop(
+      "elements of 'itemList' must have 4 columns: score, delta dot, tau, discrimination"
+    )
+    if (nrow(itemList[[i]]) > 2) {
+      anyPolyItems <- TRUE
+      if (firstPolyItem == 0) firstPolyItem <- i
+      # print(paste0("setting `anyPolyItems` to true, and `firstPolyItem` is: ", firstPolyItem))
+    }
+  }
+
+  # do the elements of itemList have names? If not, use counter for "itemid"
+  if(is.null(names(itemList))) {
+    isNamed <- FALSE
+  } else {
+    isNamed <- TRUE
+  }
+
+  for (i in seq(itemList)) {
+    
+    thisItemName <- as.character(i)
+    if (isNamed) thisItemName<- names(itemList)[i]
+
+    thisItemPoly <- FALSE
+    if (anyPolyItems && nrow(itemList[[i]]) > 2) thisItemPoly <- TRUE
+    
+    thisItemConstDiscrim <- TRUE
+    if (length(unique((itemList[[i]][2:(nrow(itemList[[i]])),4]))) > 1) {
+      thisItemConstDiscrim <- FALSE
+    }
+
+    #scores
+      # * "id" is an integer
+      # * "itemid" is a character string
+      # * "step" is an integer
+      # * "score" is numeric
+      # * The original category scores (i.e., increasing integer scoring) is preserved in the rownames of the matrix.
+    tScores <- data.frame(
+      id = as.integer(i),
+      itemid = thisItemName,
+      step = 1:nrow(itemList[[i]]),
+      score = itemList[[i]][ , 1]
+    )
+
+    # deltadots
+      # "id" is an integer
+      # "itemid" is a character string
+      # "delta" is numeric
+    tDeltaDot <- data.frame(
+      id = as.integer(i),
+      itemid = thisItemName,
+      delta = itemList[[i]][nrow(itemList[[i]]), 2]
+    )
+
+    # tau
+      # "id" is an integer
+      # "itemid" is a character string
+      # "step" is an integer
+      # "tau" is numeric
+    # print(paste0("is this item poly? ", thisItemPoly, " nrows(itemList[[i]]): ", nrow(itemList[[i]])))
+    if (thisItemPoly) {
+      #print(
+      #  paste0(
+      #    "thisItemPoly: ", as.integer(i),
+      #    " id: ", thisItemName, 
+      #    " itemid: ", thisItemName, 
+      #    " step: ", 1:(nrow(itemList[[i]])-2), 
+      #    " tau: ", itemList[[i]][2:(nrow(itemList[[i]])-1) , 3]
+      #  )
+      #)
+       tTau <- data.frame(
+        id = as.integer(i),
+        itemid = thisItemName,
+        step = 1:(nrow(itemList[[i]])-2),
+        tau = itemList[[i]][2:(nrow(itemList[[i]])-1) , 3]
+       )
+    }
+
+    # discrim
+      # when 1 row in DF and step = NA, discrim is for all cats
+      # otherwise all steps must be defined 
+      # "id" is an integer
+      # "itemid" is a character string
+      # "step" is an integer
+      # "discrim" is numeric
+    tDiscrim <- data.frame(
+      id = as.integer(i),
+      itemid = thisItemName,
+      step = if (thisItemConstDiscrim) {
+        NA
+      } else {
+        1:nrow(itemList[[i]])
+      },
+      discrim = if (thisItemConstDiscrim) {
+        itemList[[i]][2, 4]
+      } else {
+        itemList[[i]][ , 4]
+      }
+    )
+
+    if (i == 1) {
+      scoresDf <- tScores
+      deltaDotDf <- tDeltaDot
+      discrimDf <- tDiscrim
+    } else {
+      scoresDf <- rbind(scoresDf, tScores)
+      deltaDotDf <- rbind(deltaDotDf, tDeltaDot)
+      discrimDf <- rbind(discrimDf, tDiscrim)
+    }
+    if (anyPolyItems && i >= firstPolyItem) {
+      if (i == firstPolyItem) {
+      tauDf <- tTau
+      } else {
+      tauDf <- rbind(tauDf, tTau)
+      }
+    }
+  }
+
+  myItems[["scores"]] <- scoresDf
+  myItems[["deltaDot"]] <- deltaDotDf
+  if (anyPolyItems) {
+    myItems[["tau"]] <- tauDf
+  } else {
+    myItems[["tau"]] <- NULL
+  }
+  myItems[["discrim"]] <- discrimDf
+
+  
+  return(myItems)
+}
 
 #' @title mleCalc
 #'

@@ -307,15 +307,22 @@ createConQuestProject <- function(prefix = getwd(), ...) {
 
 #' @title getCqHist
 #'
-#' @description creates a data frame representation of the iteration history for all parameters.
+#' @description creates a data frame representation of the iteration history 
+#'   for all parameters.
 #'
-#' @param myCqs A system file.
+#' @param myCqs An ACER ConQuest system file created using the conquest 
+#'   command, [put](https://conquestmanual.acer.org/s4-00.html#put).
+#' @param labelParams A boolean. When true, and if long (user) 
+#'   parameter labels are available, replace default history column names 
+#'   (e.g., "Xsi1") with user labels (e.g., "Item one"). 
+#'   Currently only available for Xsi and Tau.
 #' @return A data frame.
+#' @seealso [conquestr::getCqChain()] which is a wrapper for this function
+#'   to use with models estimated by Markov chain Monte Carlo (MCMC) methods.
 #' @examples
-#' \dontrun{
-#' getCqHist(ConQuestSys())
-#' }
-getCqHist <- function(myCqs) {
+#' myHist <- getCqHist(ConQuestSys(), labelParams = TRUE)
+#' str(myHist)
+getCqHist <- function(myCqs, labelParams = FALSE) {
 
   IterHistTmp <- data.frame(
     RunNo = unlist(myCqs$gHistory$RunNo),
@@ -336,12 +343,15 @@ getCqHist <- function(myCqs) {
   for (paramType in ParamTypesTmp) {
     # which lists in gHistory are we working with?
     whichParam <- as.logical(match(names(myCqs$gHistory), paramType, nomatch = 0)) 
+    histList[[paramType]] <- unlist(myCqs$gHistory[whichParam])
+    # if this paramType is not used in this model (all NA) move on to the next param
+    if (all(is.na(histList[[paramType]]))) next
+    
     # Deal with "Xsi" , "Tau", "RanTermVariance"
     # beta is special case, 1 row per dim, var is special case, 
     # (1,1); (1,2), ... , (1,gNDim), ... , (2, 1), ... (gNDim, gNDim)
-    if (paramType != "Beta" & paramType != "Variance")
+    if (paramType != "Beta" && paramType != "Variance")
     {
-      histList[[paramType]] <- unlist(myCqs$gHistory[whichParam])
       history[[paramType]] <- as.data.frame(
         matrix(
           histList[[paramType]],
@@ -349,7 +359,30 @@ getCqHist <- function(myCqs) {
           byrow = TRUE
         )
       )
-      names(history[[paramType]]) <- paste0(paramType, 1:ncol(history[[paramType]])) # add names based on param type
+      # add names based on param type
+      names(history[[paramType]]) <- paste0(paramType, 1:ncol(history[[paramType]])) 
+      if (paramType == "Xsi") {
+        if (labelParams) {
+          if (length(myCqs$gXsiParameterLabels) > 0) {
+            names(history[["Xsi"]]) <- paste0(
+              names(history[["Xsi"]]),
+              "_", 
+              trimws(unlist(myCqs$gXsiParameterLabels))
+            )
+          }
+        }
+      }
+      if (paramType == "Tau") {
+        if (labelParams) {
+          if (length(myCqs$gTauParameterLabels) > 0) {
+            names(history[["Tau"]]) <- paste0(
+              names(history[["Tau"]]),
+              "_", 
+              trimws(unlist(myCqs$gTauParameterLabels))
+            )
+          } 
+        }
+      }
     }
     # Deal with Betas
     if (paramType == "Beta") # beta is special case, each entry has 1 row per dim
@@ -421,7 +454,7 @@ getCqHist <- function(myCqs) {
     }
     history[[paramType]] <- replaceInDataFrame(history[[paramType]], -1.797693e+308, NA)
   }
-  # concat list into single DF
+  # concatenate list into single DF
   myHistoryDf <- Reduce(cbind, history)
   row.names(myHistoryDf) <- NULL
   return(myHistoryDf)
@@ -745,7 +778,7 @@ getCqLongLabs <- function(sysFile) {
 isCqConverged <- function(myCqs) {
   if (!"conQuestSysFile" %in% class(myCqs))
   {
-    stop("'mySys' must be a ConQuest system file object created by 'conquestr::ConQuestSys'")
+    stop("'myCqs' must be a ConQuest system file object created by 'conquestr::ConQuestSys'")
   }
 
   modConverged <- FALSE

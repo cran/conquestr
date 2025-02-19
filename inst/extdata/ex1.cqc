@@ -1,3 +1,5 @@
+let location = "../extdata";
+
 Datafile ex1.dat;
 set constraint=cases;
 Format pid 1-5 responses 12-23 v1 12 v2 15;
@@ -22,7 +24,7 @@ estimate!abilities = yes,fit=yes,stderr=quick;
 itanal ! matrixout = itan;
 show ! matrixout = show;
 
-plot icc ! gins = 1, filetype = rout >> myicc.rout;
+plot icc ! gins = 1, filetype = rout >> %location%/myicc.rout;
 
 banddefine ! label = "L0 (critical)", upper = -2.133, lower = -100;
 banddefine ! label = "L1 (upper)", upper = 100, lower = 2.133;

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Dan Cloney, Dave Jeffries" />
 
-<meta name="date" content="2024-07-24" />
+<meta name="date" content="2025-02-19" />
 
 <title>Data cleaning function in conquestr</title>
 
@@ -29,230 +29,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>$(document).ready(function(){
-    if (typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
-        $('[data-toggle="tooltip"]').tooltip();
-    }
-    if ($('[data-toggle="popover"]').popover === 'function') {
-        $('[data-toggle="popover"]').popover();
-    }
-});
-</script>
-<style type="text/css">
-.lightable-minimal {
-border-collapse: separate;
-border-spacing: 16px 1px;
-width: 100%;
-margin-bottom: 10px;
-}
-.lightable-minimal td {
-margin-left: 5px;
-margin-right: 5px;
-}
-.lightable-minimal th {
-margin-left: 5px;
-margin-right: 5px;
-}
-.lightable-minimal thead tr:last-child th {
-border-bottom: 2px solid #00000050;
-empty-cells: hide;
-}
-.lightable-minimal tbody tr:first-child td {
-padding-top: 0.5em;
-}
-.lightable-minimal.lightable-hover tbody tr:hover {
-background-color: #f5f5f5;
-}
-.lightable-minimal.lightable-striped tbody tr:nth-child(even) {
-background-color: #f5f5f5;
-}
-.lightable-classic {
-border-top: 0.16em solid #111111;
-border-bottom: 0.16em solid #111111;
-width: 100%;
-margin-bottom: 10px;
-margin: 10px 5px;
-}
-.lightable-classic tfoot tr td {
-border: 0;
-}
-.lightable-classic tfoot tr:first-child td {
-border-top: 0.14em solid #111111;
-}
-.lightable-classic caption {
-color: #222222;
-}
-.lightable-classic td {
-padding-left: 5px;
-padding-right: 5px;
-color: #222222;
-}
-.lightable-classic th {
-padding-left: 5px;
-padding-right: 5px;
-font-weight: normal;
-color: #222222;
-}
-.lightable-classic thead tr:last-child th {
-border-bottom: 0.10em solid #111111;
-}
-.lightable-classic.lightable-hover tbody tr:hover {
-background-color: #F9EEC1;
-}
-.lightable-classic.lightable-striped tbody tr:nth-child(even) {
-background-color: #f5f5f5;
-}
-.lightable-classic-2 {
-border-top: 3px double #111111;
-border-bottom: 3px double #111111;
-width: 100%;
-margin-bottom: 10px;
-}
-.lightable-classic-2 tfoot tr td {
-border: 0;
-}
-.lightable-classic-2 tfoot tr:first-child td {
-border-top: 3px double #111111;
-}
-.lightable-classic-2 caption {
-color: #222222;
-}
-.lightable-classic-2 td {
-padding-left: 5px;
-padding-right: 5px;
-color: #222222;
-}
-.lightable-classic-2 th {
-padding-left: 5px;
-padding-right: 5px;
-font-weight: normal;
-color: #222222;
-}
-.lightable-classic-2 tbody tr:last-child td {
-border-bottom: 3px double #111111;
-}
-.lightable-classic-2 thead tr:last-child th {
-border-bottom: 1px solid #111111;
-}
-.lightable-classic-2.lightable-hover tbody tr:hover {
-background-color: #F9EEC1;
-}
-.lightable-classic-2.lightable-striped tbody tr:nth-child(even) {
-background-color: #f5f5f5;
-}
-.lightable-material {
-min-width: 100%;
-white-space: nowrap;
-table-layout: fixed;
-font-family: Roboto, sans-serif;
-border: 1px solid #EEE;
-border-collapse: collapse;
-margin-bottom: 10px;
-}
-.lightable-material tfoot tr td {
-border: 0;
-}
-.lightable-material tfoot tr:first-child td {
-border-top: 1px solid #EEE;
-}
-.lightable-material th {
-height: 56px;
-padding-left: 16px;
-padding-right: 16px;
-}
-.lightable-material td {
-height: 52px;
-padding-left: 16px;
-padding-right: 16px;
-border-top: 1px solid #eeeeee;
-}
-.lightable-material.lightable-hover tbody tr:hover {
-background-color: #f5f5f5;
-}
-.lightable-material.lightable-striped tbody tr:nth-child(even) {
-background-color: #f5f5f5;
-}
-.lightable-material.lightable-striped tbody td {
-border: 0;
-}
-.lightable-material.lightable-striped thead tr:last-child th {
-border-bottom: 1px solid #ddd;
-}
-.lightable-material-dark {
-min-width: 100%;
-white-space: nowrap;
-table-layout: fixed;
-font-family: Roboto, sans-serif;
-border: 1px solid #FFFFFF12;
-border-collapse: collapse;
-margin-bottom: 10px;
-background-color: #363640;
-}
-.lightable-material-dark tfoot tr td {
-border: 0;
-}
-.lightable-material-dark tfoot tr:first-child td {
-border-top: 1px solid #FFFFFF12;
-}
-.lightable-material-dark th {
-height: 56px;
-padding-left: 16px;
-padding-right: 16px;
-color: #FFFFFF60;
-}
-.lightable-material-dark td {
-height: 52px;
-padding-left: 16px;
-padding-right: 16px;
-color: #FFFFFF;
-border-top: 1px solid #FFFFFF12;
-}
-.lightable-material-dark.lightable-hover tbody tr:hover {
-background-color: #FFFFFF12;
-}
-.lightable-material-dark.lightable-striped tbody tr:nth-child(even) {
-background-color: #FFFFFF12;
-}
-.lightable-material-dark.lightable-striped tbody td {
-border: 0;
-}
-.lightable-material-dark.lightable-striped thead tr:last-child th {
-border-bottom: 1px solid #FFFFFF12;
-}
-.lightable-paper {
-width: 100%;
-margin-bottom: 10px;
-color: #444;
-}
-.lightable-paper tfoot tr td {
-border: 0;
-}
-.lightable-paper tfoot tr:first-child td {
-border-top: 1px solid #00000020;
-}
-.lightable-paper thead tr:last-child th {
-color: #666;
-vertical-align: bottom;
-border-bottom: 1px solid #00000020;
-line-height: 1.15em;
-padding: 10px 5px;
-}
-.lightable-paper td {
-vertical-align: middle;
-border-bottom: 1px solid #00000010;
-line-height: 1.15em;
-padding: 7px 5px;
-}
-.lightable-paper.lightable-hover tbody tr:hover {
-background-color: #F9EEC1;
-}
-.lightable-paper.lightable-striped tbody tr:nth-child(even) {
-background-color: #00000008;
-}
-.lightable-paper.lightable-striped tbody td {
-border: 0;
-}
-</style>
 
 <style type="text/css">
 code{white-space: pre-wrap;}
@@ -286,7 +62,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -564,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Data cleaning function in conquestr</h1>
 <h4 class="author">Dan Cloney, Dave Jeffries</h4>
-<h4 class="date">2024-07-24</h4>
+<h4 class="date">2025-02-19</h4>
 
 
 
@@ -596,9 +372,9 @@ in the system file from your analysis.</p>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>myEx1Sys_itanal <span class="ot">&lt;-</span> <span class="fu">getCqItanal</span>(myEx1Sys)</span>
 <span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a></span>
 <span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co"># show unformatted list objects for first item</span></span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="fu">print</span>(myEx1Sys_itanal[[<span class="dv">1</span>]])</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="fu">print</span>(myEx1Sys_itanal[[<span class="dv">1</span>]][[<span class="dv">1</span>]])</span>
 <span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; $name</span></span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;item:1 (item one)&quot;</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;item:1 (item one) group:All Cases&quot;</span></span>
 <span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt; $table</span></span>
 <span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt;   Category Score Count    Percent      Pt Bis Pt Bis t stat.  Pt Bis sig.</span></span>
@@ -652,203 +428,100 @@ be illustrated in the following sections.</p>
 </div>
 <div id="an-example-of-an-html-itanal-table-for-item-categories" class="section level2">
 <h2>An example of an html itanal table for item categories</h2>
-<p>The function <code>fmtCqItanal</code> will return a formated version
-of the itanal object that we read in earlier. Presently this function
-will apply coloured text to any distractor point biserial correlation
-that is larger than 0. The following example shows the output for the
-fourth item in the current item analysis.</p>
+<p>The function <code>fmtCqItanal</code> will return a formatted version
+of the itanal object that we read in earlier.<br />
+Presently this function will apply coloured text to any distractor point
+biserial correlation that is larger than 0. The following example shows
+the output for the fourth item in the current item analysis.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a></span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># return a conditionally formatted item category statistics table for the fourth item</span></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>myEx1Sys_itanal_f <span class="ot">&lt;-</span> <span class="fu">fmtCqItanal</span>(myEx1Sys_itanal, <span class="at">ptBisFlag =</span> ptBisFlag, <span class="at">textColHighlight =</span> <span class="st">&quot;red&quot;</span>)</span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># print table</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>myEx1Sys_itanal_f[[<span class="dv">4</span>]]<span class="sc">$</span>table</span></code></pre></div>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<caption>
-Item category statistics for: item:4 (item four)
-</caption>
-<thead>
-<tr>
-<th style="text-align:center;">
-Category
-</th>
-<th style="text-align:center;">
-Score
-</th>
-<th style="text-align:center;">
-Count
-</th>
-<th style="text-align:center;">
-Percent
-</th>
-<th style="text-align:center;">
-Pt Bis
-</th>
-<th style="text-align:center;">
-Pt Bis t stat.
-</th>
-<th style="text-align:center;">
-Pt Bis sig.
-</th>
-<th style="text-align:center;">
-Ability mean (D1)
-</th>
-<th style="text-align:center;">
-Ability SD (D1)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center;">
-M
-</td>
-<td style="text-align:center;">
-0
-</td>
-<td style="text-align:center;">
-3
-</td>
-<td style="text-align:center;">
-0.30
-</td>
-<td style="text-align:center;">
-&lt;span style=” color: black !important;” &gt;-0.07&lt;/span&gt;
-</td>
-<td style="text-align:center;">
--2.29
-</td>
-<td style="text-align:center;">
-0.02
-</td>
-<td style="text-align:center;">
--1.09
-</td>
-<td style="text-align:center;">
-1.42
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-a
-</td>
-<td style="text-align:center;">
-0
-</td>
-<td style="text-align:center;">
-151
-</td>
-<td style="text-align:center;">
-15.12
-</td>
-<td style="text-align:center;">
-&lt;span style=” color: red !important;” &gt;0.06&lt;/span&gt;
-</td>
-<td style="text-align:center;">
-1.77
-</td>
-<td style="text-align:center;">
-0.08
-</td>
-<td style="text-align:center;">
--0.07
-</td>
-<td style="text-align:center;">
-0.76
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-b
-</td>
-<td style="text-align:center;">
-0
-</td>
-<td style="text-align:center;">
-73
-</td>
-<td style="text-align:center;">
-7.31
-</td>
-<td style="text-align:center;">
-&lt;span style=” color: black !important;” &gt;-0.2&lt;/span&gt;
-</td>
-<td style="text-align:center;">
--6.39
-</td>
-<td style="text-align:center;">
-0.00
-</td>
-<td style="text-align:center;">
--0.64
-</td>
-<td style="text-align:center;">
-0.76
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-c
-</td>
-<td style="text-align:center;">
-0
-</td>
-<td style="text-align:center;">
-224
-</td>
-<td style="text-align:center;">
-22.42
-</td>
-<td style="text-align:center;">
-&lt;span style=” color: black !important;” &gt;-0.32&lt;/span&gt;
-</td>
-<td style="text-align:center;">
--10.59
-</td>
-<td style="text-align:center;">
-0.00
-</td>
-<td style="text-align:center;">
--0.51
-</td>
-<td style="text-align:center;">
-0.79
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-d
-</td>
-<td style="text-align:center;">
-1
-</td>
-<td style="text-align:center;">
-548
-</td>
-<td style="text-align:center;">
-54.85
-</td>
-<td style="text-align:center;">
-&lt;span style=” color: black !important;” &gt;0.34&lt;/span&gt;
-</td>
-<td style="text-align:center;">
-11.33
-</td>
-<td style="text-align:center;">
-0.00
-</td>
-<td style="text-align:center;">
-0.33
-</td>
-<td style="text-align:center;">
-0.85
-</td>
-</tr>
-</tbody>
-</table>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co"># print summary</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>myEx1Sys_itanal_f[[<span class="fu">length</span>(myEx1Sys_itanal_f)]] <span class="co"># the last object is always the summary</span></span></code></pre></div>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>myEx1Sys_itanal_f[[<span class="dv">1</span>]][[<span class="dv">4</span>]]</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; $name</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; [1] &quot;item:4 (item four) group:All Cases&quot;</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; $table</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; &lt;table class=&quot;table&quot; style=&quot;margin-left: auto; margin-right: auto;&quot;&gt;</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; &lt;caption&gt;Item category statistics for: item:4 (item four) group:All Cases&lt;/caption&gt;</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;  &lt;thead&gt;</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;   &lt;tr&gt;</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;    &lt;th style=&quot;text-align:center;&quot;&gt; Category &lt;/th&gt;</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt;    &lt;th style=&quot;text-align:center;&quot;&gt; Score &lt;/th&gt;</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt;    &lt;th style=&quot;text-align:center;&quot;&gt; Count &lt;/th&gt;</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt;    &lt;th style=&quot;text-align:center;&quot;&gt; Percent &lt;/th&gt;</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt;    &lt;th style=&quot;text-align:center;&quot;&gt; Pt Bis &lt;/th&gt;</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt;    &lt;th style=&quot;text-align:center;&quot;&gt; Pt Bis t stat. &lt;/th&gt;</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt;    &lt;th style=&quot;text-align:center;&quot;&gt; Pt Bis sig. &lt;/th&gt;</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt;    &lt;th style=&quot;text-align:center;&quot;&gt; Ability mean (D1) &lt;/th&gt;</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt;    &lt;th style=&quot;text-align:center;&quot;&gt; Ability SD (D1) &lt;/th&gt;</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt;   &lt;/tr&gt;</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;  &lt;/thead&gt;</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt; &lt;tbody&gt;</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt;   &lt;tr&gt;</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; M &lt;/td&gt;</span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0 &lt;/td&gt;</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 3 &lt;/td&gt;</span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.30 &lt;/td&gt;</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; &amp;lt;span style=&quot;     color: black !important;&quot; &amp;gt;-0.07&amp;lt;/span&amp;gt; &lt;/td&gt;</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; -2.29 &lt;/td&gt;</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.02 &lt;/td&gt;</span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; -1.09 &lt;/td&gt;</span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 1.42 &lt;/td&gt;</span></span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a><span class="co">#&gt;   &lt;/tr&gt;</span></span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="co">#&gt;   &lt;tr&gt;</span></span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; a &lt;/td&gt;</span></span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0 &lt;/td&gt;</span></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 151 &lt;/td&gt;</span></span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 15.12 &lt;/td&gt;</span></span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; &amp;lt;span style=&quot;     color: red !important;&quot; &amp;gt;0.06&amp;lt;/span&amp;gt; &lt;/td&gt;</span></span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 1.77 &lt;/td&gt;</span></span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.08 &lt;/td&gt;</span></span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; -0.07 &lt;/td&gt;</span></span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.76 &lt;/td&gt;</span></span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a><span class="co">#&gt;   &lt;/tr&gt;</span></span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a><span class="co">#&gt;   &lt;tr&gt;</span></span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; b &lt;/td&gt;</span></span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0 &lt;/td&gt;</span></span>
+<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 73 &lt;/td&gt;</span></span>
+<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 7.31 &lt;/td&gt;</span></span>
+<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; &amp;lt;span style=&quot;     color: black !important;&quot; &amp;gt;-0.2&amp;lt;/span&amp;gt; &lt;/td&gt;</span></span>
+<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; -6.39 &lt;/td&gt;</span></span>
+<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.00 &lt;/td&gt;</span></span>
+<span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; -0.64 &lt;/td&gt;</span></span>
+<span id="cb3-58"><a href="#cb3-58" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.76 &lt;/td&gt;</span></span>
+<span id="cb3-59"><a href="#cb3-59" tabindex="-1"></a><span class="co">#&gt;   &lt;/tr&gt;</span></span>
+<span id="cb3-60"><a href="#cb3-60" tabindex="-1"></a><span class="co">#&gt;   &lt;tr&gt;</span></span>
+<span id="cb3-61"><a href="#cb3-61" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; c &lt;/td&gt;</span></span>
+<span id="cb3-62"><a href="#cb3-62" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0 &lt;/td&gt;</span></span>
+<span id="cb3-63"><a href="#cb3-63" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 224 &lt;/td&gt;</span></span>
+<span id="cb3-64"><a href="#cb3-64" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 22.42 &lt;/td&gt;</span></span>
+<span id="cb3-65"><a href="#cb3-65" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; &amp;lt;span style=&quot;     color: black !important;&quot; &amp;gt;-0.32&amp;lt;/span&amp;gt; &lt;/td&gt;</span></span>
+<span id="cb3-66"><a href="#cb3-66" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; -10.59 &lt;/td&gt;</span></span>
+<span id="cb3-67"><a href="#cb3-67" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.00 &lt;/td&gt;</span></span>
+<span id="cb3-68"><a href="#cb3-68" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; -0.51 &lt;/td&gt;</span></span>
+<span id="cb3-69"><a href="#cb3-69" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.79 &lt;/td&gt;</span></span>
+<span id="cb3-70"><a href="#cb3-70" tabindex="-1"></a><span class="co">#&gt;   &lt;/tr&gt;</span></span>
+<span id="cb3-71"><a href="#cb3-71" tabindex="-1"></a><span class="co">#&gt;   &lt;tr&gt;</span></span>
+<span id="cb3-72"><a href="#cb3-72" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; d &lt;/td&gt;</span></span>
+<span id="cb3-73"><a href="#cb3-73" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 1 &lt;/td&gt;</span></span>
+<span id="cb3-74"><a href="#cb3-74" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 548 &lt;/td&gt;</span></span>
+<span id="cb3-75"><a href="#cb3-75" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 54.85 &lt;/td&gt;</span></span>
+<span id="cb3-76"><a href="#cb3-76" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; &amp;lt;span style=&quot;     color: black !important;&quot; &amp;gt;0.34&amp;lt;/span&amp;gt; &lt;/td&gt;</span></span>
+<span id="cb3-77"><a href="#cb3-77" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 11.33 &lt;/td&gt;</span></span>
+<span id="cb3-78"><a href="#cb3-78" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.00 &lt;/td&gt;</span></span>
+<span id="cb3-79"><a href="#cb3-79" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.33 &lt;/td&gt;</span></span>
+<span id="cb3-80"><a href="#cb3-80" tabindex="-1"></a><span class="co">#&gt;    &lt;td style=&quot;text-align:center;&quot;&gt; 0.85 &lt;/td&gt;</span></span>
+<span id="cb3-81"><a href="#cb3-81" tabindex="-1"></a><span class="co">#&gt;   &lt;/tr&gt;</span></span>
+<span id="cb3-82"><a href="#cb3-82" tabindex="-1"></a><span class="co">#&gt; &lt;/tbody&gt;</span></span>
+<span id="cb3-83"><a href="#cb3-83" tabindex="-1"></a><span class="co">#&gt; &lt;/table&gt;</span></span>
+<span id="cb3-84"><a href="#cb3-84" tabindex="-1"></a><span class="co">#&gt; $item_rest_total</span></span>
+<span id="cb3-85"><a href="#cb3-85" tabindex="-1"></a><span class="co">#&gt; item-total  item-rest   obs_mean   exp_mean   adj_mean  delta_dot </span></span>
+<span id="cb3-86"><a href="#cb3-86" tabindex="-1"></a><span class="co">#&gt;  0.5148848  0.3378377  0.5485485  0.5498466  0.5497980 -0.2311748</span></span>
+<span id="cb3-87"><a href="#cb3-87" tabindex="-1"></a></span>
+<span id="cb3-88"><a href="#cb3-88" tabindex="-1"></a><span class="co"># print summary</span></span>
+<span id="cb3-89"><a href="#cb3-89" tabindex="-1"></a>myEx1Sys_itanal_f[[<span class="dv">1</span>]][[<span class="fu">length</span>(myEx1Sys_itanal_f[[<span class="dv">1</span>]])]] <span class="co"># the last object is always the summary</span></span></code></pre></div>
 <table>
 <caption>Item Analysis Summary Statistics</caption>
 <thead>
