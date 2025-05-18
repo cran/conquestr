@@ -9,6 +9,7 @@
 ## conquestr is built and tested on Win, OS X using rhub2
 
 * see more on [R-hub Documentation](https://r-hub.github.io/rhub/)
+* rhub::rhub_check()
 
 ## conquestr is built and tested on linux using a docker container
 

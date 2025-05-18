@@ -1,3 +1,21 @@
+# CHANGES IN conquestr VERSION 1.5.0
+
+## NEW FEATURES
+
+* Added support for ACER ConQuest system files version 29 which are created by
+  the command put (https://conquestmanual.acer.org/s4-00.html#put) in ACER ConQuest
+  Version > 5.42.
+
+## MAJOR CHANGES
+
+* conquesrt::getCqItan now returns estimated scores in the item tables rather than
+  raw scores. Previous versions would the pre-key value and the raw score associated
+  with the pre-key value (these two values are identical when no key or recode is 
+  used). The values are now the pre-key value and the estimated score. 
+  In the case of models without estimated scores (e.g., Rasch models) the raw score
+  is the same as the estimated score. 
+  
+  
 # CHANGES IN conquestr VERSION 1.4.4
 
 ## NEW FEATURES

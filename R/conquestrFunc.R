@@ -590,7 +590,7 @@ getCqParams <- function(sysFile) {
   sysFileOk(sysFile, defaultSys)
 
   # checks
-  if (sysFile$gPairWise) stop("pairwise is not yet supported") # actually don't know if this will work
+  if (any(unlist(sysFile$gEstimationAllMethods)>20)) stop("pairwise is not yet supported") # actually don't know if this will work
   isFit <- sysFile$gIFit # is fit available?
   isSe <- sysFile$gStdError < 3 # bool SE is calculated, 3 = none
 

@@ -291,7 +291,7 @@ ReadSys <- function(myFile, isMini) {
   gPreKeyLookUp <- ReadLookUp(myFile)
   gNDataRecords <- ReadInteger(myFile)
   gFacetVariables <- ReadVarList(myFile)
-  gRegressionVariables <- ReadVarList(myFile)
+  tmpVarList <- ReadVarList(myFile) # this is a tmp VarList (previously this was gRegressionVariables)
   gGroupVariables <- ReadVarList(myFile)
   gWeightVariable <- ReadVarList(myFile)
   gTDFileV <- ReadVarList(myFile)
@@ -299,9 +299,9 @@ ReadSys <- function(myFile, isMini) {
   gFileRebuildNeeded <- ReadBoolean(myFile)
   gAMatrixImportFileName <- ReadString(myFile)
   gCMatrixImportFileName <- ReadString(myFile)
-  gHistoryFileName <- ReadString(myFile)
+  gHistoryFileName <- ReadString(myFile) # no longer in use? Now read a temp string?
   gTitle <- ReadString(myFile)
-  gStoreInRAM <- ReadBoolean(myFile)
+  gStoreInRAM <- ReadBoolean(myFile) # no longer in use? Now read a temp boolean?
 
   check <- ReadInteger(myFile)
   if (myDebug) print(paste0("check: ", check)) # check 4
@@ -325,15 +325,15 @@ ReadSys <- function(myFile, isMini) {
   gSLM <- ReadBoolean(myFile)
   gTwoPL <- ReadBoolean(myFile)
   gNominalResponse <- ReadBoolean(myFile)
-  gPairWise <- ReadBoolean(myFile)
-  gRegC <- ReadBoolean(myFile)
+  gPairWise <- ReadBoolean(myFile) # no longer in use - i think we DO need this, however - otherwise we need to know about gEstimationAllMethods before it is read! TODO: revert to set in CQ, ensure is in envir
+  gRegC <- ReadBoolean(myFile) # no longer in use
   gNPlausibles <- ReadInteger(myFile)
   gLConstraint <- ReadInteger(myFile)
-  gNRegressors <- ReadInteger(myFile)
+  gNRegressors <- ReadInteger(myFile) # no longer in use
   gThreePL <- ReadBoolean(myFile)
   gUniquePID <- ReadBoolean(myFile)
   gNGroup <- ReadInteger(myFile)
-  gNReg <- ReadInteger(myFile)
+  gNReg <- ReadInteger(myFile) # no longer in use, but needed to read YFile later
 
   check <- ReadInteger(myFile)
   if (myDebug) print(paste0("check: ", check)) # check 5
@@ -386,9 +386,13 @@ ReadSys <- function(myFile, isMini) {
   gStartSteps <- ReadIntegerList(myFile)
   gParam <- ReadParametersList(myFile)
   gParamConstrained <- ReadParametersList(myFile)
-  gNRegC <- ReadIntegerList(myFile) # number of regressors by dim
-  gRegConstraints <- ReadMatrixList(myFile)
-  gRegLookUp <- ReadMatrixList(myFile)
+  if (cqs_version < 29)
+  {
+    gNRegC <- ReadIntegerList(myFile) # number of regressors by dim
+    gRegConstraints <- ReadMatrixList(myFile)
+    gRegLookUp <- ReadMatrixList(myFile)
+  }
+  
   gPIndex <- ReadIntegerList(myFile)
   gProblemGins <- ReadIntegerList(myFile)
 
@@ -449,13 +453,20 @@ ReadSys <- function(myFile, isMini) {
 
   gItemListByD <- ReadIntegerListList(myFile)
   gGeneraliseditemList_D <- ReadIntegerListList(myFile)
-  gRegToCategorise <- ReadCategoriseList(myFile)
+  if (cqs_version < 29) gRegToCategorise <- ReadCategoriseListLegacy(myFile)
   gFitStatistics <- ReadFitList(myFile)
-  gRegressors <- ReadRegressionListLeg(myFile) # this is the legacy regression object - not retained and replaced by read later (ReadRegressionList)
-  gDummies <- ReadMatrixList(myFile)
-  gHasDummies <- ReadBooleanList(myFile)
+  if (cqs_version < 29)
+  {
+    gRegressors <- ReadRegressionListLeg(myFile) # this is the legacy regression object - not retained and replaced by read later (ReadRegressionList)
+    gDummies <- ReadMatrixList(myFile)
+    gHasDummies <- ReadBooleanList(myFile)
+  }
+  
   gItemGroups <- ReadItemSetList(myFile)
-  if (myDebug) print(paste0("gHasDummies: ", gHasDummies)) #
+  if (cqs_version < 29) 
+  {
+    if (myDebug) print(paste0("gHasDummies: ", gHasDummies)) 
+  }
   gHistory <- ReadHistory(myFile)
     # print(str(gHistory)); # debug
     # print(names(gHistory)); # debug
@@ -469,7 +480,9 @@ ReadSys <- function(myFile, isMini) {
   check <- ReadInteger(myFile)
   if (myDebug) print(paste0("check: ", check)) # check 7
   
-  if (!gPairWise) {
+  if (!gPairWise)
+  # if (any(unlist(gEstimationAllMethods)>20))
+  {
     gAllCaseEstimates <- ReadAllCaseEstimates(
       myFile = myFile,
       Dimensions = gNDim,
@@ -581,7 +594,11 @@ ReadSys <- function(myFile, isMini) {
   check <- ReadInteger(myFile)
   if (myDebug) print(paste0("check: ", check)) # check 14
 
-  gRegressorLabels <- ReadStringList(myFile)
+  if (cqs_version < 29) 
+  {
+    gRegressionLabels <- ReadStringList(myFile)
+  }
+    
   gGinLongLabels <- ReadStringList(myFile)
   gGinShortLabels <- ReadStringList(myFile)
   gPIDLookUp <- ReadStringList(myFile)
@@ -608,11 +625,33 @@ ReadSys <- function(myFile, isMini) {
   check <- ReadInteger(myFile)
   if (myDebug) print(paste0("check: ", check)) # check 16
 
-  gRegressors <- ReadRegressionList(myFile) # overwrites legacy gRegression object
+  if (cqs_version < 29) gRegressors <- ReadRegressionList(myFile) # overwrites old legacy gRegression object - note different from "new" gRegression class
 
   gSpeed <- ReadInteger(myFile)
   gEstimationAllMethods <- ReadIntegerList(myFile)
   gExportOptions <- ReadGExportOptionsList(myFile)
+
+  if (cqs_version >= 29) 
+  {
+    check <- ReadInteger(myFile)
+    if (myDebug) print(paste0("check: ", check)) # check 17
+  }
+
+  if (cqs_version >= 28) 
+  {
+    # gStdErrors
+    gStdErrors <- ReadErrors(myFile)
+  }
+
+  if (cqs_version >= 29) 
+  {
+    check <- ReadInteger(myFile)
+    if (myDebug) print(paste0("check: ", check)) # check 18
+    gRegressors <- ReadRegressors(myFile)
+    gMaxPIDLen  <- ReadInteger(myFile)
+    check <- ReadInteger(myFile)
+    if (myDebug) print(paste0("check: ", check)) # check 19
+  }
 
     # debug
     # gXsiParameterLabelsTemp<<- gXsiParameterLabels; print("gXsiParameterLabelsTemp is available for debugging") # debug
@@ -707,7 +746,7 @@ ReadSys <- function(myFile, isMini) {
     gPreKeyLookUp = gPreKeyLookUp,
     gNDataRecords = gNDataRecords,
     gFacetVariables = gFacetVariables,
-    gRegressionVariables = gRegressionVariables,
+    # tmpVarList = tmpVarList, # this is a tmp VarList (previously this was gRegressionVariables)
     gGroupVariables = gGroupVariables,
     gWeightVariable = gWeightVariable,
     gTDFileV = gTDFileV,
@@ -715,9 +754,9 @@ ReadSys <- function(myFile, isMini) {
     gFileRebuildNeeded = gFileRebuildNeeded,
     gAMatrixImportFileName = gAMatrixImportFileName,
     gCMatrixImportFileName = gCMatrixImportFileName,
-    gHistoryFileName = gHistoryFileName,
+    # gHistoryFileName = gHistoryFileName, # no longer used
     gTitle = gTitle,
-    gStoreInRAM = gStoreInRAM,
+    # gStoreInRAM = gStoreInRAM, # no longer used
     # check 4
     gSubmitMode = gSubmitMode,
     gMaxCats = gMaxCats,
@@ -738,11 +777,11 @@ ReadSys <- function(myFile, isMini) {
     gSLM = gSLM,
     gTwoPL = gTwoPL,
     gNominalResponse = gNominalResponse,
-    gPairWise = gPairWise,
-    gRegC = gRegC,
+    # gPairWise = gPairWise,
+    # gRegC = gRegC,
     gNPlausibles = gNPlausibles,
     gLConstraint = gLConstraint,
-    gNRegressors = gNRegressors,
+    # gNRegressors = gNRegressors,
     gThreePL = gThreePL,
     gUniquePID = gUniquePID,
     gNGroup = gNGroup,
@@ -794,19 +833,12 @@ ReadSys <- function(myFile, isMini) {
     gStartSteps = gStartSteps,
     gParam = gParam,
     gParamConstrained = gParamConstrained,
-    gNRegC = gNRegC,
-    gRegConstraints = gRegConstraints,
-    gRegLookUp = gRegLookUp,
     gPIndex = gPIndex,
     gProblemGins = gProblemGins,
     # check 6
     gItemListByD = gItemListByD,
     gGeneraliseditemList_D = gGeneraliseditemList_D,
-    gRegToCategorise = gRegToCategorise,
     gFitStatistics = gFitStatistics,
-    # gRegressors = gRegressors, # not stored to keep order with CQ system file
-    gDummies = gDummies,
-    gHasDummies = gHasDummies,
     gItemGroups = gItemGroups,
     gHistory = gHistory,
     gNModelVariables = gNModelVariables,
@@ -836,7 +868,7 @@ ReadSys <- function(myFile, isMini) {
     gXsiParameterLabels = gXsiParameterLabels,
     gTauParameterLabels = gTauParameterLabels,
     # check 14
-    gRegressorLabels = gRegressorLabels,
+    # gRegressorLabels = gRegressorLabels,
     gGinLongLabels = gGinLongLabels,
     gGinShortLabels = gGinShortLabels,
     gPIDLookUp = gPIDLookUp,
@@ -860,7 +892,26 @@ ReadSys <- function(myFile, isMini) {
     gRegressors = gRegressors,
     gSpeed = gSpeed,
     gEstimationAllMethods = gEstimationAllMethods,
-    gExportOptions = gExportOptions
+    gExportOptions = gExportOptions,
+    gStdErrors = if (cqs_version >= 28)
+    {
+      gStdErrors
+    } else {
+      NULL
+    },
+    gRegressors = if (cqs_version >= 29)
+    {
+      gRegressors
+    } else {
+       NULL
+    },
+    gMaxPIDLen = if (cqs_version >= 29)
+    {
+      gMaxPIDLen
+    } else {
+      NULL
+    }
+    #TODO: when cqs_version < 29 populate gRegressors with legagcy stuff from above
 
   )
 

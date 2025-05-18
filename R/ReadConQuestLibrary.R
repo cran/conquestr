@@ -4,7 +4,7 @@
 #' @keywords internal
 ReadDouble <- function(myFile)
 {
-    readBin(myFile, double(), endian = "little", size = 8, n = 1)
+  readBin(myFile, double(), endian = "little", size = 8, n = 1)
 }
 
 #' @title ReadDoubleList
@@ -13,13 +13,13 @@ ReadDouble <- function(myFile)
 #' @keywords internal
 ReadDoubleList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
-    Value <- list()
-    for (i in seq_len(N))
-    {
-      Value[[i]] <- ReadDouble(myFile)
-    }
-    return(Value)
+  N <- ReadInteger(myFile)
+  Value <- list()
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadDouble(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadInteger
@@ -36,7 +36,7 @@ ReadInteger <- function(myFile) {
 #' @keywords internal
 ReadBoolean <- function(myFile)
 {
-    readBin(myFile, logical(), endian = "little", size = 1, n = 1)
+  readBin(myFile, logical(), endian = "little", size = 1, n = 1)
 }
 
 #' @title ReadString
@@ -62,13 +62,13 @@ ReadString <- function(myFile) {
 #' @keywords internal
 ReadIntegerList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
-    Value <- list()
-    for (i in seq_len(N))
-    {
-      Value[[i]] <- ReadInteger(myFile)
-    }
-    return(Value)
+  N <- ReadInteger(myFile)
+  Value <- list()
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadInteger(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadIntegerListList
@@ -77,13 +77,13 @@ ReadIntegerList <- function(myFile)
 #' @keywords internal
 ReadIntegerListList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadIntegerList(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadIntegerList(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadBooleanList
@@ -137,6 +137,54 @@ ReadNamedStringList <- function(myFile)
   return(Value)
 }
 
+#' @title ReadIntArray2
+#' @param myFile An 'ACER ConQuest' system file.
+#' @return A matrix
+#' @keywords internal
+ReadIntArray2 <- function(myFile)
+{
+  NRows <- ReadInteger(myFile)
+  NCols <- ReadInteger(myFile)
+  # resize A
+  A <- matrix(1:NRows * NCols, nrow = NRows, ncol = NCols)
+  for (r in seq_len(NRows)) {
+    for (c in seq_len(NCols)) {
+      A[r, c] <- ReadInteger(myFile)
+    }
+  }
+  return(A)
+}
+
+#' @title ReadTerm
+#' @param myFile An 'ACER ConQuest' system file.
+#' @return A list
+#' @keywords internal
+ReadTerm <- function(myFile) {
+  VarNo <- ReadInteger(myFile)
+  ValueList <- ReadStringList(myFile)
+  WhichCategorise <- ReadInteger(myFile)
+  NDummies <- ReadInteger(myFile)
+  HasDummies <- ReadBoolean(myFile)
+  V <- list(VarNo, ValueList, WhichCategorise, NDummies, HasDummies)
+  names(V) <- c("VarNo", "ValueList", "WhichCategorise", "NDummies", "HasDummies")
+  return(V)
+}
+
+#' @title ReadTermsList
+#' @param myFile An 'ACER ConQuest' system file.
+#' @return A list
+#' @keywords internal
+ReadTermsList <- function(myFile)
+{
+  N <- ReadInteger(myFile)
+  Value <- list()
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadTerm(myFile)
+  }
+  return(Value)
+}
+
 #' @title ReadBitSet
 #' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
@@ -152,17 +200,17 @@ ReadBitSet <- function(myFile)
       tmpString <- readBin(myFile, what = "raw")
       tmpLogical <- as.logical(rawToBits(tmpString))
       if (i == 1) {
-          String <- tmpLogical
-        } else {
-          String <- c(String, tmpLogical)
-        }
+        String <- tmpLogical
+      } else {
+        String <- c(String, tmpLogical)
       }
-      # subset String as it is likely too big!
-      String <- matrix(String[1:(Items*Columns)], nrow = Items, ncol = Columns, byrow = TRUE)
     }
-    V <- list(String, Items, Columns, Size)
-    names(V)<-c("String", "Items", "Columns", "Size")
-    return(V)
+    # subset String as it is likely too big!
+    String <- matrix(String[1:(Items*Columns)], nrow = Items, ncol = Columns, byrow = TRUE)
+  }
+  V <- list(String, Items, Columns, Size)
+  names(V)<-c("String", "Items", "Columns", "Size")
+  return(V)
 }
 
 #' @title ReadMatrix
@@ -205,23 +253,85 @@ ReadMatrixList <- function(myFile)
   return (Value)
 }
 
+#' @title ReadErrors
+#' @param myFile An 'ACER ConQuest' system file.
+#' @return A list
+#' @keywords internal
+ReadErrors <- function(myFile)
+{
+  init <- ReadBoolean(myFile)
+  errormatrix <- ReadMatrix(myFile)
+  errorstype <- ReadInteger(myFile)
+  nXsi <- ReadInteger(myFile)
+  nTau <- ReadInteger(myFile)
+  nBeta <- ReadInteger(myFile)
+  nSigma <- ReadInteger(myFile)
+  nRandomGroup <- ReadInteger(myFile)
+  XsiIndex <- ReadIntegerList(myFile)
+  TauIndex <- ReadIntegerList(myFile)
+  BetaIndex <- ReadIntArray2(myFile)
+  SigmaIndex <- ReadIntArray2(myFile)
+  RandomGroupIndex <- ReadIntArray2(myFile)
+  V <- list(init, errormatrix, errorstype, nXsi, nTau, nBeta, nSigma, nRandomGroup,
+            XsiIndex, TauIndex, BetaIndex, SigmaIndex, RandomGroupIndex)
+  return (V)
+}
+
+#' @title ReadRegressors
+#' @param myFile An 'ACER ConQuest' system file.
+#' @return A list
+#' @keywords internal
+ReadRegressors <- function(myFile)
+{
+  myDebug <- TRUE
+  gModelText <- ReadString(myFile)
+  # Read the regression terms 
+  # ReadTermsList spits error "Error in seq_len(N) :" but the internals of the function work fine here...why?
+  # RegressionTerms <- ReadTermsList(myFile)
+  N <- ReadInteger(myFile)
+  Value <- list()
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadTerm(myFile)
+  }
+  RegressionTerms <- Value
+  Nparams <- ReadInteger(myFile)
+  NRegVars <- ReadInteger(myFile)
+  CategoriseList <- ReadCategoriseList(myFile) 
+  RandomExists <- ReadBoolean(myFile)
+  RandomGroup <- ReadString(myFile)
+  NRegByD <- ReadIntegerList(myFile)
+  Constraints <- ReadMatrixList(myFile)
+  RegLookUp <- ReadMatrixList(myFile) 
+  
+  V <- list(
+    gModelText, RegressionTerms, Nparams, NRegVars, RandomExists, RandomGroup,
+    NRegByD, Constraints, RegLookUp
+  )
+  names(V) <- c(
+    "gModelText", "RegressionTerms", "Nparams", "NRegVars", "RandomExists", "RandomGroup",
+    "NRegByD", "Constraints", "RegLookUp"
+  )
+  return (V)
+}
+
 #' @title ReadImplicitVar
 #' @param myFile An 'ACER ConQuest' system file.
 #' @return A list
 #' @keywords internal
 ReadImplicitVar <- function(myFile)
 {
-    L <- ReadInteger(myFile)
+  L <- ReadInteger(myFile)
   Name <- list()
-    for (i in seq_len(L))
-    {
-            Name[[i]] <-ReadString(myFile)
-    }
+  for (i in seq_len(L))
+  {
+    Name[[i]] <-ReadString(myFile)
+  }
   Levels <- list()
-    for (i in seq_len(L))
-    {
-            Levels[[i]] <-ReadInteger(myFile)
-    }
+  for (i in seq_len(L))
+  {
+    Levels[[i]] <-ReadInteger(myFile)
+  }
   V <- list(Name,Levels)
   names(V)<-c("Name","Levels")
   return (V)
@@ -233,17 +343,17 @@ ReadImplicitVar <- function(myFile)
 #' @keywords internal
 ReadVarList <- function(myFile)
 {
-    LX <- ReadInteger(myFile)
+  LX <- ReadInteger(myFile)
   XV <- list()
-    for (i in seq_len(LX))
-    {
-            XV[[i]] <-ReadInteger(myFile)
-    }
-    LI <- ReadInteger(myFile)
+  for (i in seq_len(LX))
+  {
+    XV[[i]] <-ReadInteger(myFile)
+  }
+  LI <- ReadInteger(myFile)
   IV <- list()
   for (i in seq_len(LI))
   {
-        IV[[i]] <-ReadInteger(myFile)
+    IV[[i]] <-ReadInteger(myFile)
   }
   V <- list(XV,IV)
   names(V) <- c("XV","IV")
@@ -256,13 +366,13 @@ ReadVarList <- function(myFile)
 #' @keywords internal
 ReadLookUp <- function(myFile)
 {
-    VarNumber <- ReadInteger(myFile)
-    N <- ReadInteger(myFile)
+  VarNumber <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadString(myFile)
-    }
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadString(myFile)
+  }
   V <- list(VarNumber,Value)
   names(V)<-c("VarNumber","Value")
   return(V)
@@ -274,13 +384,13 @@ ReadLookUp <- function(myFile)
 #' @keywords internal
 ReadLookUpList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadLookUp(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadLookUp(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadBandDefine
@@ -320,10 +430,10 @@ ReadBandDefinesList <- function(myFile)
 #' @keywords internal
 ReadAnchor <- function(myFile)
 {
-    Type <- ReadInteger(myFile)
-    I1 <-ReadInteger(myFile)
-    I2 <-ReadInteger(myFile)
-    Value <- ReadDouble(myFile)
+  Type <- ReadInteger(myFile)
+  I1 <-ReadInteger(myFile)
+  I2 <-ReadInteger(myFile)
+  Value <- ReadDouble(myFile)
   V <- list(Type,I1,I2,Value)
   names(V)<-c("Type","I1","I2","Value")
   return (V)
@@ -335,13 +445,13 @@ ReadAnchor <- function(myFile)
 #' @keywords internal
 ReadAnchorList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadAnchor(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadAnchor(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadVariable
@@ -350,55 +460,55 @@ ReadAnchorList <- function(myFile)
 #' @keywords internal
 ReadVariable <- function(myFile)
 {
-    Name <- ReadString(myFile)
-    N <- ReadInteger(myFile)
+  Name <- ReadString(myFile)
+  N <- ReadInteger(myFile)
   Begin <- list()
   End <- list()
   Record <- list()
-    for (i in seq_len(N))
-    {
-        Begin[[i]] <-ReadInteger(myFile)
-    }
-    for (i in seq_len(N))
-    {
-        End[[i]] <-ReadInteger(myFile)
-    }
-    for (i in seq_len(N))
-    {
-        Record[[i]] <-ReadInteger(myFile)
-    }
-    Level <- ReadInteger(myFile)
-    NMissing <- ReadInteger(myFile)
+  for (i in seq_len(N))
+  {
+    Begin[[i]] <-ReadInteger(myFile)
+  }
+  for (i in seq_len(N))
+  {
+    End[[i]] <-ReadInteger(myFile)
+  }
+  for (i in seq_len(N))
+  {
+    Record[[i]] <-ReadInteger(myFile)
+  }
+  Level <- ReadInteger(myFile)
+  NMissing <- ReadInteger(myFile)
   MissingList <- list()
-    for (i in seq_len(NMissing))
-    {
-        MissingList[[i]] <-ReadString(myFile)
-    }
-    NMissingMatchMethod <- ReadInteger(myFile)
-    MissingMatchMethod <- list()
-    for (i in seq_len(NMissingMatchMethod))
-    {
-        MissingMatchMethod[[i]] <-ReadInteger(myFile)
-    }
-    NDropKeepList <- ReadInteger(myFile)
-    DropKeepList <- list()
-    for (i in seq_len(NDropKeepList))
-    {
-        DropKeepList[[i]] <-ReadString(myFile)
-    }
-    NDropKeepMatchMethod <- ReadInteger(myFile)
-    DropKeepMatchMethod <- list()
+  for (i in seq_len(NMissing))
+  {
+    MissingList[[i]] <-ReadString(myFile)
+  }
+  NMissingMatchMethod <- ReadInteger(myFile)
+  MissingMatchMethod <- list()
+  for (i in seq_len(NMissingMatchMethod))
+  {
+    MissingMatchMethod[[i]] <-ReadInteger(myFile)
+  }
+  NDropKeepList <- ReadInteger(myFile)
+  DropKeepList <- list()
+  for (i in seq_len(NDropKeepList))
+  {
+    DropKeepList[[i]] <-ReadString(myFile)
+  }
+  NDropKeepMatchMethod <- ReadInteger(myFile)
+  DropKeepMatchMethod <- list()
   for (i in seq_len(NDropKeepMatchMethod))
   {
-        DropKeepMatchMethod[[i]] <-ReadInteger(myFile)
+    DropKeepMatchMethod[[i]] <-ReadInteger(myFile)
   }
-    DropKeepType <- ReadInteger(myFile)
-    Categorical <- ReadBoolean(myFile)
-    C <- ReadStringList(myFile)
+  DropKeepType <- ReadInteger(myFile)
+  Categorical <- ReadBoolean(myFile)
+  C <- ReadStringList(myFile)
   V <- list(Name,Begin,End,Level,MissingList,MissingMatchMethod,DropKeepList,
-          DropKeepMatchMethod,DropKeepType,Categorical,C)
+            DropKeepMatchMethod,DropKeepType,Categorical,C)
   names(V)<-c("Name","Begin","End","Level","MissingList","MissingMatchMethod","DropKeepList",
-               "DropKeepMatchMethod","DropKeepType","Categorical","c")
+              "DropKeepMatchMethod","DropKeepType","Categorical","c")
   return (V)
 }
 
@@ -408,13 +518,13 @@ ReadVariable <- function(myFile)
 #' @keywords internal
 ReadVariableList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadVariable(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadVariable(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadResponse
@@ -423,18 +533,18 @@ ReadVariableList <- function(myFile)
 #' @keywords internal
 ReadResponse <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Col <- list()
   Rec <- list()
-    for (i in seq_len(N))
-    {
-            Col[[i]] <-ReadInteger(myFile)
-    }
-    for (i in seq_len(N))
-    {
-            Rec[[i]] <-ReadInteger(myFile)
-    }
-    Width <- ReadInteger(myFile)
+  for (i in seq_len(N))
+  {
+    Col[[i]] <-ReadInteger(myFile)
+  }
+  for (i in seq_len(N))
+  {
+    Rec[[i]] <-ReadInteger(myFile)
+  }
+  Width <- ReadInteger(myFile)
   V <- list(Col,Rec,Width)
   names(V)<-c("Col","Rec","Width")
   return (V)
@@ -446,25 +556,25 @@ ReadResponse <- function(myFile)
 #' @keywords internal
 ReadResponseList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadResponse(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadResponse(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadKey
 #' @keywords internal
 ReadKey <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Key <- list()
-    for (i in seq_len(N))
-    {
-            Key[[i]] <-ReadString(myFile)
-    }
+  for (i in seq_len(N))
+  {
+    Key[[i]] <-ReadString(myFile)
+  }
   Score <- ReadString(myFile)
   V <- list(Key,Score)
   names(V)<-c("Key","Score")
@@ -477,13 +587,13 @@ ReadKey <- function(myFile)
 #' @keywords internal
 ReadKeyList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadKey(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadKey(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadLabel
@@ -492,19 +602,19 @@ ReadKeyList <- function(myFile)
 #' @keywords internal
 ReadLabel <- function(myFile)
 {
-    VarNum <- ReadInteger(myFile)
-    VarType <- ReadInteger(myFile) #IMPLICIT=0, EXPLICIT=1, DIMENSION=2, PARAMETER=3, FIT=4
-    N <- ReadInteger(myFile)
+  VarNum <- ReadInteger(myFile)
+  VarType <- ReadInteger(myFile) #IMPLICIT=0, EXPLICIT=1, DIMENSION=2, PARAMETER=3, FIT=4
+  N <- ReadInteger(myFile)
   Code <- list()
-    for (i in seq_len(N))
-    {
-            Code[[i]] <-ReadString(myFile)
-    }
+  for (i in seq_len(N))
+  {
+    Code[[i]] <-ReadString(myFile)
+  }
   Label <- list()
-    for (i in seq_len(N))
-    {
-            Label[[i]] <-ReadString(myFile)
-    }
+  for (i in seq_len(N))
+  {
+    Label[[i]] <-ReadString(myFile)
+  }
   V <- list(VarNum,VarType,Code,Label)
   names(V)<-c("VarNum","VarType","Code","Label")
   return (V)
@@ -516,13 +626,13 @@ ReadLabel <- function(myFile)
 #' @keywords internal
 ReadLabelList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-      Value[[i]] <-ReadLabel(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadLabel(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadTerms
@@ -536,18 +646,18 @@ ReadTerms <- function(myFile, cqs_version) {
   VariableType <- list()
   ParamNumber <- list()
   ParamType <- list()
-    for (i in seq_len(N)) {
-      VariableNumber[[i]] <- ReadInteger(myFile)
-    }
-    for (i in seq_len(N)) {
-      VariableType[[i]] <- ReadInteger(myFile)
-    }
-    for (i in seq_len(NP)) {
-      ParamNumber[[i]] <- ReadInteger(myFile)
-    }
-    for (i in seq_len(NP)) {
-      ParamType[[i]] <- ReadInteger(myFile)
-    }
+  for (i in seq_len(N)) {
+    VariableNumber[[i]] <- ReadInteger(myFile)
+  }
+  for (i in seq_len(N)) {
+    VariableType[[i]] <- ReadInteger(myFile)
+  }
+  for (i in seq_len(NP)) {
+    ParamNumber[[i]] <- ReadInteger(myFile)
+  }
+  for (i in seq_len(NP)) {
+    ParamType[[i]] <- ReadInteger(myFile)
+  }
   Sign <- readChar(myFile, 1)
   if (cqs_version >= 26) Constraint <- ReadInteger(myFile)
   Label <- ReadString(myFile)
@@ -580,8 +690,8 @@ ReadTermsList <- function(myFile, cqs_version)
 #' @keywords internal
 ReadVarInfo <- function(myFile)
 {
-    VarNumber <- ReadInteger(myFile)
-    VarType <- ReadInteger(myFile)
+  VarNumber <- ReadInteger(myFile)
+  VarType <- ReadInteger(myFile)
   V <- list(VarNumber,VarType)
   names(V)<-c("VarNumber","VarType")
   return (V)
@@ -593,8 +703,8 @@ ReadVarInfo <- function(myFile)
 #' @keywords internal
 ReadCodeList <- function(myFile)
 {
-    VarInfo <- ReadVarInfo(myFile)
-    S <- ReadStringList(myFile)
+  VarInfo <- ReadVarInfo(myFile)
+  S <- ReadStringList(myFile)
   V <- list(VarInfo,S)
   names(V)<-c("VarInfo","S")
   return (V)
@@ -606,19 +716,19 @@ ReadCodeList <- function(myFile)
 #' @keywords internal
 ReadIRecode <- function(myFile)
 {
-    Before <- ReadStringList(myFile)
-    NAfter <- ReadInteger(myFile)
+  Before <- ReadStringList(myFile)
+  NAfter <- ReadInteger(myFile)
   AfterList <- list()
-    for (i in seq_len(NAfter))
-    {
-            AfterList[[i]] <-ReadStringList(myFile)
-    }
-    NList <- ReadInteger(myFile)
+  for (i in seq_len(NAfter))
+  {
+    AfterList[[i]] <-ReadStringList(myFile)
+  }
+  NList <- ReadInteger(myFile)
   CList <- list()
-    for (i in seq_len(NList))
-    {
-            CList[[i]] <-ReadCodeList(myFile)
-    }
+  for (i in seq_len(NList))
+  {
+    CList[[i]] <-ReadCodeList(myFile)
+  }
   V <- list(Before,AfterList,CList)
   names(V)<-c("Before","AfterList","CList")
   return (V)
@@ -630,13 +740,13 @@ ReadIRecode <- function(myFile)
 #' @keywords internal
 ReadIRecodeList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadIRecode(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadIRecode(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadParameters
@@ -646,7 +756,7 @@ ReadIRecodeList <- function(myFile)
 ReadParameters <- function(myFile)
 {
   Levels <- ReadIntegerList(myFile)
-    Step <- ReadInteger(myFile)
+  Step <- ReadInteger(myFile)
   Sign <- readChar(myFile, 1)
   V <- list(Levels,Step,Sign)
   names(V)<-c("Levels","Step","Sign")
@@ -659,13 +769,28 @@ ReadParameters <- function(myFile)
 #' @keywords internal
 ReadParametersList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadParameters(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadParameters(myFile)
+  }
+  return(Value)
+}
+
+#' @title ReadCategoriseLegacy
+#' @param myFile An 'ACER ConQuest' system file.
+#' @return A list
+#' @keywords internal
+ReadCategoriseLegacy <- function(myFile)
+{
+  Type <- ReadInteger(myFile)
+  Varnum <- ReadInteger(myFile)
+  ValueList <- ReadStringList(myFile)
+  MatchType <- ReadIntegerList(myFile)
+  V <- list(Type, Varnum, ValueList, MatchType)
+  names(V) <- c("Type", "Varnum", "ValueList", "MatchType")
+  return(V)
 }
 
 #' @title ReadCategorise
@@ -678,9 +803,25 @@ ReadCategorise <- function(myFile)
   Varnum <- ReadInteger(myFile)
   ValueList <- ReadStringList(myFile)
   MatchType <- ReadIntegerList(myFile)
-  V <- list(Type, Varnum, ValueList, MatchType)
-  names(V) <- c("Type", "Varnum", "ValueList", "MatchType")
+  DummyVectors <- ReadMatrixVars(myFile)
+  V <- list(Type, Varnum, ValueList, MatchType, DummyVectors)
+  names(V) <- c("Type", "Varnum", "ValueList", "MatchType", "DummyVectors")
   return(V)
+}
+
+#' @title ReadCategoriseListLegacy
+#' @param myFile An 'ACER ConQuest' system file.
+#' @return A list
+#' @keywords internal
+ReadCategoriseListLegacy <- function(myFile)
+{
+  N <- ReadInteger(myFile)
+  Value <- list()
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadCategoriseLegacy(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadCategoriseList
@@ -704,18 +845,18 @@ ReadCategoriseList <- function(myFile)
 #' @keywords internal
 ReadFit <- function(myFile)
 {
-    UnWeightedMNSQ <- ReadDouble(myFile)
-    UnWeightedtfit <- ReadDouble(myFile)
+  UnWeightedMNSQ <- ReadDouble(myFile)
+  UnWeightedtfit <- ReadDouble(myFile)
   WeightedCW2 <-ReadDouble(myFile)
-    WeightedMNSQ <- ReadDouble(myFile)
-    Weightedtfit <- ReadDouble(myFile)
-    WeightedNumerator <- ReadDouble(myFile)
-    WeightedDenominator <- ReadDouble(myFile)
-    UnWeightedSE <- ReadDouble(myFile)
-    WeightedSE <- ReadDouble(myFile)
-    Failed <- ReadBoolean(myFile)
+  WeightedMNSQ <- ReadDouble(myFile)
+  Weightedtfit <- ReadDouble(myFile)
+  WeightedNumerator <- ReadDouble(myFile)
+  WeightedDenominator <- ReadDouble(myFile)
+  UnWeightedSE <- ReadDouble(myFile)
+  WeightedSE <- ReadDouble(myFile)
+  Failed <- ReadBoolean(myFile)
   V <- list(UnWeightedMNSQ,UnWeightedtfit,WeightedCW2,WeightedMNSQ,Weightedtfit,
-          WeightedNumerator,WeightedDenominator,UnWeightedSE,WeightedSE,Failed)
+            WeightedNumerator,WeightedDenominator,UnWeightedSE,WeightedSE,Failed)
   names(V)<-c("UnWeightedMNSQ","UnWeightedtfit","WeightedCW2","WeightedMNSQ","Weightedtfit",
               "WeightedNumerator","WeightedDenominator","UnWeightedSE","WeightedSE","Failed")
   return (V)
@@ -727,16 +868,16 @@ ReadFit <- function(myFile)
 #' @keywords internal
 ReadFitList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Names <- list()
   Value <- list()
   V <- list(Names,Value)
   names(V)<-c("Names","Value")
-    for (i in seq_len(N))
-    {
-           Names[[i]] <-ReadString(myFile)
-            Value[[i]] <-ReadFit(myFile)
-    }
+  for (i in seq_len(N))
+  {
+    Names[[i]] <-ReadString(myFile)
+    Value[[i]] <-ReadFit(myFile)
+  }
   V <- list(Names,Value)
   names(V)<-c("Names","Value")
   return (V)
@@ -748,10 +889,10 @@ ReadFitList <- function(myFile)
 #' @keywords internal
 ReadRegression <- function(myFile)
 {
-    Varnum <- ReadInteger(myFile)
-    ValueList <- ReadStringList(myFile)
+  Varnum <- ReadInteger(myFile)
+  ValueList <- ReadStringList(myFile)
   V <- list(Varnum,ValueList)
-  names(V)<-c("Varnum","ValueList")
+  names(V) <- c("Varnum","ValueList")
   return (V)
 }
 
@@ -761,13 +902,13 @@ ReadRegression <- function(myFile)
 #' @keywords internal
 ReadRegressionListLeg <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadRegression(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <- ReadRegression(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadRegressionList
@@ -795,8 +936,8 @@ ReadRegressionList <- function(myFile)
 #' @keywords internal
 ReadItemSet <- function(myFile)
 {
-    Name <- ReadString(myFile)
-    ValueList <- ReadIntegerList(myFile)
+  Name <- ReadString(myFile)
+  ValueList <- ReadIntegerList(myFile)
   V <- list(Name,ValueList)
   names(V)<-c("Name","ValueList")
   return (V)
@@ -808,13 +949,13 @@ ReadItemSet <- function(myFile)
 #' @keywords internal
 ReadItemSetList <- function(myFile)
 {
-    N <- ReadInteger(myFile)
+  N <- ReadInteger(myFile)
   Value <- list()
-    for (i in seq_len(N))
-    {
-            Value[[i]] <-ReadItemSet(myFile)
-    }
-    return(Value)
+  for (i in seq_len(N))
+  {
+    Value[[i]] <-ReadItemSet(myFile)
+  }
+  return(Value)
 }
 
 #' @title ReadHistory
@@ -834,7 +975,7 @@ ReadHistory <- function(myFile)
   RanTermVariance <- list()
   BetweenVariance <- list()
   for (i in seq_len(N))
-    {
+  {
     myTmpInt <- ReadInteger(myFile)
     RunNo[[i]] <- myTmpInt
     Iter[[i]] <- ReadInteger(myFile)
@@ -874,10 +1015,10 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
     maxscores <- vector(mode = "double", Dimensions)
     if (NPlausibles > 0)
     {
-        pvs <- matrix(1:Dimensions * NPlausibles, nrow = Dimensions, ncol = NPlausibles)
+      pvs <- matrix(1:Dimensions * NPlausibles, nrow = Dimensions, ncol = NPlausibles)
     }
   }
-     # read data into objects
+  # read data into objects
   for (i in seq_len(Dimensions))
   {
     alla_eap[i] <- ReadDouble(myFile)
@@ -938,12 +1079,12 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
   weight <- ReadDouble(myFile)
   pid <- n
   V <- list(
-      pid, alla_eap, alla_eaperr, eap, eaperr, wle, 
-      wleerr, pvs, jml, jmlerr, scores, maxscores, fit, weight
+    pid, alla_eap, alla_eaperr, eap, eaperr, wle,
+    wleerr, pvs, jml, jmlerr, scores, maxscores, fit, weight
   )
   names(V) <- c(
-      "pid", "alla_eap", "alla_eaperr", "eap", "eaperr", "wle",
-      "wleerr", "pvs", "jml", "jmlerr", "scores","maxscores", "fit", "weight"
+    "pid", "alla_eap", "alla_eaperr", "eap", "eaperr", "wle",
+    "wleerr", "pvs", "jml", "jmlerr", "scores","maxscores", "fit", "weight"
   )
   return(V)
 }
@@ -958,7 +1099,7 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
 ReadAllCaseEstimates <- function(myFile,Dimensions,N,NPlausibles)
 {
   V <- list()
-  # the chain length can be updated by subsequent calls to estimate, 
+  # the chain length can be updated by subsequent calls to estimate,
   # gNPlausibles is not the number of PVs in the last run
   chainLen <- ReadInteger(myFile)
   for (i in seq_len(N))
@@ -979,11 +1120,11 @@ ReadAllCaseEstimates <- function(myFile,Dimensions,N,NPlausibles)
 #' @keywords internal
 ReadDataRecord <- function(myFile)
 {
-    Pid <- ReadInteger(myFile)+1 # note in CQ this is a seq from 0:n-1 cases, this ensures the PID is the same as the seqnum in gAllCaseEstimates
-    Rsp <- ReadInteger(myFile)
-    Item <- ReadInteger(myFile)
-    PreKeyRsp <- ReadInteger(myFile)
-    RspFlag <- ReadInteger(myFile)
+  Pid <- ReadInteger(myFile)+1 # note in CQ this is a seq from 0:n-1 cases, this ensures the PID is the same as the seqnum in gAllCaseEstimates
+  Rsp <- ReadInteger(myFile)
+  Item <- ReadInteger(myFile)
+  PreKeyRsp <- ReadInteger(myFile)
+  RspFlag <- ReadInteger(myFile)
   V <- list(Pid,Rsp,Item,PreKeyRsp,RspFlag)
   names(V)<-c("Pid","Rsp","Item","PreKeyRsp","RspFlag")
   return (V)
@@ -996,12 +1137,12 @@ ReadDataRecord <- function(myFile)
 #' @keywords internal
 ReadAllResponseData <- function(myFile,N)
 {
-    V <- list()
-    for (i in seq_len(N))
-    {
-        V[[i]]=ReadDataRecord(myFile)
-    }
-    return (V)
+  V <- list()
+  for (i in seq_len(N))
+  {
+    V[[i]]=ReadDataRecord(myFile)
+  }
+  return (V)
 }
 
 #' @title ReadADesignMatrices
@@ -1014,27 +1155,27 @@ ReadAllResponseData <- function(myFile,N)
 #' @description ReadSys Read the A design matrix (A list of length gNGins of matrices.  For each matrix the number of rows is gItemSteps (for that item) and the number of columns is gNParameters_C).
 ReadADesignMatrices <- function(myFile,Columns,Items,ItemSteps)
 {
-    V <- list()      # this is a list of matrices, for review
-    if (Columns == 0) return(V)
-    for (i in seq_len(Items))
+  V <- list()      # this is a list of matrices, for review
+  if (Columns == 0) return(V)
+  for (i in seq_len(Items))
+  {
+    if (ItemSteps[[i]]>0)
     {
-      if (ItemSteps[[i]]>0)
+      V[[i]] <-matrix(1:ItemSteps[[i]]*Columns,nrow = ItemSteps[[i]],ncol = Columns)
+      for (r in seq_len(ItemSteps[[i]]))
       {
-            V[[i]] <-matrix(1:ItemSteps[[i]]*Columns,nrow = ItemSteps[[i]],ncol = Columns)
-            for (r in seq_len(ItemSteps[[i]]))
-            {
-                for (c in seq_len(Columns))
-                {
-                   V[[i]][r,c] <-ReadDouble(myFile);
-                }
-            }
-        }
-        else
+        for (c in seq_len(Columns))
         {
-            V[[i]]=matrix()
+          V[[i]][r,c] <-ReadDouble(myFile);
         }
+      }
     }
-    return(V)
+    else
+    {
+      V[[i]]=matrix()
+    }
+  }
+  return(V)
 }
 
 #' @title ReadBDesignMatrices
@@ -1046,18 +1187,18 @@ ReadADesignMatrices <- function(myFile,Columns,Items,ItemSteps)
 #' @description  ReadSys Read the B design matrix (A list of length gNGins of lists, one per item. For each item a list of length gItemSteps of matrices).
 ReadBDesignMatrices <- function(myFile,ItemSteps,Items)
 {
-    V <- list()      # this will be a 2D list of matrices, for review
-    for (i in seq_len(Items))
+  V <- list()      # this will be a 2D list of matrices, for review
+  for (i in seq_len(Items))
+  {
+    V[[i]] <-list()
+    TempIndex <- ItemSteps[[i]]
+    if (TempIndex==0)TempIndex <- 1
+    for (j in seq_len(TempIndex))
     {
-        V[[i]] <-list()
-        TempIndex <- ItemSteps[[i]]
-        if (TempIndex==0)TempIndex <- 1
-        for (j in seq_len(TempIndex))
-        {
-                 V[[i]][[j]] <-ReadMatrix(myFile);
-        }
+      V[[i]][[j]] <-ReadMatrix(myFile);
     }
-    return(V)
+  }
+  return(V)
 }
 
 #' @title ReadCDesignMatrices
@@ -1070,30 +1211,30 @@ ReadBDesignMatrices <- function(myFile,ItemSteps,Items)
 #' @description  ReadSys Read the C design matrix (A list of length gNGins of lists, one per item. For each item a list of length gItemSteps of matrices).
 ReadCDesignMatrices <- function(myFile,Dimensions,ItemSteps,Items)
 {
-    #print(paste(Dimensions, " : printing Dimensions - gNDim")); # debug
+  #print(paste(Dimensions, " : printing Dimensions - gNDim")); # debug
   #print(paste(ItemSteps, " : printing ItemSteps - gItemSteps")); # debug
   #print(paste(Items, " : printing Items - gNGins")); # debug
 
   V <- list()
-    for (d in seq_len(Dimensions))
+  for (d in seq_len(Dimensions))
+  {
+    # print(d); print("d in seq_len(Dimensions)") # debug
+    V[[d]] <-list()
+    for (i in seq_len(Items))
     {
-      # print(d); print("d in seq_len(Dimensions)") # debug
-      V[[d]] <-list()
-        for (i in seq_len(Items))
-        {
-          #print(paste(i, ": item. from call: (i in seq_len(Items))")) # debug
-          V[[d]][[i]] <-list()
-          TempIndex <- ItemSteps[[i]]
-          #print(paste(ItemSteps[[i]], ": item steps for item i, from call: ItemSteps[[i]]")) # debug
+      #print(paste(i, ": item. from call: (i in seq_len(Items))")) # debug
+      V[[d]][[i]] <-list()
+      TempIndex <- ItemSteps[[i]]
+      #print(paste(ItemSteps[[i]], ": item steps for item i, from call: ItemSteps[[i]]")) # debug
       if (TempIndex==0)TempIndex <- 1
-          #print(paste(TempIndex, ": TempIndex from call: TempIndex <- ItemSteps[[i]]")) # debug
+      #print(paste(TempIndex, ": TempIndex from call: TempIndex <- ItemSteps[[i]]")) # debug
       for (k in seq_len(TempIndex))
       {
         #print(paste(k, ": kth item step from call, seq_len(ItemSteps[[i]])")) # debug
-              V[[d]][[i]][[k]] <-ReadMatrix(myFile);
+        V[[d]][[i]][[k]] <-ReadMatrix(myFile);
       }
     }
-    }
+  }
   return(V)
 }
 
@@ -1104,13 +1245,13 @@ ReadCDesignMatrices <- function(myFile,Dimensions,ItemSteps,Items)
 #' @keywords internal
 ReadYOneCase <- function(myFile,NReg)
 {
-    Y <- vector(mode="double",NReg)
-    Weight <- ReadDouble(myFile)
-    for (i in seq_len(NReg))
-    {
-        Y[i] <-ReadDouble(myFile)
-    }
-    V <- list(Weight,Y)
+  Y <- vector(mode="double",NReg)
+  Weight <- ReadDouble(myFile)
+  for (i in seq_len(NReg))
+  {
+    Y[i] <-ReadDouble(myFile)
+  }
+  V <- list(Weight,Y)
   names(V)<-c("Weight","Y")
   return (V)
 }
@@ -1122,12 +1263,12 @@ ReadYOneCase <- function(myFile,NReg)
 #' @keywords internal
 ReadAllY <- function(myFile,N,NReg)
 {
-    V <- list()
-    for (n in seq_len(N))
-    {
-        V[[n]] <-ReadYOneCase(myFile,NReg = NReg)
-    }
-    return(V)
+  V <- list()
+  for (n in seq_len(N))
+  {
+    V[[n]] <-ReadYOneCase(myFile,NReg = NReg)
+  }
+  return(V)
 }
 
 #' @title ReadGroupsOneCase
@@ -1140,36 +1281,36 @@ ReadAllY <- function(myFile,N,NReg)
 ReadGroupsOneCase <- function(myFile, GroupVariables, AllVariables, CaseNum)
 {
   Dummy <- readChar(myFile,1)
-    NGvars <- length(GroupVariables$XV)
-    GData <- vector()
-    V <- list()
-    if (NGvars==0)return (V)
-    GData <- vector(mode="character",NGvars)
-    for (k in seq_len(NGvars))
-    {
-      WhichVarNum <- GroupVariables$XV[[k]]
-      WhichVar <- AllVariables[[WhichVarNum+1]]
-        L <- WhichVar$End[[1]]-WhichVar$Begin[[1]]+1
-        # when missing values (" ", ".") in group data
-        # sys file encodes embedded nuls
-        # this is a safe work around
-        # tS <- readBin(myFile, "raw", L)
-        # if (any(tS == as.raw(0))) {
-        #   tS <- charToRaw(paste0(rep(" ", L), collapse = ""))
-        # }
-        GData[k] <- readCharSafe(myFile, L)
-        #if (nchar(GData[k]) != L) {
-        #  warning("Group data contained missing value - file may not be read correctly")
-        #  print(paste0("CaseNum: ", CaseNum))
-        #  seek(con = myFile, where = (-1*L)) # rewind file
-        #  readBin(myFile, "raw", L) # re-read raw - safe if some embedded nulls
-        #  GData[k] <- paste0(rep(" ", L), collapse = "") # empty value
-        #}
-    }
-    V <- list(CaseNum, GData)
-    names(V) <- c("CaseNum", "GData")
+  NGvars <- length(GroupVariables$XV)
+  GData <- vector()
+  V <- list()
+  if (NGvars==0)return (V)
+  GData <- vector(mode="character",NGvars)
+  for (k in seq_len(NGvars))
+  {
+    WhichVarNum <- GroupVariables$XV[[k]]
+    WhichVar <- AllVariables[[WhichVarNum+1]]
+    L <- WhichVar$End[[1]]-WhichVar$Begin[[1]]+1
+    # when missing values (" ", ".") in group data
+    # sys file encodes embedded nuls
+    # this is a safe work around
+    # tS <- readBin(myFile, "raw", L)
+    # if (any(tS == as.raw(0))) {
+    #   tS <- charToRaw(paste0(rep(" ", L), collapse = ""))
+    # }
+    GData[k] <- readCharSafe(myFile, L)
+    #if (nchar(GData[k]) != L) {
+    #  warning("Group data contained missing value - file may not be read correctly")
+    #  print(paste0("CaseNum: ", CaseNum))
+    #  seek(con = myFile, where = (-1*L)) # rewind file
+    #  readBin(myFile, "raw", L) # re-read raw - safe if some embedded nulls
+    #  GData[k] <- paste0(rep(" ", L), collapse = "") # empty value
+    #}
+  }
+  V <- list(CaseNum, GData)
+  names(V) <- c("CaseNum", "GData")
 
-    return(V)
+  return(V)
 }
 
 #' @title ReadAllGroupsData
@@ -1181,19 +1322,19 @@ ReadGroupsOneCase <- function(myFile, GroupVariables, AllVariables, CaseNum)
 #' @keywords internal
 ReadAllGroupsData <- function(myFile,N,GroupVariables,AllVariables)
 {
-    V <- list()
-    for (n in seq_len(N))
-    {
-        V[[n]] <- ReadGroupsOneCase(
-          myFile = myFile,
-          GroupVariables = GroupVariables,
-          AllVariables = AllVariables,
-          CaseNum = n
-        )
-    }
-    #print(paste0("exited on casenum = ", n)) # debug
-    #print(paste0("N was passed in as  = ", N)) # debug
-    return(V)
+  V <- list()
+  for (n in seq_len(N))
+  {
+    V[[n]] <- ReadGroupsOneCase(
+      myFile = myFile,
+      GroupVariables = GroupVariables,
+      AllVariables = AllVariables,
+      CaseNum = n
+    )
+  }
+  #print(paste0("exited on casenum = ", n)) # debug
+  #print(paste0("N was passed in as  = ", N)) # debug
+  return(V)
 }
 
 #' @title ReadMatrixVars
@@ -1207,10 +1348,10 @@ ReadMatrixVars <- function(myFile)
   # read length of list of matrix objects
   nMatricies <- ReadInteger(myFile)
   for (n in seq_len(nMatricies))
-    {
-      myTempName <- ReadString(myFile)
-      m[[myTempName]] <- ReadMatrix(myFile)
-    }
+  {
+    myTempName <- ReadString(myFile)
+    m[[myTempName]] <- ReadMatrix(myFile)
+  }
   return(m)
 }
 
@@ -1220,9 +1361,9 @@ ReadMatrixVars <- function(myFile)
 #' @keywords internal
 ReadPoint <- function(myFile)
 {
-    x <- ReadDouble(myFile)
-    y <- ReadDouble(myFile)
-    z <- ReadDouble(myFile)
+  x <- ReadDouble(myFile)
+  y <- ReadDouble(myFile)
+  z <- ReadDouble(myFile)
   Label <- ReadString(myFile)
   Point <- list(x,y,z,Label)
   names(Point)<-c("x","y","z","Label")
@@ -1235,53 +1376,53 @@ ReadPoint <- function(myFile)
 #' @keywords internal
 ReadSeries <- function(myFile)
 {
-    SType <- ReadInteger(myFile)
-    # print(paste0("SType = ", SType))
-    PointCount <- ReadInteger(myFile)
-    # print(PointCount)
-    Points <- list()
-    for (i in seq_len(PointCount))
-    {
-            # print(p("point number ",i))
-            Points[[i]]=ReadPoint(myFile)
-    }
-    MinX <- ReadDouble(myFile)
-    MaxX <- ReadDouble(myFile)
-    MinY <- ReadDouble(myFile)
-    MaxY <- ReadDouble(myFile)
-    Name <- ReadString(myFile)
-    DrawSeries <- ReadBoolean(myFile)
-    DrawPoints <- ReadBoolean(myFile)
-    JoinPoints <- ReadBoolean(myFile)
-    LabelPoints <- ReadBoolean(myFile)
-    LineWidth <- ReadInteger(myFile)
-    PointColour <- ReadInteger(myFile)
-    LineColour <- ReadInteger(myFile)
-    PointStyle <- ReadInteger(myFile)
-    LabelStyle <- ReadInteger(myFile)
-    LineStyle <- ReadInteger(myFile)
-    Series = list(
-                SType = SType,
-                PointCount = PointCount,
-                Points = Points,
-                MinX = MinX,
-                MaxX = MaxX,
-                MinY = MinY,
-                MaxY = MaxY,
-                Name = Name,
-                DrawSeries = DrawSeries,
-                DrawPoints = DrawPoints,
-                JoinPoints = JoinPoints,
-                LabelPoints = LabelPoints,
-                LineWidth = LineWidth,
-                PointColour = PointColour,
-                LineColour = LineColour,
-                PointStyle = PointStyle,
-                LabelStyle = LabelStyle,
-                LineStyle = LineStyle
-                )
-    # print(Series)
-    return(Series)
+  SType <- ReadInteger(myFile)
+  # print(paste0("SType = ", SType))
+  PointCount <- ReadInteger(myFile)
+  # print(PointCount)
+  Points <- list()
+  for (i in seq_len(PointCount))
+  {
+    # print(p("point number ",i))
+    Points[[i]]=ReadPoint(myFile)
+  }
+  MinX <- ReadDouble(myFile)
+  MaxX <- ReadDouble(myFile)
+  MinY <- ReadDouble(myFile)
+  MaxY <- ReadDouble(myFile)
+  Name <- ReadString(myFile)
+  DrawSeries <- ReadBoolean(myFile)
+  DrawPoints <- ReadBoolean(myFile)
+  JoinPoints <- ReadBoolean(myFile)
+  LabelPoints <- ReadBoolean(myFile)
+  LineWidth <- ReadInteger(myFile)
+  PointColour <- ReadInteger(myFile)
+  LineColour <- ReadInteger(myFile)
+  PointStyle <- ReadInteger(myFile)
+  LabelStyle <- ReadInteger(myFile)
+  LineStyle <- ReadInteger(myFile)
+  Series = list(
+    SType = SType,
+    PointCount = PointCount,
+    Points = Points,
+    MinX = MinX,
+    MaxX = MaxX,
+    MinY = MinY,
+    MaxY = MaxY,
+    Name = Name,
+    DrawSeries = DrawSeries,
+    DrawPoints = DrawPoints,
+    JoinPoints = JoinPoints,
+    LabelPoints = LabelPoints,
+    LineWidth = LineWidth,
+    PointColour = PointColour,
+    LineColour = LineColour,
+    PointStyle = PointStyle,
+    LabelStyle = LabelStyle,
+    LineStyle = LineStyle
+  )
+  # print(Series)
+  return(Series)
 }
 
 #' @title ReadGraph
@@ -1290,60 +1431,60 @@ ReadSeries <- function(myFile)
 #' @keywords internal
 ReadGraph <- function(myFile)
 {
-    GType <- ReadInteger(myFile)
-    # print(GType)
-    NSeries <- ReadInteger(myFile)
-    #print(NSeries)
-    Series <- list()
-    for (i in seq_len(NSeries))
-    {
-        #print("Series ",i)
-        Series[[i]] <- ReadSeries(myFile)
-    }
-    MinX <- ReadDouble(myFile)
-    MaxX <- ReadDouble(myFile)
-    MinY <- ReadDouble(myFile)
-    MaxY <- ReadDouble(myFile)
-    PointColourIndex <- ReadInteger(myFile)
-    LineColourIndex <- ReadInteger(myFile)
-    PointStyleIndex <- ReadInteger(myFile)
-    FreeTextCount <- ReadInteger(myFile)
-    L <- ReadInteger(myFile)
-    GraphTitleText <- ReadString(myFile)
-    GraphSubTitleText <- ReadString(myFile)
-    xAxisLabelText <- ReadString(myFile)
-    yAxisLabelText <- ReadString(myFile)
-    DifficultyLabelText <- ReadString(myFile)
-    FitLabelText <- ReadString(myFile)
-    NStrings <- L-6;
-    Strings <- list()
-    # print(p("other strings ",NStrings))
-    for (i in seq_len(NStrings))
-    {
-        Strings[[i]]=ReadPoint(myFile)
-    }
-    Graph <- list(
-                GType = GType,
-                NSeries = NSeries,
-                Series = Series,
-                MinX = MinX,
-                MaxX = MaxX,
-                MinY = MinY,
-                MaxY = MaxY,
-                PointColourIndex = PointColourIndex,
-                LineColourIndex = LineColourIndex,
-                PointStyleIndex = PointStyleIndex,
-                GraphTitleText = GraphTitleText,
-                GraphSubTitleText = GraphSubTitleText,
-                xAxisLabelText = xAxisLabelText,
-                yAxisLabelText = yAxisLabelText,
-                DifficultyLabelText = DifficultyLabelText,
-                FitLabelText = FitLabelText,
-                NStrings = NStrings,
-                Strings = Strings
-                )
-      return(Graph)
-    }
+  GType <- ReadInteger(myFile)
+  # print(GType)
+  NSeries <- ReadInteger(myFile)
+  #print(NSeries)
+  Series <- list()
+  for (i in seq_len(NSeries))
+  {
+    #print("Series ",i)
+    Series[[i]] <- ReadSeries(myFile)
+  }
+  MinX <- ReadDouble(myFile)
+  MaxX <- ReadDouble(myFile)
+  MinY <- ReadDouble(myFile)
+  MaxY <- ReadDouble(myFile)
+  PointColourIndex <- ReadInteger(myFile)
+  LineColourIndex <- ReadInteger(myFile)
+  PointStyleIndex <- ReadInteger(myFile)
+  FreeTextCount <- ReadInteger(myFile)
+  L <- ReadInteger(myFile)
+  GraphTitleText <- ReadString(myFile)
+  GraphSubTitleText <- ReadString(myFile)
+  xAxisLabelText <- ReadString(myFile)
+  yAxisLabelText <- ReadString(myFile)
+  DifficultyLabelText <- ReadString(myFile)
+  FitLabelText <- ReadString(myFile)
+  NStrings <- L-6;
+  Strings <- list()
+  # print(p("other strings ",NStrings))
+  for (i in seq_len(NStrings))
+  {
+    Strings[[i]]=ReadPoint(myFile)
+  }
+  Graph <- list(
+    GType = GType,
+    NSeries = NSeries,
+    Series = Series,
+    MinX = MinX,
+    MaxX = MaxX,
+    MinY = MinY,
+    MaxY = MaxY,
+    PointColourIndex = PointColourIndex,
+    LineColourIndex = LineColourIndex,
+    PointStyleIndex = PointStyleIndex,
+    GraphTitleText = GraphTitleText,
+    GraphSubTitleText = GraphSubTitleText,
+    xAxisLabelText = xAxisLabelText,
+    yAxisLabelText = yAxisLabelText,
+    DifficultyLabelText = DifficultyLabelText,
+    FitLabelText = FitLabelText,
+    NStrings = NStrings,
+    Strings = Strings
+  )
+  return(Graph)
+}
 
 #' @title ReadRandomStructure
 #' @param myFile An 'ACER ConQuest' system file.

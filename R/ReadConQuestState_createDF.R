@@ -18,7 +18,7 @@
 #' @examples
 #'   mySys <- ConQuestSys()
 #'   myData <- getCqData(mySys)
-#'   myDataDf <- getCqDataDf(myData)
+#'   suppressWarnings(myDataDf <- getCqDataDf(myData)) # NAs introduced by coercion
 getCqDataDf <-function(cqData) {
 
   isCqData <- any(grepl("^cqData", class(cqData)))

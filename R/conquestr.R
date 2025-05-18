@@ -7,7 +7,7 @@ NULL
 #' @rawNamespace exportPattern("^[[:alpha:]]+")
 #' @rawNamespace if (.Platform$OS.type=="windows") importFrom(utils,shortPathName)
 
-packageStartupMessage("\nConQuestR requires a copy of ACER ConQuest version <= 5.40.0")
+packageStartupMessage("\n`conquestr` requires a copy of ACER ConQuest version <= 5.40.0")
 
 # for vignette or default we can access files like this: system.file("extdata", "ex1.cqc", package = "conquestr")
 # consider using this in the future https://www.tidyverse.org/blog/2018/09/processx-3.2.0/

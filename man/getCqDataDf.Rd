@@ -24,7 +24,7 @@ regression variables in the analysis). For more complex data, the user should us
 \examples{
   mySys <- ConQuestSys()
   myData <- getCqData(mySys)
-  myDataDf <- getCqDataDf(myData)
+  suppressWarnings(myDataDf <- getCqDataDf(myData)) # NAs introduced by coercion
 }
 \seealso{
 conquestr::ConQuestSys()

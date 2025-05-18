@@ -1,7 +1,7 @@
 Type: Package
 Package: conquestr
 Title: An R Package to Extend 'ACER ConQuest'
-Version: 1.4.5
+Version: 1.5.1
 Authors@R: c(
     person(
       given = "Dan",
@@ -45,9 +45,9 @@ Collate: "RcppExports.R" "ReadConQuestLibrary.R"
         "showHelpers.R" "thrstThrsh.R" "cleaningHelpers.R"
 Depends: R (>= 4.1.0)
 NeedsCompilation: yes
-Packaged: 2025-02-18 21:53:54 UTC; acercloneyd
-Author: Dan Cloney [aut, cre] (<https://orcid.org/0000-0002-2130-237X>),
+Packaged: 2025-05-18 07:26:21 UTC; acercloneyd
+Author: Dan Cloney [aut, cre] (ORCID: <https://orcid.org/0000-0002-2130-237X>),
   Ray Adams [aut]
 Maintainer: Dan Cloney <dan.cloney@acer.org>
 Repository: CRAN
-Date/Publication: 2025-02-19 00:40:08 UTC
+Date/Publication: 2025-05-18 07:50:02 UTC

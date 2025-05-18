@@ -69,13 +69,16 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
     )
   }
   # are there many itanals (matrixout objects from more than one call to itanal)?
+  # list all the "_abilitymeansd" elements in gMatrixList
   ItanNames <- names(sysFile$gMatrixList)[grep("_abilitymeansd", names(sysFile$gMatrixList))]
+  # capture the prefix used in ConQuest "matrixout = <prefix>"
   ItanNames_prefixTemp <- gsub("^(\\w+)_abilitymeansd.*", "\\1", ItanNames)
+  # work out if there are more then one prefixes used (multiple calls to itanal in ConQuest)
   ItanNames_prefix <- unique(ItanNames_prefixTemp)
   ItanNames_prefixN <- length(ItanNames_prefix)
   if (isDebug) {
     print(paste0("ItanNames: ", ItanNames))
-    print(paste0("ItanNames_prefixTemp: ", ItanNames_prefixTemp))
+    # print(paste0("ItanNames_prefixTemp: ", ItanNames_prefixTemp))
     print(paste0("ItanNames_prefix: ", ItanNames_prefix))
     print(paste0("ItanNames_prefixN: ", ItanNames_prefixN))
   }
@@ -89,8 +92,10 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
   ItanList <- list()
   for (thisItan in ItanNames_prefix) {
     ItanList[[thisItan]] <- list()
-    tmpString <- paste0("^", thisItan, "_\\w+_(\\w+)_(\\w+)_+$")
+    tmpString <- paste0("^", thisItan, "_\\w+_(\\w+)_(\\w+)*$")
     tmpString1 <- paste0("^", thisItan, "_abilitymeansd$")
+    # if we match using tmpString1, there is no group suffix on the end of the name
+    #    the itanal objects
     hasGroups <- !any(grepl(tmpString1, ItanNames))
     tmpVec <- unique(gsub(tmpString, "\\2", ItanNames))
     if (hasGroups) {
@@ -108,7 +113,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
     stop(
       "The sysFile you have provided has matrixout objects from 
       more than one call to itanal in it.
-      You must specify which itanal to include via the argument matrixPrefix"
+      You must specify which itanal to include via the argument `matrixPrefix`"
     )
   }
   if (!is.character(matrixPrefix)) stop("matrixPrefix must be a string")
@@ -237,7 +242,12 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
       oneResult <- replaceInDataFrame(oneResult, -1.797693e+308, NA)
       if (any(oneResult$count == 0)) oneResult$ptbis[oneResult$count == 0] <- NA
 
-      #if (myDebug) print(oneResult)
+      if (myDebug)
+      {
+        print("oneResult: ")
+        print(names(oneResult))
+        print(oneResult)
+      } 
 
       # get map of gins to dim
       for (j in seq(length(sysFile$gGeneraliseditemList_D))) {
@@ -297,13 +307,17 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
           oneResult$score <- oneResult$tmpRespCatNames
           oneResult$score[is.na(oneResult$ptbis)] <- NA
         }
-
-      # check for 2PL and multiply score by tau.
-      # Need to check how Bock model works - is gTau a list of lists, one per gin?
-
       } else
       {
-        oneResult$score <- as.numeric(oneResult$tmpRespCatNames) # no keys or scores, just use tmpRespCatNames
+        oneResult$score <- as.numeric(oneResult$tmpRespCatNames) # no keys or scores, just use tmpRespCatNames      
+      }
+      # if cqs_version > 29, there is a column "catscore" in oneResult
+      # this will have estimated scores (e.g., from 2PL) or otherwise raw scores.
+      # If this exists, put the values from catscore in score, and drop catscore (?)
+      if ("catscore" %in% names(oneResult))
+      {
+        oneResult$score <- oneResult$catscore
+        # oneResult$catscore <- NULL
       }
 
       oneResult$prop <- oneResult$count / sum(oneResult$count) * 100

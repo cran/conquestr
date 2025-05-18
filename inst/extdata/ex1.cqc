@@ -4,7 +4,7 @@ Datafile ex1.dat;
 set constraint=cases;
 Format pid 1-5 responses 12-23 v1 12 v2 15;
 Key acddbcebbacc ! 1;
-Model item;
+Model item ! type = rasch;
 group v1;
 
 labels 1  "item one"      ! item;
@@ -29,5 +29,5 @@ plot icc ! gins = 1, filetype = rout >> %location%/myicc.rout;
 banddefine ! label = "L0 (critical)", upper = -2.133, lower = -100;
 banddefine ! label = "L1 (upper)", upper = 100, lower = 2.133;
 
-put ! compress = no >> mysysfile.cqs;
+put >> mysysfile.cqs;
 
