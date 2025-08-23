@@ -49,6 +49,8 @@
 #'      note that if `groups` is not used in call to `genResponses` than this
 #'      value is ignored and all cases' responses are perturbed.
 #'
+#' @references  Adams, R. J., & Wright, B. D. (1994). When does misfit make a difference. 
+#'   In Objective Measurement Theory and Practice (Vol. 2). Ablex Publishing Corporation.
 #' @return A matrix, `n` cases by `i` items, of scored item responses.
 #' @seealso [conquestr::simplef()], `browseVignettes("conquestr")`
 #' @examples

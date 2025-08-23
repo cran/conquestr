@@ -1,3 +1,18 @@
+# CHANGES IN conquestr VERSION 1.5.5
+
+## NEW FEATURES
+
+* Added support for ACER ConQuest system files version 30 which are created by
+  the command put (https://conquestmanual.acer.org/s4-00.html#put) in ACER ConQuest
+  Version > 5.47.
+* Improved handling of missing values or items where all responses are in one category
+  itanal output (see e.g., `conquestr::getCqItanal`, and `conquestr::getCqItanalSummary`)
+
+## MAJOR CHANGES
+
+* Patched internal tests for upstream dependencies. 
+
+
 # CHANGES IN conquestr VERSION 1.5.0
 
 ## NEW FEATURES
@@ -8,7 +23,7 @@
 
 ## MAJOR CHANGES
 
-* conquesrt::getCqItan now returns estimated scores in the item tables rather than
+* conquestr::getCqItan now returns estimated scores in the item tables rather than
   raw scores. Previous versions would the pre-key value and the raw score associated
   with the pre-key value (these two values are identical when no key or recode is 
   used). The values are now the pre-key value and the estimated score. 

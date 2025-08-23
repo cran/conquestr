@@ -4,7 +4,7 @@
 \alias{ReadEstimatesRecord}
 \title{ReadEstimatesRecord}
 \usage{
-ReadEstimatesRecord(myFile, Dimensions, NPlausibles, n)
+ReadEstimatesRecord(myFile, Dimensions, NPlausibles, n, cqs_version)
 }
 \arguments{
 \item{myFile}{An 'ACER ConQuest' system file.}
@@ -14,6 +14,8 @@ ReadEstimatesRecord(myFile, Dimensions, NPlausibles, n)
 \item{NPlausibles}{An integer representation of 'ACER ConQuest' object gNPlausibles.}
 
 \item{n}{An integer representation of 'ACER ConQuest' object gNCases.}
+
+\item{cqs_version}{An integer - the version of the CQS system file.}
 }
 \value{
 A list

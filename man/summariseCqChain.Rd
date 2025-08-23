@@ -13,7 +13,8 @@ summariseCqChain(myChain)
 A list.
 }
 \description{
-takes a data frame created by getCqChain and returns a list reporting the mean and variaince for each parameter
+takes a data frame created by getCqChain and returns a list reporting the mean and
+variance for each parameter
 }
 \examples{
 \dontrun{

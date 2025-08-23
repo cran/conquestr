@@ -4,6 +4,6 @@ MyItemMap <- conquestr::plotItemMap(mySys)
 
 # Rout tests
 test_that("Item mape is of correct type", {
-  expect_s3_class(MyItemMap, "ggplot")
+  expect_true(ggplot2::is_ggplot(MyItemMap))
   }
 )

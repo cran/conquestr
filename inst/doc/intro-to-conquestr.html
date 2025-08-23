@@ -12,7 +12,7 @@
 
 <meta name="author" content="Dan Cloney" />
 
-<meta name="date" content="2025-05-18" />
+<meta name="date" content="2025-08-23" />
 
 <title>Introduction to conquestr</title>
 
@@ -50,8 +50,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -62,7 +63,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -340,7 +341,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Introduction to conquestr</h1>
 <h4 class="author">Dan Cloney</h4>
-<h4 class="date">2025-05-18</h4>
+<h4 class="date">2025-08-23</h4>
 
 
 
@@ -539,9 +540,9 @@ is read into the R object <code>myExSys</code>.</p>
 <span id="cb4-106"><a href="#cb4-106" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
 <span id="cb4-107"><a href="#cb4-107" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
 <span id="cb4-108"><a href="#cb4-108" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr &quot;&quot;</span></span>
-<span id="cb4-109"><a href="#cb4-109" tabindex="-1"></a><span class="co">#&gt;  $ gHistoWeights          : logi [1, 1] NA</span></span>
-<span id="cb4-110"><a href="#cb4-110" tabindex="-1"></a><span class="co">#&gt;  $ gOldHisto              : logi [1, 1] NA</span></span>
-<span id="cb4-111"><a href="#cb4-111" tabindex="-1"></a><span class="co">#&gt;  $ gBestHisto             : logi [1, 1] NA</span></span>
+<span id="cb4-109"><a href="#cb4-109" tabindex="-1"></a><span class="co">#&gt;  $ gHistoryWeights        : logi [1, 1] NA</span></span>
+<span id="cb4-110"><a href="#cb4-110" tabindex="-1"></a><span class="co">#&gt;  $ gOldHistory            : logi [1, 1] NA</span></span>
+<span id="cb4-111"><a href="#cb4-111" tabindex="-1"></a><span class="co">#&gt;  $ gBestHistory           : logi [1, 1] NA</span></span>
 <span id="cb4-112"><a href="#cb4-112" tabindex="-1"></a><span class="co">#&gt;  $ gYBetaAll              : num [1:1000, 1] 0 0 0 0 0 0 0 0 0 0 ...</span></span>
 <span id="cb4-113"><a href="#cb4-113" tabindex="-1"></a><span class="co">#&gt;   ..- attr(*, &quot;dimnames&quot;)=List of 2</span></span>
 <span id="cb4-114"><a href="#cb4-114" tabindex="-1"></a><span class="co">#&gt;   .. ..$ : chr [1:1000] &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...</span></span>
@@ -576,8 +577,8 @@ is read into the R object <code>myExSys</code>.</p>
 <span id="cb4-143"><a href="#cb4-143" tabindex="-1"></a><span class="co">#&gt;  $ gPopulation            : int 1</span></span>
 <span id="cb4-144"><a href="#cb4-144" tabindex="-1"></a><span class="co">#&gt;  $ gSeeds                 : int 5</span></span>
 <span id="cb4-145"><a href="#cb4-145" tabindex="-1"></a><span class="co">#&gt;  $ gMaxSinceBests         : int 100</span></span>
-<span id="cb4-146"><a href="#cb4-146" tabindex="-1"></a><span class="co">#&gt;  $ gInnerLoopss           : int 10</span></span>
-<span id="cb4-147"><a href="#cb4-147" tabindex="-1"></a><span class="co">#&gt;  $ gWarningss             : logi TRUE</span></span>
+<span id="cb4-146"><a href="#cb4-146" tabindex="-1"></a><span class="co">#&gt;  $ gInnerLoops            : int 10</span></span>
+<span id="cb4-147"><a href="#cb4-147" tabindex="-1"></a><span class="co">#&gt;  $ gWarnings              : logi TRUE</span></span>
 <span id="cb4-148"><a href="#cb4-148" tabindex="-1"></a><span class="co">#&gt;  $ gEstsToLog             : logi TRUE</span></span>
 <span id="cb4-149"><a href="#cb4-149" tabindex="-1"></a><span class="co">#&gt;  $ gKeepLast              : logi FALSE</span></span>
 <span id="cb4-150"><a href="#cb4-150" tabindex="-1"></a><span class="co">#&gt;  $ gAddExtension          : logi TRUE</span></span>
@@ -706,7 +707,8 @@ declared in the option <code>matrixout</code>) in
 helper function <code>searchConQuestSys</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># search for objects named history in myCqs</span></span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">searchConQuestSys</span>(<span class="st">&quot;history&quot;</span>, myCqs)</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;gHistory&quot;        &quot;gCommandHistory&quot;</span></span></code></pre></div>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;gHistoryWeights&quot; &quot;gOldHistory&quot;     &quot;gBestHistory&quot;    &quot;gHistory&quot;       </span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; [5] &quot;gCommandHistory&quot;</span></span></code></pre></div>
 </div>
 
 

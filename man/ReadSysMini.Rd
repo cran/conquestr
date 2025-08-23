@@ -8,16 +8,23 @@ ReadSysMini(myFile, Dimensions, N, NPlausibles, isDebug)
 }
 \arguments{
 \item{myFile}{An 'ACER ConQuest' \emph{mini} system file created by the \code{put}
-command in 'ACER ConQuest' with the option "mini = yes".
-The put command must use the option \code{compressed = no}.}
+command in 'ACER ConQuest' with the option "mini = yes".}
 
-\item{Dimensions}{.}
+\item{Dimensions}{gNDim object passed in to this call to \code{ReadSysMini} from
+the higher-level original call to ReadSys. This value is returned in the
+list returned by this function call.}
 
-\item{N}{.}
+\item{N}{gNCases object passed in to this call to \code{ReadSysMini} from
+the higher-level original call to ReadSys. This value is returned in the
+list returned by this function call.}
 
-\item{NPlausibles}{.}
+\item{NPlausibles}{gNPlausibles object passed in to this call to \code{ReadSysMini} from
+the higher-level original call to ReadSys. This value is returned in the
+list returned by this function call.}
 
-\item{isDebug}{.}
+\item{isDebug}{Bool. Passed in to this call to \code{ReadSysMini} from
+the higher-level original call to ReadSys. This value is used to trigger
+output of debug information to standard out.}
 }
 \value{
 A list containing the data objects created by 'ACER ConQuest'.

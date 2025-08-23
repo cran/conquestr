@@ -7,7 +7,7 @@ myRoutPlot <- conquestr::plotRout(myRoutTest)
 test_that("Rout file is of correct type", {
   expect_s3_class(myRoutTest, "ICC")
   expect_type(myRoutDfTest, "list")
-  expect_type(myRoutPlot, "list")
+  ggplot2::is_ggplot(myRoutPlot)
   }
 )
 

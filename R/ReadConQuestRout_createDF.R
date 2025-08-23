@@ -3,7 +3,7 @@
 #' @return A data frame containing the series that make up the plot
 #' @keywords internal
 routPointsToDf <- function(myRout) {
-  # coerces points to list of matricies, nseries long
+  # coerces points to list of matrices, nseries long
   myTempList <- list()
   for (i in seq_len(myRout$NSeries)) {
     tmpName <- stringr::str_wrap(myRout$Series[[i]]$Name, 25)
@@ -27,7 +27,7 @@ routPointsToDf <- function(myRout) {
     )
     myTempList[[i]] <- tmpMat1
   }
-  # turns list of matricies to single matrix
+  # turns list of matrices to single matrix
   myTmpMat <- myTempList[[1]]
   for (i in seq_len(length(myTempList))) {
     if (i == 1) next
@@ -86,11 +86,11 @@ routType <- function(myRout) {
            "8" = "Conditional",
            "9" = "WrightMap",
            "10" = "ppWrightMap",
-           "11" = "Liklihood",
+           "11" = "Likelihood",
            "12" = "History",
            "13" = "FitMap",
            "14" = "InformationWithLatentDist",
-           "15" = "LogLiklihood",
+           "15" = "LogLikelihood",
            "16" = "Scatter"
   )
   return(myRoutClass)

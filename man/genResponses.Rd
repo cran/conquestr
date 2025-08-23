@@ -80,6 +80,10 @@ known item parameters, person abilities, and (optionally) other inputs.
   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
   myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
 }
+\references{
+Adams, R. J., & Wright, B. D. (1994). When does misfit make a difference.
+In Objective Measurement Theory and Practice (Vol. 2). Ablex Publishing Corporation.
+}
 \seealso{
 \code{\link[=simplef]{simplef()}}, \code{browseVignettes("conquestr")}
 }

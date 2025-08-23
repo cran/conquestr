@@ -92,7 +92,7 @@ ConQuestSys <- function(myCqs, isMini = FALSE) {
   if (missing(myCqs))
   {
     message("no system file provided, loading the example system file instead")
-    # anon function to get cqs - this is due to wierd behaviour on Fedora
+    # anon function to get cqs - this is due to weird behaviour on Fedora
     myCqsGet <- function() system.file("extdata", "mysysfile.cqs", package = "conquestr")
     myCqs <- tryCatch(
       {

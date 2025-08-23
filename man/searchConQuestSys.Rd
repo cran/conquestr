@@ -16,7 +16,7 @@ searchConQuestSys(searchString, mySys, value = TRUE, ignore.case = TRUE)
 \item{ignore.case}{Should searchConQuestSys ignore the case of the search term.}
 }
 \value{
-a string including object names mathching the search term
+a string including object names matching the search term
 }
 \description{
 Search for object names within a ConQuest System file object.

@@ -107,8 +107,8 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
     }
   }
 
-  if (!manyItan & is.null(matrixPrefix)) matrixPrefix <- ItanNames_prefix[1]
-  if (manyItan & !(matrixPrefix %in% ItanNames_prefix))
+  if (!manyItan && is.null(matrixPrefix)) matrixPrefix <- ItanNames_prefix[1]
+  if (manyItan && is.null(matrixPrefix))
   {
     stop(
       "The sysFile you have provided has matrixout objects from 
@@ -172,7 +172,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
       tmpString <- ""
       tmpStringName <- paste0(ItanGroupInfo$groupVar)
     }
-    if (isDebug) print(tmpString)
+    if (isDebug) print(paste0("tmpString ('' if no group): ", tmpString))
     tmp_ptbis <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_ptbis", tmpString), names(sysFile$gMatrixList))]]
     tmp_abilitymeansd <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_abilitymeansd", tmpString), names(sysFile$gMatrixList))]]
     tmp_counts <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_counts", tmpString), names(sysFile$gMatrixList))]]
@@ -199,7 +199,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
       tmp_one_abilitymeansd <- as.data.frame(t(tmp_abilitymeansd[i, ]))
       tmp_one_ptbis <- as.data.frame(t(tmp_ptbis[i, ]))
       tmp_one_counts <- as.data.frame(t(tmp_counts[i, ]))
-      if (myDebug) print(paste0("read in transpose of pvmean, ptbis, and counts for item: ", i))
+      if (myDebug) print(paste0("read in transpose of pvmean, ptbis, and counts for group: ", g, " item: ", i))
       # to wider
       tmp_one_abilitymeansd <- tmp_one_abilitymeansd %>% pivot_longer(
         cols = everything(),
@@ -313,7 +313,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
       }
       # if cqs_version > 29, there is a column "catscore" in oneResult
       # this will have estimated scores (e.g., from 2PL) or otherwise raw scores.
-      # If this exists, put the values from catscore in score, and drop catscore (?)
+      # If this exists, put the values from catscore in score
       if ("catscore" %in% names(oneResult))
       {
         oneResult$score <- oneResult$catscore
@@ -699,11 +699,17 @@ getCqItanalFacility <- function(itan) {
       tName <- itan[[i]][[j]]$name
       tScore <- as.numeric(itan[[i]][[j]]$table$Score)
       tCount <- as.numeric(itan[[i]][[j]]$table$Count)
-
-      nN <- sum(tCount)
-      tFac <- (tScore * tCount) / (nN * max(tScore))
-      tFac <- sum(tFac) * 100
-
+      
+      if (nrow(itan[[i]][[j]]$table) > 1) {
+        nN <- sum(tCount)
+        tFac <- (tScore * tCount) / (nN * max(tScore))
+        tFac <- sum(tFac) * 100
+      } else {
+        nN <- NA
+        tFac <- NA
+        tFac <- NA
+      }
+      
       facilityList[[j]] <- tFac
       names(facilityList)[j] <- tName
     }
@@ -742,7 +748,7 @@ getCqItanalSummary <- function(itan) {
   itanalSummaryList <- list() # return object
   
   # get facilities - list of lists
-  tmpFacil <- getCqItanalFacility(itan)
+  tmpFacil <- getCqItanalFacility(itan) 
   
   for (i in seq_len(myNItanals)) {
     # tmp list for results for this group
@@ -785,7 +791,11 @@ getCqItanalSummary <- function(itan) {
 
     summaryDf <- as.data.frame(tmpMat)
     names(summaryDf) <- names(oneSumList[[1]][[1]])
-
+    for (col in 2:length(names(summaryDf))) {
+      summaryDf[, col] <- gsub("-1.79769313486232e+308", NA, summaryDf[, col])
+      summaryDf[, col] <- as.numeric(summaryDf[, col])
+    }
+    
     itanalSummaryList[[i]] <- summaryDf
   }
 

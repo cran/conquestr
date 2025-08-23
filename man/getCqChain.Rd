@@ -13,8 +13,10 @@ getCqChain(myCqs)
 A data frame.
 }
 \description{
-creates a data frame representation of the estimation chain from an MCMC model.
-The burn is discarded and only the unskipped itterations in MCMC chain are retained.
+creates a data frame representation of the estimation chain from an
+MCMC model.
+For example the Patz estimator in ACER ConQuest.
+The burn is discarded and only the un-skipped iterations in MCMC chain are retained.
 }
 \examples{
 \dontrun{

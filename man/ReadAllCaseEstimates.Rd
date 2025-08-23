@@ -4,7 +4,7 @@
 \alias{ReadAllCaseEstimates}
 \title{ReadAllCaseEstimates}
 \usage{
-ReadAllCaseEstimates(myFile, Dimensions, N, NPlausibles)
+ReadAllCaseEstimates(myFile, Dimensions, N, NPlausibles, cqs_version)
 }
 \arguments{
 \item{myFile}{An 'ACER ConQuest' system file.}

@@ -13,7 +13,7 @@ getCqFit(myCqs)
 A data frame.
 }
 \description{
-creates a data frame representation of the fit of parameters in the item reponse model
+creates a data frame representation of the fit of parameters in the item response model
 }
 \examples{
 \dontrun{

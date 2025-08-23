@@ -20,7 +20,7 @@ DecompressSys <- function(myFile) {
       myOut <- c(myOut, thisChunk)
     }
   }
-  close(myFile) # we dont need this file any more
+  close(myFile) # we don't need this file any more
 
   decompressor <- zlib$decompressobj(zlib$MAX_WBITS)
   
@@ -67,9 +67,6 @@ DecompressSys <- function(myFile) {
 #' @importFrom utils str
 ReadSys <- function(myFile, isMini) {
   myDebug <- FALSE
-  # requires functions in R/ReadConQuestLibrary.R
-
-  # add trycatch here? if fail, spit error "needs to be uncomp..."
   compressedString <- ReadString(myFile)
   if (myDebug) print(paste0("Compressed: ", compressedString))
 
@@ -173,12 +170,12 @@ ReadSys <- function(myFile, isMini) {
   gVariance <- ReadMatrix(myFile)
   gOldVariance <- ReadMatrix(myFile)
   gBestVariance <- ReadMatrix(myFile)
-  gHistoWeights <- ReadMatrix(myFile)
-  gOldHisto <- ReadMatrix(myFile)
-  gBestHisto <- ReadMatrix(myFile)
+  gHistoryWeights <- ReadMatrix(myFile)
+  gOldHistory <- ReadMatrix(myFile)
+  gBestHistory <- ReadMatrix(myFile)
   gYBetaAll <- ReadMatrix(myFile)
 
-    # debugging block - creates objects in global env in case this funtion fails before it creates the system file object at the end
+    # debugging block - creates objects in global env in case this function fails before it creates the system file object at the end
     # gFilterTemp<<- gFilter; print("gFilterTemp is available for debugging") # debug
     # gBetaTemp<<- gBeta; print("gBetaTemp is available for debugging") # debug
     # gOldBetaTemp<<- gOldBeta; print("gOldBetaTemp is available for debugging") # debug
@@ -198,9 +195,9 @@ ReadSys <- function(myFile, isMini) {
     # gVarianceTemp<<- gVariance; print("gVarianceTemp is available for debugging") # debug
     # gOldVarianceTemp<<- gOldVariance; print("gOldVarianceTemp is available for debugging") # debug
     # gBestVarianceTemp<<- gBestVariance; print("gBestVarianceTemp is available for debugging") # debug
-    # gHistoWeightsTemp<<- gHistoWeights; print("gHistoWeightsTemp is available for debugging") # debug
-    # gOldHistoTemp<<- gOldHisto; print("gOldHistoTemp is available for debugging") # debug
-    # gBestHistoTemp<<- gBestHisto; print("gBestHistoTemp is available for debugging") # debug
+    # gHistoryWeightsTemp<<- gHistoryWeights; print("gHistoryWeightsTemp is available for debugging") # debug
+    # gOldHistoryTemp<<- gOldHistory; print("gOldHistoryTemp is available for debugging") # debug
+    # gBestHistoryTemp<<- gBestHistory; print("gBestHistoryTemp is available for debugging") # debug
     # AllTemp<<- gYBetaAll; print("gYBetaAllTemp is available for debugging") # debug
 
   check <- ReadInteger(myFile)
@@ -235,8 +232,8 @@ ReadSys <- function(myFile, isMini) {
   gPopulation <- ReadInteger(myFile)
   gSeeds <- ReadInteger(myFile)
   gMaxSinceBests <- ReadInteger(myFile)
-  gInnerLoopss <- ReadInteger(myFile)
-  gWarningss <- ReadBoolean(myFile)
+  gInnerLoops <- ReadInteger(myFile)
+  gWarnings <- ReadBoolean(myFile)
   gEstsToLog <- ReadBoolean(myFile)
   gKeepLast <- ReadBoolean(myFile)
   gAddExtension <- ReadBoolean(myFile)
@@ -245,7 +242,7 @@ ReadSys <- function(myFile, isMini) {
   gZero <- ReadDouble(myFile)
   gRespMiss <- ReadInteger(myFile)
 
-    # debugging block - creates objects in global env in case this funtion fails before it creates the system file object at the end
+    # debugging block - creates objects in global env in case this function fails before it creates the system file object at the end
     # gWeightFactorTemp<<- gWeightFactor; print("gWeightFactorTemp is available for debugging") # debug
     # gSuffXsiTemp<<- gSuffXsi; print("gSuffXsiTemp is available for debugging") # debug
     # gSuffTauTemp<<- gSuffTau; print("gSuffTauTemp is available for debugging") # debug
@@ -265,8 +262,8 @@ ReadSys <- function(myFile, isMini) {
     # gPopulationTemp<<- gPopulation; print("gPopulationTemp is available for debugging") # debug
     # gSeedsTemp<<- gSeeds; print("gSeedsTemp is available for debugging") # debug
     # gMaxSinceBestsTemp<<- gMaxSinceBests; print("gMaxSinceBestsTemp is available for debugging") # debug
-    # gInnerLoopssTemp<<- gInnerLoopss; print("gInnerLoopssTemp is available for debugging") # debug
-    # gWarningssTemp<<- gWarningss; print("gWarningssTemp is available for debugging") # debug
+    # gInnerLoopsTemp<<- gInnerLoops; print("gInnerLoopsTemp is available for debugging") # debug
+    # gWarningsTemp<<- gWarnings; print("gWarningsTemp is available for debugging") # debug
     # gEstsToLogTemp<<- gEstsToLog; print("gEstsToLogTemp is available for debugging") # debug
     # gKeepLastTemp<<- gKeepLast; print("gKeepLastTemp is available for debugging") # debug
     # gAddExtensionTemp<<- gAddExtension; print("gAddExtensionTemp is available for debugging") # debug
@@ -396,7 +393,7 @@ ReadSys <- function(myFile, isMini) {
   gPIndex <- ReadIntegerList(myFile)
   gProblemGins <- ReadIntegerList(myFile)
 
-    # debugging block - creates objects in global env in case this funtion fails before it creates the system file object at the end
+    # debugging block - creates objects in global env in case this function fails before it creates the system file object at the end
     # gDeriv2ndTemp<<- gDeriv2nd; print("gDeriv2ndTemp is available for debugging") # debug
     # gMLEReliabilityTemp<<- gMLEReliability; print("gMLEReliabilityTemp is available for debugging") # debug
     # gEAPReliabilityTemp<<- gEAPReliability; print("gEAPReliabilityTemp is available for debugging") # debug
@@ -457,7 +454,8 @@ ReadSys <- function(myFile, isMini) {
   gFitStatistics <- ReadFitList(myFile)
   if (cqs_version < 29)
   {
-    gRegressors <- ReadRegressionListLeg(myFile) # this is the legacy regression object - not retained and replaced by read later (ReadRegressionList)
+    # this is the legacy regression object - not retained and replaced by read later (ReadRegressionList)
+    gRegressors <- ReadRegressionListLeg(myFile) 
     gDummies <- ReadMatrixList(myFile)
     gHasDummies <- ReadBooleanList(myFile)
   }
@@ -481,13 +479,13 @@ ReadSys <- function(myFile, isMini) {
   if (myDebug) print(paste0("check: ", check)) # check 7
   
   if (!gPairWise)
-  # if (any(unlist(gEstimationAllMethods)>20))
   {
     gAllCaseEstimates <- ReadAllCaseEstimates(
       myFile = myFile,
       Dimensions = gNDim,
       N = gNCases[[1]],
-      NPlausibles = gNPlausiblesEstimate
+      NPlausibles = gNPlausiblesEstimate,
+      cqs_version = cqs_version
     )
     # TODO: close this?
 
@@ -609,7 +607,7 @@ ReadSys <- function(myFile, isMini) {
   gCommandHistory <- ReadStringList(myFile)
   gBandDefines <- ReadBandDefinesList(myFile)
   gDIC <- ReadDouble(myFile)
-  gPostiveScores <- ReadBoolean(myFile)
+  gPositiveScores <- ReadBoolean(myFile)
   gScoresMax <- ReadDouble(myFile)
   gRandomStructure <- ReadRandomStructure(myFile)
   gSConstraint <- ReadInteger(myFile)
@@ -700,9 +698,9 @@ ReadSys <- function(myFile, isMini) {
     gVariance = gVariance,
     gOldVariance = gOldVariance,
     gBestVariance = gBestVariance,
-    gHistoWeights = gHistoWeights,
-    gOldHisto = gOldHisto,
-    gBestHisto = gBestHisto,
+    gHistoryWeights = gHistoryWeights,
+    gOldHistory = gOldHistory,
+    gBestHistory = gBestHistory,
     gYBetaAll = gYBetaAll,
     # check 2
     gWtFactor = gWtFactor,
@@ -723,8 +721,8 @@ ReadSys <- function(myFile, isMini) {
     gPopulation = gPopulation,
     gSeeds = gSeeds,
     gMaxSinceBests = gMaxSinceBests,
-    gInnerLoopss = gInnerLoopss,
-    gWarningss = gWarningss,
+    gInnerLoops = gInnerLoops,
+    gWarnings = gWarnings,
     gEstsToLog = gEstsToLog,
     gKeepLast = gKeepLast,
     gAddExtension = gAddExtension,
@@ -876,7 +874,7 @@ ReadSys <- function(myFile, isMini) {
     gCommandHistory = gCommandHistory,
     gBandDefines = gBandDefines,
     gDIC = gDIC,
-    gPostiveScores = gPostiveScores,
+    gPositiveScores = gPositiveScores,
     gScoresMax = gScoresMax,
     gRandomStructure = gRandomStructure,
     gSConstraint = gSConstraint,
@@ -911,7 +909,7 @@ ReadSys <- function(myFile, isMini) {
     } else {
       NULL
     }
-    #TODO: when cqs_version < 29 populate gRegressors with legagcy stuff from above
+    #TODO: when cqs_version < 29 populate gRegressors with legacy stuff from above
 
   )
 
@@ -928,11 +926,18 @@ ReadSys <- function(myFile, isMini) {
 #'   Called by conquestr::ConQuestSys.
 #' @param myFile An 'ACER ConQuest' _mini_ system file created by the `put` 
 #'   command in 'ACER ConQuest' with the option "mini = yes".
-#'   The put command must use the option `compressed = no`.
-#' @param Dimensions .
-#' @param N .
-#' @param NPlausibles .
-#' @param isDebug .
+#' @param Dimensions gNDim object passed in to this call to `ReadSysMini` from
+#'   the higher-level original call to ReadSys. This value is returned in the
+#'   list returned by this function call.
+#' @param N gNCases object passed in to this call to `ReadSysMini` from
+#'   the higher-level original call to ReadSys. This value is returned in the
+#'   list returned by this function call.
+#' @param NPlausibles gNPlausibles object passed in to this call to `ReadSysMini` from
+#'   the higher-level original call to ReadSys. This value is returned in the
+#'   list returned by this function call.
+#' @param isDebug Bool. Passed in to this call to `ReadSysMini` from
+#'   the higher-level original call to ReadSys. This value is used to trigger
+#'   output of debug information to standard out.
 #' @return A list containing the data objects created by 'ACER ConQuest'.
 #' @seealso conquestr::ConQuestSys()
 #' @importFrom utils str

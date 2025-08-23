@@ -74,7 +74,7 @@ zapSystemMissing <- function(x) {
 #' @param mySys An 'ACER ConQuest' system file object created using the conquestr::ConQuestSys function.
 #' @param value Should searchConQuestSys return the name of the object or its index.
 #' @param ignore.case Should searchConQuestSys ignore the case of the search term.
-#' @return a string including object names mathching the search term
+#' @return a string including object names matching the search term
 searchConQuestSys <- function(searchString, mySys, value = TRUE, ignore.case = TRUE) {
 
   if (!("conQuestSysFile" %in% class(mySys))) {
@@ -272,7 +272,7 @@ createConQuestProject <- function(prefix = getwd(), ...) {
     file.path("output", "params", "beta"),
     file.path("output", "cases"),
     file.path("output", "log"),
-    file.path("output", "resdiuals"),
+    file.path("output", "residuals"),
     file.path("output", "history"),
     file.path("submission")
   )
@@ -332,12 +332,12 @@ getCqHist <- function(myCqs, labelParams = FALSE) {
 
   IterHistTmp <- replaceInDataFrame(IterHistTmp, -1.797693e+308, NA)
 
-# todo - clear NA liklihoods for JML
+# todo - clear NA likelihoods for JML
 
   ParamTypesTmp <- c("Beta", "Variance", "Xsi", "Tau", "RanTermVariance")
   histList <- list()
   history <- list()
-  history[["Liklihood"]] <- IterHistTmp
+  history[["Likelihood"]] <- IterHistTmp
 
   # iterate over each param type and unlist into a named list
   for (paramType in ParamTypesTmp) {
@@ -462,8 +462,10 @@ getCqHist <- function(myCqs, labelParams = FALSE) {
 
 #' @title getCqChain
 #'
-#' @description creates a data frame representation of the estimation chain from an MCMC model.
-#' The burn is discarded and only the unskipped itterations in MCMC chain are retained.
+#' @description creates a data frame representation of the estimation chain from an 
+#'   MCMC model.
+#'   For example the Patz estimator in ACER ConQuest.
+#'   The burn is discarded and only the un-skipped iterations in MCMC chain are retained.
 #'
 #' @param myCqs A system file.
 #' @return A data frame.
@@ -478,7 +480,7 @@ getCqChain <- function(myCqs) {
   if (tmpBurn > 0)
   {
     # "myHist$Iter[1] == 0" checks that iter 1 is the first burn iteration,
-    # and that this function hasnt been called multiple times
+    # and that this function hasn't been called multiple times
     tmpBurn <- tmpBurn+1 # note that gBurn is 1-offset, and iter is 0-offset
     if (tmpHist$Iter[1] == 0) tmpHist <- tmpHist[ -c(1:tmpBurn), ]
   }
@@ -488,7 +490,8 @@ getCqChain <- function(myCqs) {
 
 #' @title summariseCqChain
 #'
-#' @description takes a data frame created by getCqChain and returns a list reporting the mean and variaince for each parameter
+#' @description takes a data frame created by getCqChain and returns a list reporting the mean and 
+#'   variance for each parameter
 #'
 #' @param myChain A data frame returned from getCqChain.
 #' @return A list.
@@ -548,7 +551,7 @@ getCqTerms <- function(myCqs) {
   for (term in seq_len(length(myCqs$gTerms))) {
     stepInvolved <- any(unlist(myCqs$gTerms[[term]][c("VariableNumber", "VariableType")]) == 2) # does this term involve steps?
     thisVarType <- unlist(myCqs$gTerms[[term]][c("VariableType")])
-    termList[[term]] <-data.frame(
+    termList[[term]] <- data.frame(
       # what variables are involved in this term matrix(unlist(myGroupSys$gTerms[[4]][c("VariableNumber", "VariableType")]), ncol = 2)
       VariableNumber = unlist(myCqs$gTerms[[term]][c("VariableNumber")]),
       VariableType = ifelse (thisVarType == 0, "I", ifelse(thisVarType == 1, "E", "S")),
@@ -627,8 +630,8 @@ getCqParams <- function(sysFile) {
   }
 
   # See https://github.com/acerorg/ACER-ConQuest/issues/10
-  tmpFlag <- length(unlist(sysFile$gParam)) %% 3
-  if (tmpFlag > 0) {
+  tmpFlag <- (length(unlist(sysFile$gParam)) %% 3 > 0) || (unlist(sysFile$gParam)[1] == -1)
+  if (tmpFlag) {
     tmpDim <- 4
     tmpTrimReq <- TRUE
   } else {
@@ -637,8 +640,10 @@ getCqParams <- function(sysFile) {
   }
 
   if (isDebug) {
-    print("got terms, and params associated with each term")
+    print(paste0("tmpTrimReq: ", tmpTrimReq))
+    print("tmpResult: got terms, and params associated with each term")
     print(tmpResult)
+    print(str(tmpResult))
   }
   # get param est values and associated info
   tmpNames <- c("gin_no", "step_involved", "sign") #, "constrained", "anchor")
@@ -648,17 +653,49 @@ getCqParams <- function(sysFile) {
   )
   if (tmpTrimReq) tmpParams <- tmpParams[ , 2:tmpDim]
   names(tmpParams) <- tmpNames
+  tmpParams$gin_no <- as.integer(tmpParams$gin_no)
+
+  # which gins are not identified?
+  MyProblemGins <- unlist(sysFile$gProblemGins)+1
+  tmpParams <- tmpParams[!(tmpParams$gin_no %in% (MyProblemGins)) , ] #
+
+  if (isDebug) {
+    print("tmpParams: removed MyProblemGins")
+    print(tmpParams)
+    print(str(tmpParams))
+  }
+
   tmpParams$constrained <- FALSE
-  tmpParams$anchor <- unlist(sysFile$gXsiAnchor)
+  TmpAnchor <- unlist(sysFile$gXsiAnchor)
+  if (length(MyProblemGins) > 0) TmpAnchor <- TmpAnchor[-MyProblemGins]
+
+  if (isDebug) {
+    print("tmpParams$anchor: trying to create after removing MyProblemGins")
+    print(TmpAnchor)
+    print(str(TmpAnchor))
+  }
+
+  tmpParams$anchor <- TmpAnchor # later we put this back in tmpParams$anchor
+
+  if (isDebug) print(str(tmpParams))
+
   tmpParams$xsi <- as.vector(unlist(sysFile$gXsi))
   tmpParams$se <- rep(NA, length(tmpParams$xsi))
   tmpCounter <- 1
   tmpErrVar <- as.vector(diag(sysFile$gDeriv2nd))
-  if(length(tmpParams$xsi) == sysFile$gNXsiAnchors) {
-    # nothing to do, all xsi anchored (no xsi params in model - no vars estimated either)
+  
+  if (isDebug) {
+    print(paste0("length(tmpParams$xsi): ", length(tmpParams$xsi)))
+    print(paste0("tmpErrVar: ", tmpErrVar))
+  }
+
+  # TODO: build test for this
+  # can gNXsiAnchors be length(gXsiAnchor)? if so it could be > length(tmpParams$xsi)
+  if(length(tmpParams$xsi) == sysFile$gNXsiAnchors) { 
+    # nothing to do, all xsi anchored
   } else {
-    for (i in seq_along(unlist(sysFile$gXsiAnchor))) {
-      if(!unlist(sysFile$gXsiAnchor)[i]) {
+    for (i in seq_along(tmpParams$anchor)) {
+      if(!tmpParams$anchor[i]) {
         tmpParams$se[i] <- tmpErrVar[tmpCounter]
         tmpCounter <- tmpCounter + 1
       }
@@ -686,6 +723,10 @@ getCqParams <- function(sysFile) {
     xsi = NULL,
     se = NULL
     )
+  }
+
+  if (isDebug) {
+    print(paste0("tmpParamsCons: ", tmpParamsCons))
   }
 
   # put params in same order as tempTerms
@@ -722,7 +763,7 @@ getCqParams <- function(sysFile) {
 
 #' @title getCqFit
 #'
-#' @description creates a data frame representation of the fit of parameters in the item reponse model
+#' @description creates a data frame representation of the fit of parameters in the item response model
 #' @param myCqs A system file.
 #' @return A data frame.
 #' @examples

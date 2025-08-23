@@ -997,35 +997,40 @@ ReadHistory <- function(myFile)
 #' @param Dimensions An integer representation of 'ACER ConQuest' object gNDim.
 #' @param NPlausibles An integer representation of 'ACER ConQuest' object gNPlausibles.
 #' @param n An integer representation of 'ACER ConQuest' object gNCases.
+#' @param cqs_version An integer - the version of the CQS system file.
 #' @return A list
 #' @keywords internal
-ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
+ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n, cqs_version)
 {
+  MyDebug <- FALSE
   if (Dimensions > 0)
   {
-    alla_eap <- vector(mode = "double", Dimensions)
-    alla_eaperr <- vector(mode = "double", Dimensions)
+    interim_eap <- vector(mode = "double", Dimensions)
+    interim_eaperr <- vector(mode = "double", Dimensions)
     eap <- vector(mode = "double", Dimensions)
-    eaperr <- matrix(1:Dimensions * Dimensions, nrow = Dimensions, ncol = Dimensions)
+    eaperr <- matrix(NA, nrow = Dimensions, ncol = Dimensions)
     wle <- vector(mode="double",Dimensions)
-    wleerr <- matrix(1:Dimensions*Dimensions,nrow = Dimensions,ncol = Dimensions)
+    wleerr <- matrix(NA, nrow = Dimensions,ncol = Dimensions)
     jml <- vector(mode = "double", Dimensions)
-    jmlerr <- matrix(1:Dimensions*Dimensions,nrow = Dimensions,ncol = Dimensions)
+    jmlerr <- matrix(NA ,nrow = Dimensions,ncol = Dimensions)
     scores <- vector(mode = "double",Dimensions)
     maxscores <- vector(mode = "double", Dimensions)
     if (NPlausibles > 0)
     {
-      pvs <- matrix(1:Dimensions * NPlausibles, nrow = Dimensions, ncol = NPlausibles)
+      pvs <- matrix(NA, nrow = Dimensions, ncol = NPlausibles)
     }
+    # length of vector of fits is hard coded to 4 (fit based on PVs, WLE, MLE, JMLE)
+    # planned to expand this to fit for each dimension rather than global fit
+    fit <- matrix(NA,nrow = 4,ncol = 1) 
   }
   # read data into objects
   for (i in seq_len(Dimensions))
   {
-    alla_eap[i] <- ReadDouble(myFile)
+    interim_eap[i] <- ReadDouble(myFile)
   }
   for (i in seq_len(Dimensions))
   {
-    alla_eaperr[i] <- ReadDouble(myFile)
+    interim_eaperr[i] <- ReadDouble(myFile)
   }
   for (i in seq_len(Dimensions))
   {
@@ -1075,15 +1080,26 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
   {
     maxscores[i] <-ReadDouble(myFile)
   }
-  fit <- ReadDouble(myFile)
+  if (cqs_version >=30) {
+    if (MyDebug) print(cqs_version)
+    for (r in seq_len(4))
+    {
+      for (c in seq_len(1))
+      {
+        fit[r,c] <- ReadDouble(myFile) # note that fit is now a MMatrix
+      }
+    } 
+  } else {
+    fit <- ReadDouble(myFile) 
+  }
   weight <- ReadDouble(myFile)
   pid <- n
   V <- list(
-    pid, alla_eap, alla_eaperr, eap, eaperr, wle,
+    pid, interim_eap, interim_eaperr, eap, eaperr, wle,
     wleerr, pvs, jml, jmlerr, scores, maxscores, fit, weight
   )
   names(V) <- c(
-    "pid", "alla_eap", "alla_eaperr", "eap", "eaperr", "wle",
+    "pid", "interim_eap", "interim_eaperr", "eap", "eaperr", "wle",
     "wleerr", "pvs", "jml", "jmlerr", "scores","maxscores", "fit", "weight"
   )
   return(V)
@@ -1096,11 +1112,12 @@ ReadEstimatesRecord <- function(myFile, Dimensions, NPlausibles, n)
 #' @param NPlausibles An integer representation of 'ACER ConQuest' object gNPlausibles.
 #' @return A list
 #' @keywords internal
-ReadAllCaseEstimates <- function(myFile,Dimensions,N,NPlausibles)
+ReadAllCaseEstimates <- function(myFile,Dimensions,N,NPlausibles,cqs_version)
 {
   V <- list()
-  # the chain length can be updated by subsequent calls to estimate,
-  # gNPlausibles is not the number of PVs in the last run
+  # the number of PVs (or chain length when patz)
+  # can be updated by subsequent calls to estimate,
+  # gNPlausibles is _not_ always the number of PVs in the last run
   chainLen <- ReadInteger(myFile)
   for (i in seq_len(N))
   {
@@ -1108,7 +1125,8 @@ ReadAllCaseEstimates <- function(myFile,Dimensions,N,NPlausibles)
       myFile = myFile,
       Dimensions = Dimensions,
       NPlausibles = chainLen,
-      n = i
+      n = i,
+      cqs_version = cqs_version
     )
   }
   return(V)
@@ -1343,11 +1361,11 @@ ReadAllGroupsData <- function(myFile,N,GroupVariables,AllVariables)
 #' @keywords internal
 ReadMatrixVars <- function(myFile)
 {
-  # intitate lists
+  # initiate lists
   m <- list()
   # read length of list of matrix objects
-  nMatricies <- ReadInteger(myFile)
-  for (n in seq_len(nMatricies))
+  nMatrices <- ReadInteger(myFile)
+  for (n in seq_len(nMatrices))
   {
     myTempName <- ReadString(myFile)
     m[[myTempName]] <- ReadMatrix(myFile)
