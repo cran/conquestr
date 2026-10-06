@@ -2,53 +2,19 @@
 #'
 #' @description Internal function to decompress an 'ACER ConQuest' system file
 #'   that has been compressed using zlib.
-#' @param myFile An connection to a compressed  'ACER ConQuest' system file
-#'   created by the `put` command in 'ACER ConQuest'.`
-#' @return A connection to an uncompressed system file in the users temp dir.
+#' @param myFile A raw vector: the contents of a compressed 'ACER ConQuest'
+#'   system file created by the `put` command in 'ACER ConQuest'.
+#' @return A raw vector: the uncompressed system file, beginning with the
+#'   "uncompressed" header.
 #' @seealso conquestr::ConQuestSys()
 #' @importFrom zlib zlib decompressobj decompress
 DecompressSys <- function(myFile) {
-  chunkSize <- 16384
-  myOut <- raw(0)
-  # chunkN <- 0 # debug
-  while (TRUE) {
-    thisChunk <- readBin(myFile, what=raw(), n=chunkSize)
-    if (length(thisChunk)==0) {
-      break
-    } else {
-      # chunkN <- chunkN + 1 # debug
-      myOut <- c(myOut, thisChunk)
-    }
-  }
-  close(myFile) # we don't need this file any more
-
   decompressor <- zlib$decompressobj(zlib$MAX_WBITS)
-  
-  myStarts <- seq(1, length(myOut), by = chunkSize)
-  
-  for (i in myStarts) {
-    tmpEnd <- i + chunkSize - 1
-    if (tmpEnd > length(myOut)) tmpEnd <- length(myOut)
-    chunk <- myOut[i:tmpEnd]
-    decompressed_chunk <- decompressor$decompress(chunk)
-    if (i == 1) {
-      tmpHeader <- c(as.raw(c(0x0C, 0x00, 0x00, 0x00)), charToRaw("uncompressed"))
-      decompressed_data <- tmpHeader
-      decompressed_data <- c(decompressed_data, decompressed_chunk)
-    } else {
-      decompressed_data <- c(decompressed_data, decompressed_chunk)
-    }
-  }
-  # Flush the decompressor buffer
-  decompressed_data <- c(decompressed_data, decompressor$flush())
-
-  myFile_name <- tempfile()
-  myFile <- file(myFile_name, open = "wb")
-  writeBin(decompressed_data, myFile)
-  close(myFile)
-  myFile <- file(myFile_name, open = "rb")
-  
-  return(myFile)
+  c(
+    as.raw(c(0x0C, 0x00, 0x00, 0x00)), charToRaw("uncompressed"),
+    decompressor$decompress(myFile),
+    decompressor$flush()
+  )
 }
 
 
@@ -57,9 +23,8 @@ DecompressSys <- function(myFile) {
 #'
 #' @description Internal function to read an 'ACER ConQuest' system file.
 #'   Called by conquestr::ConQuestSys.
-#' @param myFile An connection to an 'ACER ConQuest' system file created by the
-#'  `put` command in 'ACER ConQuest'.
-#'   If the file is compressed, and uncompressed temporary file is created.
+#' @param myFile A 'cqReader' (an in-memory 'ACER ConQuest' system file created by the
+#'  `put` command in 'ACER ConQuest'), as created in `ConQuestSys()`.
 #' @param isMini A boolean, set to TRUE if the system file is a _mini_ system file created by 'ACER ConQuest'
 #'   command put with option "mini = yes".
 #' @return A list containing the data objects created by 'ACER ConQuest'.
@@ -153,17 +118,23 @@ ReadSys <- function(myFile, isMini) {
   if (myDebug) print(paste0("gFilter: ", names(gFilter)))
   if (myDebug) print(paste0("gFilter: ", gFilter))
   gBeta <- ReadMatrix(myFile)
+  
   gOldBeta <- ReadMatrix(myFile)
+  
   gBestBeta <- ReadMatrix(myFile)
+  
   gXsi <- ReadMatrix(myFile)
   gOldXsi <- ReadMatrix(myFile)
   gBestXsi <- ReadMatrix(myFile)
   gTau <- ReadMatrix(myFile)
+  if (myDebug) print(paste0("gTau: ", gTau))
   gOldTau <- ReadMatrix(myFile)
   gBestTau <- ReadMatrix(myFile)
+  if (myDebug) print(paste0("gBestTau: ", gBestTau))
   gQuickErrorsXsi <- ReadMatrix(myFile)
   gQuickErrorsTau <- ReadMatrix(myFile)
   gQuickErrorsSigma <- ReadMatrix(myFile)
+  
   gQuickErrorsBeta <- ReadMatrix(myFile)
   gMasterTheta <- ReadMatrix(myFile)
   gTheta <- ReadMatrix(myFile)

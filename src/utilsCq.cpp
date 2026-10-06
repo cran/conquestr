@@ -12,7 +12,7 @@ using namespace Rcpp;
 //
 
 
-//' replace a very large neagtive number with something - usually NA_REAL
+//' replace a very large negative number with something - usually NA_REAL
 //'
 //' @param v A NumericVector.
 //' @param r A double - the value to be replaced if it is < -1e300.
@@ -57,6 +57,70 @@ DataFrame replaceInDataFrame(DataFrame d, double r, double x) {
   }
   return(d1);
 }
+
+//' find the largest common substring in 2 strings
+//'
+//' @param str1 A string.
+//' @param str2 A string.
+// [[Rcpp::export]]
+String lcs(String str1, String str2) { 
+  std::string S = str1;
+  std::string T = str2;
+  int r = S.length();
+  int n = T.length();
+  std::vector<std::vector<int> > L(r , std::vector<int>(n));
+  int z = 0;
+  std::string ret;
+
+  for (int i = 0; i < r; ++i)
+  {
+    for (int j = 0; j < n; ++j)
+    {
+      if (S[i] == T[j])
+      {
+        if (i == 0 || j == 0)
+          L[i][j] = 1;
+        else
+          L[i][j] = L[i - 1][j - 1] + 1;
+
+        if (L[i][j] > z)
+        {
+          z = L[i][j];
+          ret = S.substr(i - z + 1, z);
+        }
+      }
+      else
+      {
+        L[i][j] = 0;
+      }
+    }
+  }
+  return(ret);
+}
+
+//' find the largest common substring in a vector of strings
+//'
+//' @param input_strings A vector of strings.
+// [[Rcpp::export]]
+String lcs_vec(StringVector input_strings) { 
+  int n = input_strings.size();
+  std::string ret = "";
+  
+  if (n < 1) return(ret);
+  if (n < 2) return(input_strings[0]);
+   
+  ret = lcs(input_strings[1], input_strings[2]);
+
+  if (n < 3) return(ret);
+
+  for (int i=0; i < n; i++) {  
+    if (i < 2) continue;
+    ret = lcs(ret, input_strings[i]);
+  }
+  return(ret);
+}
+
+
 
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically

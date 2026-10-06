@@ -26,7 +26,7 @@ all cases are in the one group.}
 See conquestr::makeItemList for a helper to generate this list.}
 
 \item{BMatrix}{A simplified B-matrix mapping dimensions (columns) to items (rows).
-Or the integer "1" if items are dichotomous and ability is uni-dimensional.}
+Or the integer "1" if the abilities are uni-dimensional.}
 
 \item{mcarP}{A double indicating the proportion of missing data
 under the MCAR assumption.}

@@ -593,7 +593,9 @@ getCqParams <- function(sysFile) {
   sysFileOk(sysFile, defaultSys)
 
   # checks
-  if (any(unlist(sysFile$gEstimationAllMethods)>20)) stop("pairwise is not yet supported") # actually don't know if this will work
+  if (any(unlist(sysFile$gEstimationAllMethods)>20)) {
+    stop("pairwise is not yet supported")
+  } 
   isFit <- sysFile$gIFit # is fit available?
   isSe <- sysFile$gStdError < 3 # bool SE is calculated, 3 = none
 
@@ -641,43 +643,46 @@ getCqParams <- function(sysFile) {
 
   if (isDebug) {
     print(paste0("tmpTrimReq: ", tmpTrimReq))
-    print("tmpResult: got terms, and params associated with each term")
-    print(tmpResult)
-    print(str(tmpResult))
+    print("tempTerms: got params associated with each term")
+    print(tempTerms)
+    print(str(tempTerms))
   }
-  # get param est values and associated info
-  tmpNames <- c("gin_no", "step_involved", "sign") #, "constrained", "anchor")
-  # est params or anchors
-  tmpParams <- as.data.frame(
-    matrix(unlist(sysFile$gParam), ncol = tmpDim, byrow = TRUE)
-  )
-  if (tmpTrimReq) tmpParams <- tmpParams[ , 2:tmpDim]
-  names(tmpParams) <- tmpNames
-  tmpParams$gin_no <- as.integer(tmpParams$gin_no)
 
   # which gins are not identified?
-  MyProblemGins <- unlist(sysFile$gProblemGins)+1
-  tmpParams <- tmpParams[!(tmpParams$gin_no %in% (MyProblemGins)) , ] #
+  #  note this is a 0-offset list of gins
+  MyProblemGins <- unlist(sysFile$gProblemGins)
+  tmpP <- sysFile$gParam
+  if (length(MyProblemGins) > 0) tmpP <- tmpP[-(MyProblemGins+1)]
+
+  # get param est values and associated info
+  # est params or anchors
+  tmpParams <- as.data.frame(
+    matrix(unlist(tmpP), ncol = tmpDim, byrow = TRUE)
+  )
+  if (tmpTrimReq) tmpParams <- tmpParams[ , 2:tmpDim]
+  tmpNames <- c("gin_no", "step_involved", "sign") #, "constrained", "anchor")
+  names(tmpParams) <- tmpNames
+  tmpParams$gin_no <- as.integer(tmpParams$gin_no)
+  # which gins are constrained
+  tmpParams$constrained <- FALSE # we will replace this later (TODO: check)
 
   if (isDebug) {
-    print("tmpParams: removed MyProblemGins")
+    print(paste0("After removing prob gins, length(tmpParams$constrained): ", length(tmpParams$constrained)))
     print(tmpParams)
     print(str(tmpParams))
   }
-
-  tmpParams$constrained <- FALSE
+  
   TmpAnchor <- unlist(sysFile$gXsiAnchor)
-  if (length(MyProblemGins) > 0) TmpAnchor <- TmpAnchor[-MyProblemGins]
-
+  # note that sysFile$gXsiAnchor is length of tmpParams$constrained
+  #  BUT it is in the correct xsi order AFTER gProblemGins removed
+  #  so we wait until we are here, and we take the first gNXsi elements from TmpAnchor
+  #  and the excess is out of legal range (and redundant)
+  TmpAnchor <- TmpAnchor[1:length(sysFile$gXsi)]
+  tmpParams$anchor <- FALSE
   if (isDebug) {
-    print("tmpParams$anchor: trying to create after removing MyProblemGins")
-    print(TmpAnchor)
-    print(str(TmpAnchor))
+    print(paste0("Should equal, length(TmpAnchor): ", length(TmpAnchor)))
   }
-
-  tmpParams$anchor <- TmpAnchor # later we put this back in tmpParams$anchor
-
-  if (isDebug) print(str(tmpParams))
+  tmpParams$anchor <- TmpAnchor 
 
   tmpParams$xsi <- as.vector(unlist(sysFile$gXsi))
   tmpParams$se <- rep(NA, length(tmpParams$xsi))
@@ -690,7 +695,6 @@ getCqParams <- function(sysFile) {
   }
 
   # TODO: build test for this
-  # can gNXsiAnchors be length(gXsiAnchor)? if so it could be > length(tmpParams$xsi)
   if(length(tmpParams$xsi) == sysFile$gNXsiAnchors) { 
     # nothing to do, all xsi anchored
   } else {

@@ -1,12 +1,14 @@
 #' @title q3ExpCorrect
 #'
-#' @description Helper function to apply correction to correlation matrix. When working with standardised residuals,
-#' the expectation of the correlations is -1/(L-1) rather than 0 See DOI: 10.1177/0013164410379322
+#' @description Helper function to apply correction to correlation matrix. 
+#'   When working with standardised residuals,
+#'   the expectation of the correlations is -1/(L-1) rather than 0 See DOI: 10.1177/0013164410379322
 #'
 #' @param myCorMat A correlation matrix.
 #' @return A correlation matrix with the Q3 statistic correction applied.
 q3ExpCorrect <- function(myCorMat) {
-  # takes in a correlation matrix, returns a matrix corrected for expecation that off diaganals = −1/(I − 1)
+  # takes in a correlation matrix, returns a matrix corrected for expectation 
+  # that off diagonals = −1/(I − 1)
   if (!all(diag(myCorMat) == 1)) stop("you must provide a correlation matrix")
   myCorrection <- -1/(nrow(myCorMat)-1)
   myResult <- myCorMat
@@ -33,17 +35,20 @@ fisherTrnsfrm <- function(myCorMat) {
 
 #' @title steigerStat
 #'
-#' @description Function to cacluate the Steiger statistic. The Steiger statistic is a test of independance of
-#' the standardised residuals ((O-E)/sqrt(Var(E))), where Var(E) = p(x)/(1-p(x)).
+#' @description Function to calculate the Steiger statistic. 
+#'   The Steiger statistic is a test of independence of
+#'   the standardised residuals ((O-E)/sqrt(Var(E))), where Var(E) = p(x)/(1-p(x)).
 #'
 #' @param myDat A data frame or matrix containing standardised residuals.
 #' @param q3Adj A bool indicating whether the Q3 correction should be applied.
 #' @param fisher A bool indicating whether the Fisher Transform should be applied.
 #' @param dfAdj A bool indicating whether the df should be adjusted for sample size, L, and targeting.
-#' If dfAdj is TRUE, then you must pass in the optional argument `tmp` (test-person match)
-#' @param tpm A number indicating the test-person match, where 0 indicates that
-#' mean item difficulty is equal to mean person ability, and -1 indcates that mean item difficulty is 1 logit below mean person ability.
-#' @return A list of class "steigerStat" with the Steiger Statistic, correlation matrix, and chi square test.
+#'   If dfAdj is TRUE, then you must pass in the optional argument `tmp` (test-person match)
+#' @param tpm A double indicating the test-person match, where 0 indicates that
+#'   mean item difficulty is equal to mean person ability, and -1 indicates that 
+#'   mean item difficulty is 1 logit below mean person ability.
+#' @return A list of class "steigerStat" with the Steiger Statistic, 
+#'   correlation matrix, and chi square test.
 #' @importFrom stats cor na.omit pchisq qchisq
 steigerStat <- function(myDat, q3Adj = TRUE, fisher = TRUE, dfAdj = FALSE, tpm) {
   if (missing(tpm)) tpm <- 0

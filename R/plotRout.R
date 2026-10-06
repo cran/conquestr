@@ -314,6 +314,86 @@ plotRout.TCC <- function(myRout, ...) {
 
 #' @rdname plotRout
 #' @export
+plotRout.Expected <- function(myRout, ...) {
+  # create df of series
+  myRoutDf <- routPointsToDf(myRout)
+
+  myRoutDf <- subset(myRoutDf, as.logical(myRoutDf$DrawSeries))
+  myRoutDf$Series <- as.numeric(myRoutDf$Series)
+  myRoutDf$PointColour <- as.numeric(myRoutDf$PointColour)
+  myRoutDf$LineColour <- as.numeric(myRoutDf$LineColour)
+  myNumSeries <- max(myRoutDf$Series)
+
+  #colour palette
+  MyNColours <- 10 # how many cols will we use - could be parametrised
+  myColours <- data.frame(
+    myInt = c(0:(MyNColours-1)),
+    # myHex = hcl(h = seq(15, 375, length = (MyNColours+1)), l = 65, c = 100)[1:MyNColours]
+    myHex = c(
+      '#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c',
+      '#fdbf6f','#ff7f00','#cab2d6','#6a3d9a'
+    )
+  )
+  # This has to go back to merging on colour
+  myRoutDf <- merge(myRoutDf, myColours, by.x = "PointColour", by.y = "myInt", all.x = TRUE)
+  myRoutDf <- merge(myRoutDf, myColours, by.x = "LineColour", by.y = "myInt", all.x = TRUE)
+  names(myRoutDf)[names(myRoutDf) == "myHex.x"] <- "myHex_point"
+  names(myRoutDf)[names(myRoutDf) == "myHex.y"] <- "myHex_line"
+
+  # get manual fill
+  # note that we use the FILL as the guide (legend) and suppress other guides (colour, size, point)
+  myFillDf <- unique(myRoutDf[, c(grep("^Series\\s|myHex_point", names(myRoutDf)))])
+  myFill <- setNames(myRoutDf$myHex_point, myRoutDf$`Series Name`)
+
+  # get manual colour
+  myColDf <- unique(myRoutDf[, c(grep("^LineColour|myHex_point", names(myRoutDf)))])
+  myCol <- setNames(myRoutDf$myHex_point, as.factor(myRoutDf$LineColour))
+
+  myPlot <- ggplot2::ggplot(myRoutDf, ggplot2::aes(
+    x = .data$x,
+    y = .data$y,
+    group = .data$`Series Name`,
+    fill = .data$`Series Name`,
+    linetype = .data$LineStyle,
+    colour = as.factor(.data$LineColour)
+    )
+  ) +
+  ggplot2::geom_line() +
+  ggplot2::geom_point(ggplot2::aes(size = ifelse(as.logical(.data[["DrawPoints"]]), 1, -1)), shape = 21) +
+  ggplot2::scale_linetype_manual(
+    name = "", values = c(1, 2), labels = c("Model Expected Score", "Observed Score")
+  ) +
+  ggplot2::scale_size_continuous(range = c(-1, 1)) +
+  ggplot2::scale_fill_manual(
+      name = "", values = myFill[!(grepl("^Expected.*", names(myFill)))]
+  ) +
+  ggplot2::scale_colour_manual(values = myCol) +
+  ggplot2::guides(
+    size = "none", point = "none", colour = "none"
+  ) +
+  ggplot2::theme_bw() +
+  ggplot2::coord_cartesian(
+      ylim = c(floor(min(myRoutDf$y)), ceiling(max(myRoutDf$y))),
+      xlim = c(floor(min(myRoutDf$x)), ceiling(max(myRoutDf$x)))
+  ) + 
+  ggplot2::theme(legend.position = "bottom") + # put legend in bottom of plot
+  ggplot2::theme(legend.text = ggplot2::element_text(size = 8)) +
+  ggplot2::labs(
+    title = myRout$GraphTitleText,
+    x = myRout$xAxisLabelText,
+    y = myRout$yAxisLabelText,
+    subtitle = myRout$GraphSubTitleText,
+    caption = ifelse(myRout$FitLabelText == "", # no fit available
+      myRout$DifficultyLabelText,
+      paste0(myRout$DifficultyLabelText, " ; ", myRout$FitLabelText)
+    )
+  )
+  return(myPlot)
+}
+
+
+#' @rdname plotRout
+#' @export
 plotRout.default <- function(myRout, ...) {
 
   print("current class of Rout file not supported - using default method")

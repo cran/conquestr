@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{replaceInVector}
 \alias{replaceInVector}
-\title{replace a very large neagtive number with something - usually NA_REAL}
+\title{replace a very large negative number with something - usually NA_REAL}
 \usage{
 replaceInVector(v, r, x)
 }
@@ -14,5 +14,5 @@ replaceInVector(v, r, x)
 \item{x}{A double - the value to repalce r with.}
 }
 \description{
-replace a very large neagtive number with something - usually NA_REAL
+replace a very large negative number with something - usually NA_REAL
 }

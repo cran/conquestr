@@ -21,50 +21,56 @@ getCqRespModel <- function(sysFile) {
   }
   sysFileOk(sysFile, defaultSys)
 
-  # setup
-  resultL <- list() # put results in here
-  termsN <- length(sysFile$gTerms) # how many terms in model?
-  isTwoPl <- sysFile$gTwoPL
+  # setup return object
+  resultL <- list()
+  termsN <- length(sysFile$gTerms)
+  ScoresEstimated <- sysFile$gScore
 
   # get the model terms and params
-  termsParams <- getCqParams(sysFile)
+  ModelParams <- getCqParams(sysFile)
+  if (isDebug) {
+    print("got getCqParams: ")
+    print(str(ModelParams))
+    # write.csv(ModelParams, "ModelParams.csv")
+  }
 
   # pad the model terms and params to account for steps
   tempList <- list()
   tmpCount <- 1
-  for (i in seq_along(termsParams[, 1])) {
-    if (termsParams$step_involved[i] < 0) { # no step involved
-      tempList[[tmpCount]] <- termsParams[i , ]
+  for (i in seq_along(ModelParams[, 1])) {
+    # no step involved
+    if (ModelParams$step_involved[i] < 0) { 
+      tempList[[tmpCount]] <- ModelParams[i , ]
       tmpCount <- tmpCount + 1
     } else {
       # prepare dummy row for step 0 and last step (constraint)
-      tmpy <- termsParams[i , ]
+      tmpy <- ModelParams[i , ]
       tmpy$step_involved <- 0
       tmpy$constrained <- FALSE
       tmpy$anchor <- NA
       tmpy$xsi <- NA
       tmpy$se <- NA
 
-      if (termsParams$step_involved[i] == 1) { # first step
+      if (ModelParams$step_involved[i] == 1) { # first step
         tempList[[tmpCount]] <- tmpy
         tmpCount <- tmpCount + 1
         #if (isDebug) print("this is step 0")
       }
 
-      tempList[[tmpCount]] <- termsParams[i , ]
+      tempList[[tmpCount]] <- ModelParams[i , ]
       tmpCount <- tmpCount + 1
       #if (isDebug) print("this is an estimated step")
 
-      if (i < length(termsParams[, 1])) { # check this isn't the last row
-        if (termsParams$step_involved[i+1] == 1) { # next row is a different gin
-          tmpy$step_involved <- as.numeric(termsParams$step_involved[i])+1
+      if (i < length(ModelParams[, 1])) { # check this isn't the last row
+        if (ModelParams$step_involved[i+1] == 1) { # next row is a different gin
+          tmpy$step_involved <- as.numeric(ModelParams$step_involved[i])+1
           tmpy$constrained <- TRUE
           tempList[[tmpCount]] <- tmpy
           tmpCount <- tmpCount + 1
           #if (isDebug)  print("this is the last step")
         }
-      } else if (i == length(termsParams[, 1])) {
-        tmpy$step_involved <- as.numeric(termsParams$step_involved[i])+1
+      } else if (i == length(ModelParams[, 1])) {
+        tmpy$step_involved <- as.numeric(ModelParams$step_involved[i])+1
         tmpy$constrained <- TRUE
         tempList[[tmpCount]] <- tmpy
         tmpCount <- tmpCount + 1
@@ -95,8 +101,11 @@ getCqRespModel <- function(sysFile) {
     # does the term involve an explicit var, for example item*rater? this term includes gins
     involvesExplicit <- all(grepl("1", tShowRespMod$variable_type))
 
-
-    if (any(tShowRespMod$step_involved > -1)) { #step involved
+    if (isDebug) {
+      # write.csv(tShowRespMod, paste0("tShowRespMod", term, ".csv"))
+    }
+    # step involved in this term
+    if (any(tShowRespMod$step_involved > -1)) { 
       if (any(tShowRespMod$constrained)) {
         tGins <- unique(tShowRespMod$gin_no) # gins involved with this term
         for (thisGin in tGins) {
@@ -112,7 +121,7 @@ getCqRespModel <- function(sysFile) {
           tmpCheck <- nrow(tstSub)
           if (isDebug) {
             print("subset of this term that involves a step with 0th cat ommited")
-            print(tShowRespMod_sub) #debug
+            print(tShowRespMod_sub) 
             print(paste0("how many rows need updating?", tmpCheck))
           }
           # check, do we need to calculate this value?
@@ -178,8 +187,8 @@ getCqRespModel <- function(sysFile) {
           warning("check this is working with explcit vars")
         }
       }
-
-    } else { # no step involved, not Explicit
+    # no step involved, and not Explicit
+    } else { 
       # involves an implicit var? Then only include gins on dim
       if (length(grep("0", tShowRespMod$variable_type)) > 0) {
         # for this term, find the constrained gins (can be many when dims > 1), 
@@ -223,8 +232,15 @@ getCqRespModel <- function(sysFile) {
     warning("fit is not available when explicit vars in model")
   } else {
     if (sysFile$gIFit) {
-    tmpFit <- getCqFit(sysFile)
-    showRespMod <- cbind(showRespMod, tmpFit)
+      if (isDebug) print("Starting to work on fit")
+      tmpFit <- getCqFit(sysFile)
+      if (isDebug) {
+        print(str(tmpFit))
+        print(str(showRespMod))
+        # write.csv(tmpFit, "tmpFit.csv")
+        # write.csv(showRespMod, "showRespMod.csv")
+      } 
+      showRespMod <- cbind(showRespMod, tmpFit)
     } else {
       warning("fit is not available and is omitted from Show Response Model")
     }

@@ -13,6 +13,7 @@ q3ExpCorrect(myCorMat)
 A correlation matrix with the Q3 statistic correction applied.
 }
 \description{
-Helper function to apply correction to correlation matrix. When working with standardised residuals,
+Helper function to apply correction to correlation matrix.
+When working with standardised residuals,
 the expectation of the correlations is -1/(L-1) rather than 0 See DOI: 10.1177/0013164410379322
 }

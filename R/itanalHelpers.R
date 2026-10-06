@@ -34,7 +34,6 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
   {
     if (!is.logical(isDebug)) stop("isDebug must be a boolean")
   }
-  myDebug <- isDebug
   # test if system file is valid
   if (missing(sysFile))
   {
@@ -72,13 +71,11 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
   # list all the "_abilitymeansd" elements in gMatrixList
   ItanNames <- names(sysFile$gMatrixList)[grep("_abilitymeansd", names(sysFile$gMatrixList))]
   # capture the prefix used in ConQuest "matrixout = <prefix>"
-  ItanNames_prefixTemp <- gsub("^(\\w+)_abilitymeansd.*", "\\1", ItanNames)
+  ItanNames_prefixTemp <- gsub("^(.*)_abilitymeansd.*", "\\1", ItanNames)
   # work out if there are more then one prefixes used (multiple calls to itanal in ConQuest)
   ItanNames_prefix <- unique(ItanNames_prefixTemp)
   ItanNames_prefixN <- length(ItanNames_prefix)
   if (isDebug) {
-    print(paste0("ItanNames: ", ItanNames))
-    # print(paste0("ItanNames_prefixTemp: ", ItanNames_prefixTemp))
     print(paste0("ItanNames_prefix: ", ItanNames_prefix))
     print(paste0("ItanNames_prefixN: ", ItanNames_prefixN))
   }
@@ -91,16 +88,49 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
   # do the itanals have groups?
   ItanList <- list()
   for (thisItan in ItanNames_prefix) {
+    # subset of itans matrix objects to work over
+    ItanNamesSub <- ItanNames[grepl(paste0("^", thisItan, "_"), ItanNames)]
+    if (isDebug) {
+      print(paste0("working over this itan prefix: ", thisItan, " these are the matrix objects:"))
+      print(ItanNamesSub)
+    }
+
     ItanList[[thisItan]] <- list()
-    tmpString <- paste0("^", thisItan, "_\\w+_(\\w+)_(\\w+)*$")
+    tmpString <- paste0("^", thisItan, "_abilitymeansd_(.*)$")
     tmpString1 <- paste0("^", thisItan, "_abilitymeansd$")
-    # if we match using tmpString1, there is no group suffix on the end of the name
-    #    the itanal objects
+    # if we match using tmpString1, there is no group suffix on the end of the itanal name
     hasGroups <- !any(grepl(tmpString1, ItanNames))
-    tmpVec <- unique(gsub(tmpString, "\\2", ItanNames))
     if (hasGroups) {
-      ItanList[[thisItan]][["groupVar"]] <- unique(gsub(tmpString, "\\1", ItanNames))
+      # what if the group name has an underscore, or a group level does?
+      #  really here we need to find what is the common part
+      #  in all the elements of ItanNames with the thisItan %in% ItanNames_prefix
+      #  we now now have an rccp func to do this see lcs_vec
+
+      if (isDebug) {
+        print(paste0("Found groups in: ", thisItan))
+      }
+      
+      tmpVec <- gsub(tmpString, "\\1", ItanNamesSub)
+      
+      if (isDebug) {
+        print(paste0("Involved itan matrix objects are: "))
+        print(tmpVec)
+      }
+      # in case there are leading or trailing "_"
+      tmpGroupName <- gsub("(^_*)(.*)(_$*)", "\\2", lcs_vec(tmpVec)) 
+      ItanList[[thisItan]][["groupVar"]] <- tmpGroupName
+      if (isDebug) {
+        print(paste0("Group Variable is: ", tmpGroupName))
+      }
+
+      # replace tmpVec with the list of unique levels in the groups
+      tmpVec <- unique(gsub(paste0("(^.*", tmpGroupName, "_)(.*$)"), "\\2", tmpVec))
       ItanList[[thisItan]][["groupVarLevels"]] <- tmpVec
+      if (isDebug) {
+        print(paste0("Group Levels for: ", tmpGroupName, " are: "))
+        print(tmpVec)
+      }
+
     } else {
       ItanList[[thisItan]][["groupVar"]] <- "All Cases"
       ItanList[[thisItan]][["groupVarLevels"]] <- as.vector("All Cases")
@@ -128,7 +158,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
   # keys, scores
   tmpKeys <- getCqKeys(sysFile)
   tmpScores <- getCqScores(sysFile)
-  if (myDebug)
+  if (isDebug)
   {
     print("got keys: ")
     print(tmpKeys)
@@ -138,7 +168,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
 
   # gin labels
   tmpGinLabs <- unlist(sysFile$gGinLongLabels)
-  if (myDebug) {
+  if (isDebug) {
     print("got gin labels: ")
     print(tmpGinLabs)
   }
@@ -153,7 +183,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
 
   # get the group info for the itanal implied by `matrixPrefix`
   ItanGroupInfo <- ItanList[[which(names(ItanList)==matrixPrefix)]]
-  if (myDebug) {
+  if (isDebug) {
     print("ItanGroupInfo:")
     print(ItanGroupInfo)
   }
@@ -178,7 +208,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
     tmp_counts <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_counts", tmpString), names(sysFile$gMatrixList))]]
     tmp_itemRest <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_itemstats", tmpString), names(sysFile$gMatrixList))]]
     tmp_summary <- sysFile$gMatrixList[[grep(paste0(matrixPrefix, "_summarystats", tmpString), names(sysFile$gMatrixList))]]
-    if (myDebug) print("read in itanal matrix objects to work on")
+    if (isDebug) print("read in itanal matrix objects to work on")
   
     # response category names - used as first column in itanal tables
     tmpRespCatNames <- matrix(gsub("(\\w+_)", "", names(as.data.frame(tmp_counts))), ncol = 1)
@@ -187,7 +217,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
     if (length(toDrop) > 0) {
       tmpRespCatNames <- tmpRespCatNames[!(tmpRespCatNames %in% toDrop)]
     }
-    if (myDebug)
+    if (isDebug)
     {
       print("got resp cat names")
       print(tmpRespCatNames)
@@ -199,7 +229,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
       tmp_one_abilitymeansd <- as.data.frame(t(tmp_abilitymeansd[i, ]))
       tmp_one_ptbis <- as.data.frame(t(tmp_ptbis[i, ]))
       tmp_one_counts <- as.data.frame(t(tmp_counts[i, ]))
-      if (myDebug) print(paste0("read in transpose of pvmean, ptbis, and counts for group: ", g, " item: ", i))
+      if (isDebug) print(paste0("read in transpose of pvmean, ptbis, and counts for group: ", g, " item: ", i))
       # to wider
       tmp_one_abilitymeansd <- tmp_one_abilitymeansd %>% pivot_longer(
         cols = everything(),
@@ -214,8 +244,8 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
         names_pattern = "(\\w+)_\\s*\\w+", # there can be leading spaces in the name, e.g., "ptbis_ B"
         names_to = c(".value")
       )
-      if (myDebug) print(paste0("pivot_longer ptbis item: ", i))
-      if (myDebug) print(tmp_one_ptbis)
+      if (isDebug) print(paste0("pivot_longer ptbis item: ", i))
+      if (isDebug) print(tmp_one_ptbis)
 
       tmp_one_counts <- tmp_one_counts %>% pivot_longer(
         cols = everything(),
@@ -226,7 +256,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
       #if (myDebug) print(paste0("pivot_longer counts item: ", i))
       #if (myDebug) print(tmp_one_counts)
 
-      if (myDebug)
+      if (isDebug)
       {
         print("tmpRespCatNames")
         print(tmpRespCatNames)
@@ -242,7 +272,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
       oneResult <- replaceInDataFrame(oneResult, -1.797693e+308, NA)
       if (any(oneResult$count == 0)) oneResult$ptbis[oneResult$count == 0] <- NA
 
-      if (myDebug)
+      if (isDebug)
       {
         print("oneResult: ")
         print(names(oneResult))
@@ -287,7 +317,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
           }
           thisGinDim <- as.numeric(tmpDimMap$dim)
 
-          if (myDebug)
+          if (isDebug)
           {
               print("mapping of gin to dim: ")
               print(tmpDimMap)
@@ -328,7 +358,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
       # is the key included blank/dummy cats ("x"), Score will be NA
       oneResult <- oneResult[!is.na(oneResult$Score), ]
 
-      if (myDebug) {
+      if (isDebug) {
         print("finished with this gin: ")
         print(oneResult)
       }
@@ -336,7 +366,7 @@ getCqItanal <- function(sysFile, matrixPrefix = NULL, isDebug = FALSE) {
       # place table and item-rest in final object
       tmpResGroup[[i]] <- list()
       tmpResGroup[[i]]["name"] <- paste0(tmpGinLabs[i], " group:", tmpStringName)
-      if (myDebug) {
+      if (isDebug) {
         print(paste0("adding gin, ", i, " to result list"))
       }
       tmpResGroup[[i]][["table"]] <- oneResult
@@ -582,7 +612,7 @@ getCqScores <- function(sysFile) {
     {
       tmpBefore <- unlist(sysFile$gScores[[i]][[1]])
       tmpAfter <- unlist(sysFile$gScores[[i]][[2]])
-      if (is.null(sysFile$gScores[[i]][[3]])) # if cList is NULL then applies to all gins
+      if (length(sysFile$gScores[[i]][[3]]) == 0) # if cList is empty then applies to all gins
       {
         #print("cList is NULL")
         tmpGins <- 1:sysFile$gNGins

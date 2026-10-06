@@ -33,7 +33,7 @@ This vignette demonstrates how to use the package built-in demonstration files t
 
 ## Call ConQuest and run a syntax file
 
-First, ensure you have the most current version of ConQuest. Version > 5.17.4 is required. If you are unsure, check [ConQuest on the ACER Shop](https://shop.acer.org/acer-conquest-5.html).
+First, ensure you have the most current version of ConQuest. Version > 5.17.4 is required. If you are unsure, check [ConQuest on the ACER Shop](https://shop.acer.org/collections/acer-conquest-5).
 You will also need to install the conquestr library:
 
 ```

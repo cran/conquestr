@@ -1,0 +1,35 @@
+let location = "../extdata";
+
+Datafile ex1.dat;
+set lconstraint=none;
+Format pid 1-5 responses 11-23 v1 12 v2 15;
+Key aacddbcebbacc ! 1;
+Key xxxxxxxxxxxxa ! 2;
+Model item + item*step ! type = rasch;
+group v1;
+
+import anchor_xsi << ex1_unident_xsi.txt;
+
+labels 1  "item one_bad"  ! item;
+labels 2  "item two"      ! item;
+labels 3  "item three"    ! item;
+labels 4  "item four"     ! item;
+labels 5  "item five"     ! item;
+labels 6  "item six"      ! item;
+labels 7  "item seven"    ! item;
+labels 8  "item eight"    ! item;
+labels 9  "item nine"     ! item;
+labels 10 "item ten"      ! item;
+labels 11 "item eleven"   ! item;
+labels 12 "item twelve"   ! item;
+labels 13  "item thirteen"! item;
+
+estimate!abilities = yes,fit=yes,stderr=quick;
+itanal ! matrixout = itan, group = v1;
+show;
+
+banddefine ! label = "L0 (critical)", upper = -2.133, lower = -100;
+banddefine ! label = "L1 (upper)", upper = 100, lower = 2.133;
+
+put >> mysysfile_unident.cqs;
+

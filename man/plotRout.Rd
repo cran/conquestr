@@ -7,6 +7,7 @@
 \alias{plotRout.ICC}
 \alias{plotRout.MCC}
 \alias{plotRout.TCC}
+\alias{plotRout.Expected}
 \alias{plotRout.default}
 \title{plotRout}
 \usage{
@@ -21,6 +22,8 @@ plotRout(myRout, ...)
 \method{plotRout}{MCC}(myRout, ...)
 
 \method{plotRout}{TCC}(myRout, ...)
+
+\method{plotRout}{Expected}(myRout, ...)
 
 \method{plotRout}{default}(myRout, ...)
 }

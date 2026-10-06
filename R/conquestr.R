@@ -108,34 +108,25 @@ ConQuestSys <- function(myCqs, isMini = FALSE) {
     )
   }
 
-  if (isDebug) message("    Set `myMode` to `rb`")
-  myMode <- "rb"
-  #if (Sys.info()["sysname"] == "Linux") myMode <- "w+b"
-  myFile <- file(myCqs, myMode)
+  if (!file.exists(myCqs)) stop("system file not found: ", myCqs)
+  sysBytes <- readBin(myCqs, what = "raw", n = file.size(myCqs))
 
   if (isDebug) message("    Check if  `myCqs` is compressed")
-  # is this a compressed file?
+  # uncompressed files begin with the string "uncompressed"; compressed files
+  # are a zlib stream (CMF byte with deflate method 8, and (CMF*256 + FLG) %% 31 == 0)
   compressedString <- tryCatch(
-    {
-       if (isDebug) message("    begin `ReadString(myFile)`")
-       ReadString(myFile)
-    },
-    error = function(e) {
-      # this is blank to ensure an error is not proc'd as this interferes with 
-      # workflows that use knitr or shiny that break on error
-    },
-    finally = {
-      # close and reopen file - rewind is discouraged for Win in man
-      close(myFile)
-      myFile <- file(myCqs, myMode)
-    }
+    ReadString(.cqReaderNew(sysBytes)),
+    # silent: an error here must not break knitr or shiny workflows
+    error = function(e) NULL
   )
+  hdr <- as.integer(sysBytes[1:2])
+  isZlib <- length(sysBytes) >= 2 && bitwAnd(hdr[1], 15L) == 8L &&
+    (hdr[1] * 256L + hdr[2]) %% 31L == 0L
   if (isDebug) message("    End check if  `myCqs` is compressed")
 
-  if (is.null(compressedString)) {
+  if (!identical(compressedString, "uncompressed") && isZlib) {
     message("System file is compressed. Decompressing ... ")
-    compressedString <- "compressed"
-    myFile <- DecompressSys(myFile)
+    sysBytes <- DecompressSys(sysBytes)
     message(
       "complete"
     )
@@ -143,16 +134,13 @@ ConQuestSys <- function(myCqs, isMini = FALSE) {
 
   r <- tryCatch(
     {
-      invisible(conquestr::ReadSys(myFile, isMini))
+      conquestr::ReadSys(.cqReaderNew(sysBytes), isMini)
     },
     error = function(e) {
-      close(myFile)
       e$message <- paste0(e$message, " (in ", myCqs, ")")
       stop(e)
     }
   )
-  # tidy up by closing the connection to sysfile on exit
-  on.exit(close(myFile), add = TRUE)
   return(r)
 
 }
@@ -177,27 +165,11 @@ ConQuestSys <- function(myCqs, isMini = FALSE) {
 ConQuestRout <- function(myRout) {
 
   if (missing(myRout)) {
-
     message("no rout file provided, loading the example rout file instead")
-    routFile <- list()
-    myFile <- file(system.file("extdata", "myicc.rout", package = "conquestr"), "rb")
-    r <- invisible(ReadGraph(myFile))
-    on.exit(
-      close(myFile)
-    )
-
-  } else {
-
-    # create required lists
-    routFile <- list()
-    myFile <- file(myRout, "rb")
-    r <-invisible(ReadGraph(myFile))
-    on.exit(
-      close(myFile)
-    )
-
-
+    myRout <- system.file("extdata", "myicc.rout", package = "conquestr")
   }
+  if (!file.exists(myRout)) stop("rout file not found: ", myRout)
+  r <- ReadGraph(.cqReaderNew(readBin(myRout, what = "raw", n = file.size(myRout))))
 
   # append class to r (used later for dispatching)
   myRoutType <- routType(r)

@@ -5,20 +5,14 @@
 \title{ReadTermsList}
 \usage{
 ReadTermsList(myFile, cqs_version)
-
-ReadTermsList(myFile, cqs_version)
 }
 \arguments{
 \item{myFile}{An 'ACER ConQuest' system file.}
 }
 \value{
 A list
-
-A list
 }
 \description{
-ReadTermsList
-
 ReadTermsList
 }
 \keyword{internal}

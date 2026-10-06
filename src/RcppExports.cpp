@@ -10,6 +10,855 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// simplepCpp
+NumericVector simplepCpp(double theta, NumericMatrix item, bool muraki, double D);
+RcppExport SEXP _conquestr_simplepCpp(SEXP thetaSEXP, SEXP itemSEXP, SEXP murakiSEXP, SEXP DSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type item(itemSEXP);
+    Rcpp::traits::input_parameter< bool >::type muraki(murakiSEXP);
+    Rcpp::traits::input_parameter< double >::type D(DSEXP);
+    rcpp_result_gen = Rcpp::wrap(simplepCpp(theta, item, muraki, D));
+    return rcpp_result_gen;
+END_RCPP
+}
+// genResponsesCpp
+NumericMatrix genResponsesCpp(NumericMatrix abilities, List itemParams, IntegerVector itemDim, List perturbItems, IntegerVector perturbIdx, LogicalMatrix perturbCase);
+RcppExport SEXP _conquestr_genResponsesCpp(SEXP abilitiesSEXP, SEXP itemParamsSEXP, SEXP itemDimSEXP, SEXP perturbItemsSEXP, SEXP perturbIdxSEXP, SEXP perturbCaseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type abilities(abilitiesSEXP);
+    Rcpp::traits::input_parameter< List >::type itemParams(itemParamsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type itemDim(itemDimSEXP);
+    Rcpp::traits::input_parameter< List >::type perturbItems(perturbItemsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type perturbIdx(perturbIdxSEXP);
+    Rcpp::traits::input_parameter< LogicalMatrix >::type perturbCase(perturbCaseSEXP);
+    rcpp_result_gen = Rcpp::wrap(genResponsesCpp(abilities, itemParams, itemDim, perturbItems, perturbIdx, perturbCase));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReaderNew
+SEXP cqReaderNew(RawVector x);
+RcppExport SEXP _conquestr_cqReaderNew(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< RawVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReaderNew(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadDouble
+double cqReadDouble(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadDouble(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadDouble(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadInteger
+int cqReadInteger(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadInteger(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadInteger(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadBoolean
+LogicalVector cqReadBoolean(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadBoolean(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadBoolean(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadString
+CharacterVector cqReadString(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadString(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadString(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadDoubleList
+List cqReadDoubleList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadDoubleList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadDoubleList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadIntegerList
+List cqReadIntegerList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadIntegerList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadIntegerList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadIntegerListList
+List cqReadIntegerListList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadIntegerListList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadIntegerListList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadBooleanList
+List cqReadBooleanList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadBooleanList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadBooleanList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadStringList
+List cqReadStringList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadStringList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadStringList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadNamedStringList
+List cqReadNamedStringList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadNamedStringList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadNamedStringList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadIntArray2
+IntegerMatrix cqReadIntArray2(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadIntArray2(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadIntArray2(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadTerm
+List cqReadTerm(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadTerm(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadTerm(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadBitSet
+List cqReadBitSet(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadBitSet(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadBitSet(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadMatrix
+RObject cqReadMatrix(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadMatrix(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadMatrix(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadMatrixList
+List cqReadMatrixList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadMatrixList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadMatrixList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadErrors
+List cqReadErrors(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadErrors(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadErrors(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadRegressors
+List cqReadRegressors(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadRegressors(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadRegressors(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadImplicitVar
+List cqReadImplicitVar(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadImplicitVar(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadImplicitVar(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadVarList
+List cqReadVarList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadVarList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadVarList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadLookUp
+List cqReadLookUp(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadLookUp(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadLookUp(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadLookUpList
+List cqReadLookUpList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadLookUpList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadLookUpList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadBandDefine
+List cqReadBandDefine(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadBandDefine(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadBandDefine(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadBandDefinesList
+List cqReadBandDefinesList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadBandDefinesList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadBandDefinesList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadAnchor
+List cqReadAnchor(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadAnchor(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadAnchor(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadAnchorList
+List cqReadAnchorList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadAnchorList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadAnchorList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadVariable
+List cqReadVariable(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadVariable(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadVariable(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadVariableList
+List cqReadVariableList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadVariableList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadVariableList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadResponse
+List cqReadResponse(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadResponse(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadResponse(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadResponseList
+List cqReadResponseList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadResponseList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadResponseList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadKey
+List cqReadKey(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadKey(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadKey(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadKeyList
+List cqReadKeyList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadKeyList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadKeyList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadLabel
+List cqReadLabel(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadLabel(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadLabel(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadLabelList
+List cqReadLabelList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadLabelList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadLabelList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadTerms
+List cqReadTerms(SEXP myFile, int cqs_version);
+RcppExport SEXP _conquestr_cqReadTerms(SEXP myFileSEXP, SEXP cqs_versionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type cqs_version(cqs_versionSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadTerms(myFile, cqs_version));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadTermsList
+List cqReadTermsList(SEXP myFile, int cqs_version);
+RcppExport SEXP _conquestr_cqReadTermsList(SEXP myFileSEXP, SEXP cqs_versionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type cqs_version(cqs_versionSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadTermsList(myFile, cqs_version));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadVarInfo
+List cqReadVarInfo(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadVarInfo(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadVarInfo(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadCodeList
+List cqReadCodeList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadCodeList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadCodeList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadIRecode
+List cqReadIRecode(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadIRecode(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadIRecode(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadIRecodeList
+List cqReadIRecodeList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadIRecodeList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadIRecodeList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadParameters
+List cqReadParameters(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadParameters(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadParameters(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadParametersList
+List cqReadParametersList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadParametersList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadParametersList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadCategoriseLegacy
+List cqReadCategoriseLegacy(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadCategoriseLegacy(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadCategoriseLegacy(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadCategorise
+List cqReadCategorise(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadCategorise(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadCategorise(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadCategoriseListLegacy
+List cqReadCategoriseListLegacy(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadCategoriseListLegacy(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadCategoriseListLegacy(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadCategoriseList
+List cqReadCategoriseList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadCategoriseList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadCategoriseList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadFit
+List cqReadFit(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadFit(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadFit(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadFitList
+List cqReadFitList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadFitList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadFitList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadRegression
+List cqReadRegression(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadRegression(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadRegression(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadRegressionListLeg
+List cqReadRegressionListLeg(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadRegressionListLeg(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadRegressionListLeg(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadRegressionList
+List cqReadRegressionList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadRegressionList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadRegressionList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadItemSet
+List cqReadItemSet(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadItemSet(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadItemSet(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadItemSetList
+List cqReadItemSetList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadItemSetList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadItemSetList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadHistory
+List cqReadHistory(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadHistory(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadHistory(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadEstimatesRecord
+List cqReadEstimatesRecord(SEXP myFile, int Dimensions, int NPlausibles, int n, int cqs_version);
+RcppExport SEXP _conquestr_cqReadEstimatesRecord(SEXP myFileSEXP, SEXP DimensionsSEXP, SEXP NPlausiblesSEXP, SEXP nSEXP, SEXP cqs_versionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type Dimensions(DimensionsSEXP);
+    Rcpp::traits::input_parameter< int >::type NPlausibles(NPlausiblesSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type cqs_version(cqs_versionSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadEstimatesRecord(myFile, Dimensions, NPlausibles, n, cqs_version));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadAllCaseEstimates
+List cqReadAllCaseEstimates(SEXP myFile, int Dimensions, int N, int cqs_version);
+RcppExport SEXP _conquestr_cqReadAllCaseEstimates(SEXP myFileSEXP, SEXP DimensionsSEXP, SEXP NSEXP, SEXP cqs_versionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type Dimensions(DimensionsSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    Rcpp::traits::input_parameter< int >::type cqs_version(cqs_versionSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadAllCaseEstimates(myFile, Dimensions, N, cqs_version));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadDataRecord
+List cqReadDataRecord(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadDataRecord(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadDataRecord(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadAllResponseData
+List cqReadAllResponseData(SEXP myFile, int N);
+RcppExport SEXP _conquestr_cqReadAllResponseData(SEXP myFileSEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadAllResponseData(myFile, N));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadADesignMatrices
+List cqReadADesignMatrices(SEXP myFile, int Columns, int Items, SEXP ItemSteps);
+RcppExport SEXP _conquestr_cqReadADesignMatrices(SEXP myFileSEXP, SEXP ColumnsSEXP, SEXP ItemsSEXP, SEXP ItemStepsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type Columns(ColumnsSEXP);
+    Rcpp::traits::input_parameter< int >::type Items(ItemsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type ItemSteps(ItemStepsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadADesignMatrices(myFile, Columns, Items, ItemSteps));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadBDesignMatrices
+List cqReadBDesignMatrices(SEXP myFile, SEXP ItemSteps, int Items);
+RcppExport SEXP _conquestr_cqReadBDesignMatrices(SEXP myFileSEXP, SEXP ItemStepsSEXP, SEXP ItemsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type ItemSteps(ItemStepsSEXP);
+    Rcpp::traits::input_parameter< int >::type Items(ItemsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadBDesignMatrices(myFile, ItemSteps, Items));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadCDesignMatrices
+List cqReadCDesignMatrices(SEXP myFile, int Dimensions, SEXP ItemSteps, int Items);
+RcppExport SEXP _conquestr_cqReadCDesignMatrices(SEXP myFileSEXP, SEXP DimensionsSEXP, SEXP ItemStepsSEXP, SEXP ItemsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type Dimensions(DimensionsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type ItemSteps(ItemStepsSEXP);
+    Rcpp::traits::input_parameter< int >::type Items(ItemsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadCDesignMatrices(myFile, Dimensions, ItemSteps, Items));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadYOneCase
+List cqReadYOneCase(SEXP myFile, int NReg);
+RcppExport SEXP _conquestr_cqReadYOneCase(SEXP myFileSEXP, SEXP NRegSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type NReg(NRegSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadYOneCase(myFile, NReg));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadAllY
+List cqReadAllY(SEXP myFile, int N, int NReg);
+RcppExport SEXP _conquestr_cqReadAllY(SEXP myFileSEXP, SEXP NSEXP, SEXP NRegSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    Rcpp::traits::input_parameter< int >::type NReg(NRegSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadAllY(myFile, N, NReg));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadGroupsOneCase
+List cqReadGroupsOneCase(SEXP myFile, SEXP GroupVariables, SEXP AllVariables, SEXP CaseNum);
+RcppExport SEXP _conquestr_cqReadGroupsOneCase(SEXP myFileSEXP, SEXP GroupVariablesSEXP, SEXP AllVariablesSEXP, SEXP CaseNumSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type GroupVariables(GroupVariablesSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type AllVariables(AllVariablesSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type CaseNum(CaseNumSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadGroupsOneCase(myFile, GroupVariables, AllVariables, CaseNum));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadAllGroupsData
+List cqReadAllGroupsData(SEXP myFile, int N, SEXP GroupVariables, SEXP AllVariables);
+RcppExport SEXP _conquestr_cqReadAllGroupsData(SEXP myFileSEXP, SEXP NSEXP, SEXP GroupVariablesSEXP, SEXP AllVariablesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type GroupVariables(GroupVariablesSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type AllVariables(AllVariablesSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadAllGroupsData(myFile, N, GroupVariables, AllVariables));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadMatrixVars
+List cqReadMatrixVars(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadMatrixVars(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadMatrixVars(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadPoint
+List cqReadPoint(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadPoint(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadPoint(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadSeries
+List cqReadSeries(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadSeries(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadSeries(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadGraph
+List cqReadGraph(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadGraph(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadGraph(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadRandomStructure
+List cqReadRandomStructure(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadRandomStructure(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadRandomStructure(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadGExportOptions
+List cqReadGExportOptions(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadGExportOptions(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadGExportOptions(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cqReadGExportOptionsList
+List cqReadGExportOptionsList(SEXP myFile);
+RcppExport SEXP _conquestr_cqReadGExportOptionsList(SEXP myFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type myFile(myFileSEXP);
+    rcpp_result_gen = Rcpp::wrap(cqReadGExportOptionsList(myFile));
+    return rcpp_result_gen;
+END_RCPP
+}
 // replaceInVector
 NumericVector replaceInVector(NumericVector v, double r, double x);
 RcppExport SEXP _conquestr_replaceInVector(SEXP vSEXP, SEXP rSEXP, SEXP xSEXP) {
@@ -36,10 +885,109 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// lcs
+String lcs(String str1, String str2);
+RcppExport SEXP _conquestr_lcs(SEXP str1SEXP, SEXP str2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< String >::type str1(str1SEXP);
+    Rcpp::traits::input_parameter< String >::type str2(str2SEXP);
+    rcpp_result_gen = Rcpp::wrap(lcs(str1, str2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// lcs_vec
+String lcs_vec(StringVector input_strings);
+RcppExport SEXP _conquestr_lcs_vec(SEXP input_stringsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< StringVector >::type input_strings(input_stringsSEXP);
+    rcpp_result_gen = Rcpp::wrap(lcs_vec(input_strings));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_conquestr_simplepCpp", (DL_FUNC) &_conquestr_simplepCpp, 4},
+    {"_conquestr_genResponsesCpp", (DL_FUNC) &_conquestr_genResponsesCpp, 6},
+    {"_conquestr_cqReaderNew", (DL_FUNC) &_conquestr_cqReaderNew, 1},
+    {"_conquestr_cqReadDouble", (DL_FUNC) &_conquestr_cqReadDouble, 1},
+    {"_conquestr_cqReadInteger", (DL_FUNC) &_conquestr_cqReadInteger, 1},
+    {"_conquestr_cqReadBoolean", (DL_FUNC) &_conquestr_cqReadBoolean, 1},
+    {"_conquestr_cqReadString", (DL_FUNC) &_conquestr_cqReadString, 1},
+    {"_conquestr_cqReadDoubleList", (DL_FUNC) &_conquestr_cqReadDoubleList, 1},
+    {"_conquestr_cqReadIntegerList", (DL_FUNC) &_conquestr_cqReadIntegerList, 1},
+    {"_conquestr_cqReadIntegerListList", (DL_FUNC) &_conquestr_cqReadIntegerListList, 1},
+    {"_conquestr_cqReadBooleanList", (DL_FUNC) &_conquestr_cqReadBooleanList, 1},
+    {"_conquestr_cqReadStringList", (DL_FUNC) &_conquestr_cqReadStringList, 1},
+    {"_conquestr_cqReadNamedStringList", (DL_FUNC) &_conquestr_cqReadNamedStringList, 1},
+    {"_conquestr_cqReadIntArray2", (DL_FUNC) &_conquestr_cqReadIntArray2, 1},
+    {"_conquestr_cqReadTerm", (DL_FUNC) &_conquestr_cqReadTerm, 1},
+    {"_conquestr_cqReadBitSet", (DL_FUNC) &_conquestr_cqReadBitSet, 1},
+    {"_conquestr_cqReadMatrix", (DL_FUNC) &_conquestr_cqReadMatrix, 1},
+    {"_conquestr_cqReadMatrixList", (DL_FUNC) &_conquestr_cqReadMatrixList, 1},
+    {"_conquestr_cqReadErrors", (DL_FUNC) &_conquestr_cqReadErrors, 1},
+    {"_conquestr_cqReadRegressors", (DL_FUNC) &_conquestr_cqReadRegressors, 1},
+    {"_conquestr_cqReadImplicitVar", (DL_FUNC) &_conquestr_cqReadImplicitVar, 1},
+    {"_conquestr_cqReadVarList", (DL_FUNC) &_conquestr_cqReadVarList, 1},
+    {"_conquestr_cqReadLookUp", (DL_FUNC) &_conquestr_cqReadLookUp, 1},
+    {"_conquestr_cqReadLookUpList", (DL_FUNC) &_conquestr_cqReadLookUpList, 1},
+    {"_conquestr_cqReadBandDefine", (DL_FUNC) &_conquestr_cqReadBandDefine, 1},
+    {"_conquestr_cqReadBandDefinesList", (DL_FUNC) &_conquestr_cqReadBandDefinesList, 1},
+    {"_conquestr_cqReadAnchor", (DL_FUNC) &_conquestr_cqReadAnchor, 1},
+    {"_conquestr_cqReadAnchorList", (DL_FUNC) &_conquestr_cqReadAnchorList, 1},
+    {"_conquestr_cqReadVariable", (DL_FUNC) &_conquestr_cqReadVariable, 1},
+    {"_conquestr_cqReadVariableList", (DL_FUNC) &_conquestr_cqReadVariableList, 1},
+    {"_conquestr_cqReadResponse", (DL_FUNC) &_conquestr_cqReadResponse, 1},
+    {"_conquestr_cqReadResponseList", (DL_FUNC) &_conquestr_cqReadResponseList, 1},
+    {"_conquestr_cqReadKey", (DL_FUNC) &_conquestr_cqReadKey, 1},
+    {"_conquestr_cqReadKeyList", (DL_FUNC) &_conquestr_cqReadKeyList, 1},
+    {"_conquestr_cqReadLabel", (DL_FUNC) &_conquestr_cqReadLabel, 1},
+    {"_conquestr_cqReadLabelList", (DL_FUNC) &_conquestr_cqReadLabelList, 1},
+    {"_conquestr_cqReadTerms", (DL_FUNC) &_conquestr_cqReadTerms, 2},
+    {"_conquestr_cqReadTermsList", (DL_FUNC) &_conquestr_cqReadTermsList, 2},
+    {"_conquestr_cqReadVarInfo", (DL_FUNC) &_conquestr_cqReadVarInfo, 1},
+    {"_conquestr_cqReadCodeList", (DL_FUNC) &_conquestr_cqReadCodeList, 1},
+    {"_conquestr_cqReadIRecode", (DL_FUNC) &_conquestr_cqReadIRecode, 1},
+    {"_conquestr_cqReadIRecodeList", (DL_FUNC) &_conquestr_cqReadIRecodeList, 1},
+    {"_conquestr_cqReadParameters", (DL_FUNC) &_conquestr_cqReadParameters, 1},
+    {"_conquestr_cqReadParametersList", (DL_FUNC) &_conquestr_cqReadParametersList, 1},
+    {"_conquestr_cqReadCategoriseLegacy", (DL_FUNC) &_conquestr_cqReadCategoriseLegacy, 1},
+    {"_conquestr_cqReadCategorise", (DL_FUNC) &_conquestr_cqReadCategorise, 1},
+    {"_conquestr_cqReadCategoriseListLegacy", (DL_FUNC) &_conquestr_cqReadCategoriseListLegacy, 1},
+    {"_conquestr_cqReadCategoriseList", (DL_FUNC) &_conquestr_cqReadCategoriseList, 1},
+    {"_conquestr_cqReadFit", (DL_FUNC) &_conquestr_cqReadFit, 1},
+    {"_conquestr_cqReadFitList", (DL_FUNC) &_conquestr_cqReadFitList, 1},
+    {"_conquestr_cqReadRegression", (DL_FUNC) &_conquestr_cqReadRegression, 1},
+    {"_conquestr_cqReadRegressionListLeg", (DL_FUNC) &_conquestr_cqReadRegressionListLeg, 1},
+    {"_conquestr_cqReadRegressionList", (DL_FUNC) &_conquestr_cqReadRegressionList, 1},
+    {"_conquestr_cqReadItemSet", (DL_FUNC) &_conquestr_cqReadItemSet, 1},
+    {"_conquestr_cqReadItemSetList", (DL_FUNC) &_conquestr_cqReadItemSetList, 1},
+    {"_conquestr_cqReadHistory", (DL_FUNC) &_conquestr_cqReadHistory, 1},
+    {"_conquestr_cqReadEstimatesRecord", (DL_FUNC) &_conquestr_cqReadEstimatesRecord, 5},
+    {"_conquestr_cqReadAllCaseEstimates", (DL_FUNC) &_conquestr_cqReadAllCaseEstimates, 4},
+    {"_conquestr_cqReadDataRecord", (DL_FUNC) &_conquestr_cqReadDataRecord, 1},
+    {"_conquestr_cqReadAllResponseData", (DL_FUNC) &_conquestr_cqReadAllResponseData, 2},
+    {"_conquestr_cqReadADesignMatrices", (DL_FUNC) &_conquestr_cqReadADesignMatrices, 4},
+    {"_conquestr_cqReadBDesignMatrices", (DL_FUNC) &_conquestr_cqReadBDesignMatrices, 3},
+    {"_conquestr_cqReadCDesignMatrices", (DL_FUNC) &_conquestr_cqReadCDesignMatrices, 4},
+    {"_conquestr_cqReadYOneCase", (DL_FUNC) &_conquestr_cqReadYOneCase, 2},
+    {"_conquestr_cqReadAllY", (DL_FUNC) &_conquestr_cqReadAllY, 3},
+    {"_conquestr_cqReadGroupsOneCase", (DL_FUNC) &_conquestr_cqReadGroupsOneCase, 4},
+    {"_conquestr_cqReadAllGroupsData", (DL_FUNC) &_conquestr_cqReadAllGroupsData, 4},
+    {"_conquestr_cqReadMatrixVars", (DL_FUNC) &_conquestr_cqReadMatrixVars, 1},
+    {"_conquestr_cqReadPoint", (DL_FUNC) &_conquestr_cqReadPoint, 1},
+    {"_conquestr_cqReadSeries", (DL_FUNC) &_conquestr_cqReadSeries, 1},
+    {"_conquestr_cqReadGraph", (DL_FUNC) &_conquestr_cqReadGraph, 1},
+    {"_conquestr_cqReadRandomStructure", (DL_FUNC) &_conquestr_cqReadRandomStructure, 1},
+    {"_conquestr_cqReadGExportOptions", (DL_FUNC) &_conquestr_cqReadGExportOptions, 1},
+    {"_conquestr_cqReadGExportOptionsList", (DL_FUNC) &_conquestr_cqReadGExportOptionsList, 1},
     {"_conquestr_replaceInVector", (DL_FUNC) &_conquestr_replaceInVector, 3},
     {"_conquestr_replaceInDataFrame", (DL_FUNC) &_conquestr_replaceInDataFrame, 3},
+    {"_conquestr_lcs", (DL_FUNC) &_conquestr_lcs, 2},
+    {"_conquestr_lcs_vec", (DL_FUNC) &_conquestr_lcs_vec, 1},
     {NULL, NULL, 0}
 };
 

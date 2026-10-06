@@ -4,7 +4,7 @@
 \alias{cnvrtItemParam}
 \title{cnvrtItemParam}
 \usage{
-cnvrtItemParam(item, from = "muraki", to = "conquest", D = 1)
+cnvrtItemParam(item, from = "muraki", to = "conquest", DFrom = 1, DTo = 1)
 }
 \arguments{
 \item{item}{an item design matrix that is of size response categories (m) by four:
@@ -25,7 +25,10 @@ Describing the parameterisation of \emph{item}}
 Describing the output parameterisation of the returned \emph{item} parameter matrix
 Note that "muraki" assumes the scaling constant D = 1.7 (to give the normal ogive metric)}
 
-\item{D}{a number, giving the scaling constant. Default is 1 (logistic metric).
+\item{DFrom}{a number, giving the scaling constant for the \code{from} parameterisation. Default is 1 (logistic metric).
+Other common values are D = 1.7 (to give the normal ogive metric)}
+
+\item{DTo}{a number, giving the scaling constant for the \code{to} parameterisation. Default is 1 (logistic metric).
 Other common values are D = 1.7 (to give the normal ogive metric)}
 }
 \value{
@@ -46,5 +49,5 @@ itemParamT <- c(0, -0.5, 0.5)
 itemParamA <- rep(a, m)
 itemParam <- cbind(itemParamX, itemParamD, itemParamT, itemParamA)
 colnames(itemParam)<- c("x", "d", "t", "a")
-myItem <- cnvrtItemParam(itemParam, from = "conquest", to = "muraki")
+myItem <- cnvrtItemParam(itemParam, from = "conquest", to = "muraki", DFrom = 1, DTo = 1.7)
 }

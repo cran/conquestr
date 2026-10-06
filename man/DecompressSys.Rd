@@ -7,11 +7,12 @@
 DecompressSys(myFile)
 }
 \arguments{
-\item{myFile}{An connection to a compressed  'ACER ConQuest' system file
-created by the \code{put} command in 'ACER ConQuest'.`}
+\item{myFile}{A raw vector: the contents of a compressed 'ACER ConQuest'
+system file created by the \code{put} command in 'ACER ConQuest'.}
 }
 \value{
-A connection to an uncompressed system file in the users temp dir.
+A raw vector: the uncompressed system file, beginning with the
+"uncompressed" header.
 }
 \description{
 Internal function to decompress an 'ACER ConQuest' system file

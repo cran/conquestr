@@ -16,13 +16,16 @@ steigerStat(myDat, q3Adj = TRUE, fisher = TRUE, dfAdj = FALSE, tpm)
 \item{dfAdj}{A bool indicating whether the df should be adjusted for sample size, L, and targeting.
 If dfAdj is TRUE, then you must pass in the optional argument \code{tmp} (test-person match)}
 
-\item{tpm}{A number indicating the test-person match, where 0 indicates that
-mean item difficulty is equal to mean person ability, and -1 indcates that mean item difficulty is 1 logit below mean person ability.}
+\item{tpm}{A double indicating the test-person match, where 0 indicates that
+mean item difficulty is equal to mean person ability, and -1 indicates that
+mean item difficulty is 1 logit below mean person ability.}
 }
 \value{
-A list of class "steigerStat" with the Steiger Statistic, correlation matrix, and chi square test.
+A list of class "steigerStat" with the Steiger Statistic,
+correlation matrix, and chi square test.
 }
 \description{
-Function to cacluate the Steiger statistic. The Steiger statistic is a test of independance of
+Function to calculate the Steiger statistic.
+The Steiger statistic is a test of independence of
 the standardised residuals ((O-E)/sqrt(Var(E))), where Var(E) = p(x)/(1-p(x)).
 }

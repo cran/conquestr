@@ -12,7 +12,7 @@
 #'   (a matrix of k categories by four (category score, delta dot, tau, discrimination)).
 #'   See conquestr::makeItemList for a helper to generate this list.
 #' @param BMatrix A simplified B-matrix mapping dimensions (columns) to items (rows).
-#'   Or the integer "1" if items are dichotomous and ability is uni-dimensional.
+#'   Or the integer "1" if the abilities are uni-dimensional.
 #' @param mcarP A double indicating the proportion of missing data
 #'   under the MCAR assumption.
 #' @param perturbR A list of lists, where each element of the list refers to one item
@@ -63,9 +63,6 @@ genResponses <- function(
     abilities, groups = NULL, itemParams,
     BMatrix = 1, mcarP = 0, perturbR = NULL
   ) {
-
-  # for debug only
-  isDebug <- FALSE
 
   # error checking
   if (!is.list(itemParams)) {
@@ -126,80 +123,59 @@ genResponses <- function(
           )
         )
       }
+      if (!tmpI %in% seq_len(myNItems)) {
+        stop(
+          paste0(
+            "item number in perturbR must refer to an item in `itemParams`, problem with element ",
+            i
+          )
+        )
+      }
       myPerturbI <- c(myPerturbI, tmpI)
     }
   }
 
-  # Now start the real work
-  # create a temp response matrix, n cases by i items
-  myResponses <- matrix(NA, myNCases, myNItems)
-  # create a temp expectation matrix, n cases by i items
-  myExpected <- matrix(NA, myNCases, myNItems)
-  # loop over cases and items and calculate expectation and response
-  for (case in seq(myNCases)) {
-    thisGroup <- myGroups[case]
-    if (!isGroups) thisGroup <- NULL
-    for (item in seq(myNItems)) {
-      if (isMultDim) {
-        thisDim <- which(BMatrix[item, ] == 1)
-      } else {
-        thisDim <- 1
+  # ability column used by each item
+  if (isMultDim) {
+    myItemDim <- apply(BMatrix, 1, function(r) which(r == 1))
+  } else {
+    myItemDim <- rep(1L, myNItems)
+  }
+
+  # perturbed item matrices, and which cases receive them
+  # (when an item appears more than once in perturbR, the last entry is used)
+  myPerturbIdx <- integer(myNItems)
+  myPerturbItems <- list()
+  myPerturbCase <- matrix(FALSE, 0, 0)
+  if (myNperturb > 0) {
+    myPerturbCase <- matrix(TRUE, myNCases, myNperturb)
+    for (i in seq_len(myNperturb)) {
+      thisPerturb <- perturbR[[i]]
+      tmpI <- itemParams[[myPerturbI[i]]]
+      nCats <- nrow(tmpI)
+      if (thisPerturb[[2]] == "discrimination") {
+        tmpI[, 4] <- tmpI[, 4] * as.numeric(thisPerturb[[3]])
       }
-      thisItemPeturb <- FALSE
-      thisPeturb <- NULL # the actual list of perturbation info for this item
-      if (isDebug) print(paste0("working on item: ", item))
-      if (isDebug) print(paste0("is item: ", item, " in myPerturbI: ", myPerturbI, " ?", item %in% myPerturbI))
-      if (item %in% myPerturbI) {
-        thisItemPeturb <- TRUE
-        for (i in seq(perturbR)) {
-          if (as.integer(perturbR[[i]][1]) == item) thisPeturb <- perturbR[[i]]
-        }
-      }
-      if (thisItemPeturb && is.null(thisPeturb)) {
-        stop("could not find the info in perturbR for this item")
-      }
-      if (is.na(myAbilitiesT[case, thisDim])) {
-        resp <- NA
-        prob <- NA
-      } else {
-        prob <- simplef(myAbilitiesT[case, thisDim], itemParams[[item]])
-        if(thisItemPeturb) {
-          if (isDebug) print(paste0("This case's group: '", thisGroup, "' this items perturbed group: '", thisPeturb[5], "'"))
-          resp <- perturbResp(
-            myAbilitiesT[case, thisDim], itemParams[[item]],
-            thisGroup, thisPeturb
-          )
-        } else {
-          resp <- itemResp(myAbilitiesT[case, thisDim], itemParams[[item]])
-        }
-      }
-      myResponses[case, item] <- resp
-      myExpected[case, item] <- prob
-      if (isDebug && case < 11 && item < 3) {
-        print(
-          paste0(
-            "case: ", case,
-            " group: ", thisGroup,
-            " item: ", item,
-            " response: ", resp,
-            " expected score: ", round(prob, 2),
-            " theta: ", round(myAbilitiesT[case , thisDim], 2)
-          )
-        )
+      # any value in perturbation[3] is ignored for "shift"
+      tmpI[2:nCats, 2] <- tmpI[2:nCats, 2] + as.numeric(thisPerturb[[4]])
+      myPerturbItems[[i]] <- tmpI
+      myPerturbIdx[myPerturbI[i]] <- i
+      if (isGroups) {
+        myPerturbCase[, i] <- as.character(myGroups) %in% as.character(thisPerturb[[5]])
       }
     }
   }
 
+  storage.mode(myAbilitiesT) <- "double"
+  myResponses <- genResponsesCpp(
+    myAbilitiesT, lapply(itemParams, as.matrix), as.integer(myItemDim),
+    myPerturbItems, myPerturbIdx, myPerturbCase
+  )
+
   # add missing if requested
   if (mcarP > 0) {
     myRand2 <- matrix(runif(myNCases * myNItems), myNCases, myNItems)
-    for (r in 1:nrow(myResponses)) {
-      for (c in 1:ncol(myResponses)) {
-        if (myRand2[r, c] > (1 - mcarP)) {
-          myResponses[r, c] <- NA
-        }
-      }
-    }
+    myResponses[myRand2 > (1 - mcarP)] <- NA
   }
 
   return(myResponses)
@@ -398,7 +374,9 @@ thetaScore <- function(theta, responses, itemParams, perfAdjust = 0.3) {
 #' @param to a string, either "muraki"  or "conquest" (default) (see 10.1177/0146621697211001).
 #'   Describing the output parameterisation of the returned _item_ parameter matrix
 #'   Note that "muraki" assumes the scaling constant D = 1.7 (to give the normal ogive metric)
-#' @param D a number, giving the scaling constant. Default is 1 (logistic metric).
+#' @param DFrom a number, giving the scaling constant for the `from` parameterisation. Default is 1 (logistic metric).
+#'   Other common values are D = 1.7 (to give the normal ogive metric)
+#' @param DTo a number, giving the scaling constant for the `to` parameterisation. Default is 1 (logistic metric).
 #'   Other common values are D = 1.7 (to give the normal ogive metric)
 #'
 #' @return an m x 4 matrix of item parameters. The same dimensions as the input, _item_
@@ -413,24 +391,29 @@ thetaScore <- function(theta, responses, itemParams, perfAdjust = 0.3) {
 #' itemParamA <- rep(a, m)
 #' itemParam <- cbind(itemParamX, itemParamD, itemParamT, itemParamA)
 #' colnames(itemParam)<- c("x", "d", "t", "a")
-#' myItem <- cnvrtItemParam(itemParam, from = "conquest", to = "muraki")
-cnvrtItemParam <- function(item, from = "muraki", to = "conquest", D = 1) {
+#' myItem <- cnvrtItemParam(itemParam, from = "conquest", to = "muraki", DFrom = 1, DTo = 1.7)
+cnvrtItemParam <- function(item, from = "muraki", to = "conquest", DFrom = 1, DTo = 1) {
   # check item, check from and to
   # TODO
   myItem_t <- item
-  if (from == "muraki") {
-    # item discrimination
-    myItem_t[, 4] <- item[, 4] * D
-    # item locations ("conquest delta dots", in delta plus tau notation)
-    myItem_t[, 2] <- item[, 2] * (D * item[, 4])
-    # item steps ("conquest taus", in delta plus tau notation)
-    # -1 takes us from easiness to difficulty parameterisation
-    myItem_t[, 3] <- -1 * item[, 3] * (D * item[, 4])
+  if (DFrom <= 0 || DTo <= 0) stop("DFrom and DTo must be greater than 0")
+  if (DFrom == DTo) {
+    D <- 1
   } else {
+    # what to do when DFrom < DTo
+    D <- DFrom / DTo
+  }
+  
+  if (from == "muraki") {
+    # Muraki -> conquest
+    myItem_t[, 4] <- item[, 4] * D # item score
+    myItem_t[, 2] <- item[, 2] * (D * item[, 4]) # item locations ("conquest delta dots", in delta plus tau notation)
+    myItem_t[, 3] <- -1 * item[, 3] * (D * item[, 4]) # item steps ("conquest taus", in delta plus tau notation) # -1 takes us from easiness to difficulty parameterisation
+  } else if (from == "conquest") {
     # conquest -> Muraki
-    myItem_t[, 4] <- item[, 4] / D # a = tau/D
-    myItem_t[, 2] <- item[, 2] / (D * myItem_t[, 4]) # b = delta_dot/(D*a)
-    myItem_t[, 3] <- -1 * item[, 3] / (D * myItem_t[, 4]) # d = -tau/(D*a)
+    myItem_t[, 4] <- item[, 4] * D # a 
+    myItem_t[, 2] <- item[, 2] / item[, 4] # b 
+    myItem_t[, 3] <- -1 * item[, 3] / item[, 4] # d
   }
   return(myItem_t)
 }
@@ -469,35 +452,44 @@ cnvrtItemParam <- function(item, from = "muraki", to = "conquest", D = 1) {
 #' colnames(itemParam)<- c("x", "d", "t", "a")
 #' myProbs <- simplep(myTheta, itemParam)
 simplep <- function(theta, item, model = "conquest", D = 1) {
+  
   if (missing(model)) model <- "conquest"
   if (!model %in% c("muraki", "conquest")) stop("model must be muraki or conquest")
   if (!is.numeric(theta) && length(theta) != 1) stop("theta must be a scalar value")
   if (!is.matrix(item) && !ncol(item) %in% c(3, 4) && nrow(item) > 1) {
     stop("item must be a matrix with at least scores, delta dots, and taus")
   }
+
   if (ncol(item) == 3) {
     item <- cbind(item, rep(1, length(item[ , 1])))
     message("assuming item discrimination is constant and equal to 1")
   }
-  tmp <- matrix(NA, nrow = nrow(item))
-  probs <- matrix(NA, nrow = nrow(item))
-  #tmp_delta_plus_tau <- 0
-  for (i in seq_len(nrow(item))) {
-    tmp[i , 1] <- exp(
-      if (model == "muraki") {
-        # Da(x*theta_m - b_m + d_m) # Muraki's GPCM
-        1.7 * item[i, 4] * (item[i, 1] * theta - item[i, 2] + item[i, 3])
-      } else {
-        # or
-        # (a*b*theta_a) - sum(delta_a+tau_a) # Adams' MMCLM
-        (item[i, 4] * item[i, 1] * theta) - (sum(item[1:i, 2:3]))
-      }
-    )
-  }
-  denom <- sum(tmp[ , 1])
-  for (i in seq_len(nrow(item))) {
-    probs[i , 1] <- tmp[i , 1] / denom
-  }
+
+  # Probabilities are computed in C++ (src/generateCq.cpp, simplepCpp). The
+  # (unnormalised) log-probability for category i is:
+  #
+  # "muraki": Muraki's (1992) GPCM. For category k (k = 0, ..., m), the model gives
+  #   the cumulative logit
+  #     sum_{v=1}^{k} D*a_i*(theta - b_iv)
+  #   with b_i0 := 0 so the k = 0 term contributes 0. Following Muraki's
+  #   (1992) reparameterisation, b_iv = b_i - d_iv, where b_i (item[, 2]) is
+  #   constant across categories (the overall item location) and d_iv
+  #   (item[, 3]) is the step deviation for category v (d_i1 := 0). Expanding
+  #   and factoring out D*a_i:
+  #     sum_{v=1}^{k} D*a_i*(theta - (b_i - d_iv))
+  #       = D*a_i*(k*theta - k*b_i + sum_{v=1}^{k} d_iv)
+  #       = D*a_i*(x*theta - sum_{v=1}^{k} b_i + sum_{v=1}^{k} d_iv) # since x = k here
+  #   i.e. cumulative sums of b (item[, 2]) and d (item[, 3]) over
+  #   categories 1:i, exactly mirroring the cumulative delta+tau sum used in
+  #   the "conquest" branch below. Verified numerically against
+  #   cnvrtItemParam()-converted items: this cumulative form reproduces
+  #   identical response probabilities to the "conquest" branch (see
+  #   tests/testthat/test-genHelpers.R).
+  #     D * item[i, 4] * (item[i, 1] * theta - sum(item[1:i, 2]) + sum(item[1:i, 3]))
+  #
+  # "conquest": Adams' MMCLM, D*((a*b*theta_a) - sum(delta_a+tau_a))
+  #     D * ((item[i, 4] * item[i, 1] * theta) - (sum(item[1:i, 2:3])))
+  probs <- matrix(simplepCpp(theta, as.matrix(item), model == "muraki", D), ncol = 1)
   return(probs)
 }
 
@@ -535,11 +527,19 @@ simplep <- function(theta, item, model = "conquest", D = 1) {
 simplef <- function(theta, item, model, D) {
   if (missing(model)) model <- "conquest"
   if (missing(D)) D <- 1
-  expt <- 0
-  probs <- simplep(theta, item, model)
-  for (i in seq(probs)) {
-    expt <- expt + (item[i, 1]) * probs[i, 1]
-  }
+  probs <- simplep(theta, item, model, D)
+  # Expected score is defined as E[X | theta] = sum_k x_k * P(X = x_k | theta),
+  # i.e. a probability-weighted average of the category *scores* x_k (item[, 1]),
+  # under both the "conquest" and "muraki" parameterisations. The discrimination
+  # parameter a_i (item[, 4]) does not belong in this sum: it already enters the
+  # calculation indirectly, via its effect on the category probabilities
+  # returned by simplep() (which does scale the logits by a_i - see simplep()'s
+  # derivation comment above). Multiplying by a_i again here would rescale
+  # scores by discrimination, which conflates two distinct quantities: the
+  # score metric (x, e.g. 0, 1, 2, ...) and the item's slope on the theta
+  # metric (a). These have different units and should not be multiplied
+  # together when computing an expected score.
+  expt <- sum(item[, 1] * probs[, 1])
   return(expt)
 }
 

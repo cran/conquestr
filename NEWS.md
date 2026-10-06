@@ -1,3 +1,35 @@
+# CHANGES IN conquestr VERSION 1.8.1
+
+## MAJOR CHANGES
+
+* The readers for 'ACER ConQuest' system files and rout files (`ReadSys` and the
+  `Read*` helpers) have been rewritten in C++. The file is read into memory once
+  and parsed in C++; `ConQuestSys()` is roughly 10-20 times faster on the
+  included examples, and the results are identical.
+* Truncated or corrupt files now give an informative "unexpected end of file"
+  error instead of silently returning short reads or trying to allocate huge vectors.
+* The low-level `Read*` helpers now take a 'cqReader' (an in-memory file created
+  internally by `ConQuestSys()` and `ConQuestRout()`) rather than a connection.
+  `DecompressSys()` now takes and returns a raw vector, and no longer writes a
+  temporary file.
+
+# CHANGES IN conquestr VERSION 1.6.1
+
+## NEW FEATURES
+
+* Added cpp helper functions to handle complex strings in Itanal helpers 
+  see `conquestr::lcs` and `conquestr::lcs_vec`
+* This allows more complex support for `conquestr::getCqItanal`, and 
+  `conquestr::getCqItanalSummary` for example when group variables
+  or levels within groups contain punctuation (e.g., "my-group_variable.",
+  and "my-group_level_1")
+
+## MAJOR CHANGES
+
+* Patched issue with getCqRespModel when the model has both anchors
+  and problem (unidentified) items 
+* Patched internal tests for getCqRespModel. 
+
 # CHANGES IN conquestr VERSION 1.5.5
 
 ## NEW FEATURES
