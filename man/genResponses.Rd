@@ -10,7 +10,8 @@ genResponses(
   itemParams,
   BMatrix = 1,
   mcarP = 0,
-  perturbR = NULL
+  perturbR = NULL,
+  debug = FALSE
 )
 }
 \arguments{
@@ -18,7 +19,7 @@ genResponses(
 One column per dimension.}
 
 \item{groups}{A vector of factors of the same length as \code{abilities} that
-allocates each case to a group. Used in perturbR. Defaults to NULL such that
+allocates each case to a group. Used in \code{perturbR}. Defaults to NULL such that
 all cases are in the one group.}
 
 \item{itemParams}{A list of item parameters of the structure used in \code{simplef}
@@ -31,59 +32,125 @@ Or the integer "1" if the abilities are uni-dimensional.}
 \item{mcarP}{A double indicating the proportion of missing data
 under the MCAR assumption.}
 
-\item{perturbR}{A list of lists, where each element of the list refers to one item
-and contains a list of elements describing how responses to that item should
-be perturbed to model misfit.
-Each element of the list should contain, in order:
+\item{perturbR}{A list of perturbations used to model misfit, or NULL (default)
+for none. Each element is a list describing one perturbation of one item.
+Elements can be given by name (recommended) or, when unnamed, in this order:
 \itemize{
-\item item number (int). Which item in \code{itemParams} is affected,
-\item type of perturbation (string) to apply. One of
+\item \code{item} (integer). Which item in \code{itemParams} is affected.
+\item \code{type} (string). One of
 \itemize{
-\item "discrimination" - increases or decreases the discrimination of the item
-at a location specified by the user.
-\item "shift" - increases or decreases the location of the item as to create a
-uniform shift in the CCC.
-\item ...more to come,
+\item "discrimination" - multiplies the item's discrimination (column 4 of
+the item matrix) by \code{factor}, and adds \code{pivot} to the delta dot.
+\item "shift" - adds \code{pivot} to the delta dot, creating a uniform shift in
+the category characteristic curves (e.g., DIF for a group).
 }
-\item scoring perturbation factor (double). When the type is "discrimination", this defines
-the scale that the discrimination is increased or decreased. For example, if
-the item has discrimination of 1, and the perturbation factor is 1.2, the
-resulting probabilities will be calculated assuming the discrimination
-is 1 * 1.2 = 1.2. Note that is the value given here is 1, than this kind of
-perturbation is the same as "shift".
-When the type is "shift" this value is always ignored.
-\item pivot point (double), When the type is "discrimination", this defines the
-location  around which the perturbation is applied relative to
-the delta dot. That is, when the type is "discrimination" and the
-"perturbation factor" is > 1, probabilities above the pivot point
-will be overestimated (generated responses will higher than expectation)
-and probabilities below the pivot point will be underestimated
-(generated responses will lower than expectation). When the pivot point
-is 0, this calculation happens at the item location parameter (e.g., at the
-category boundary).
-When the type is "shift", this is the value added to the item location (delta dot)
-as to create a uniform shift (DIF) for the group.
-\item group (string). The group found in \verb{groups that should be perturbed. note that if }groups\verb{is not used in call to}genResponses` than this
-value is ignored and all cases' responses are perturbed.
-}}
+\item \code{factor} (double). The multiplier applied to the discrimination when the
+type is "discrimination". For example, if the item has discrimination of
+1 and \code{factor} is 1.2, responses are generated assuming a discrimination
+of 1.2. Ignored when the type is "shift".
+\item \code{pivot} (double). For "shift", the value added to the delta dot (column
+2, rows 2 to k, of the item matrix), i.e., the size of the shift. For
+"discrimination", its meaning depends on \code{pivotAt}.
+\item \code{group} (character vector, optional). The group(s) in \code{groups} whose
+responses are perturbed, for example \code{"bfit"} or \code{c("g1", "g2")}. Omit
+it, or use \code{NULL} or \code{NA}, to perturb all cases. Ignored (all cases are
+perturbed) when \code{groups} is NULL. When elements are unnamed, every
+element from the fifth onwards is treated as a group.
+\item \code{pivotAt} (string, optional, by name only). Used by "discrimination":
+\itemize{
+\item "theta" (default) - \code{pivot} is added to the delta dot. The perturbed
+and unperturbed curves of a dichotomous item then cross at
+theta = pivot / (a * (factor - 1)), where \code{a} is the item's
+discrimination. That is, the crossing point is on the theta scale,
+does not depend on the item's location, and the item location moves
+unless \code{pivot} is 0 and the item is centred at theta = 0.
+\item "item" - the discrimination is changed around a point \code{pivot} logits
+from the item's location (its delta dot divided by its
+discrimination). At that point the category probabilities of the
+perturbed and unperturbed item are equal, for dichotomous and partial
+credit items, so the item's location does not move. Use \code{pivot = 0} to
+pivot at the item location.
+}
+\item \code{shift} (double, optional, by name only, default 0). Used by
+"discrimination": a value added to the delta dot after the
+discrimination is changed, moving the item location without moving
+the discrimination pivot relative to the original item. Use the
+"shift" type to shift an item without changing its discrimination.
+}
+
+An item can appear in more than one perturbation, for example to perturb it
+differently for different groups. If two perturbations apply to the same
+case and item, the later one is used, with a warning.}
+
+\item{debug}{A Boolean. If \code{TRUE}, returns a list holding the responses and
+the intermediate data products of each step (see Value). Responses are
+identical to those from \code{debug = FALSE} for the same seed.}
 }
 \value{
-A matrix, \code{n} cases by \code{i} items, of scored item responses.
+If \code{debug = FALSE} (default), a matrix, \code{n} cases by \code{i} items, of
+scored item responses. If \code{debug = TRUE}, a list with elements:
+\itemize{
+\item \code{responses}: the matrix returned when \code{debug = FALSE}.
+\item \code{responsesComplete}: responses before MCAR missingness was applied.
+\item \code{missing}: a logical cases by items matrix, TRUE where \code{\link[=genMissingMCAR]{genMissingMCAR()}}
+selected the case-item pair to be missing.
+\item \code{inputs}: the standardised inputs returned by \code{\link[=genRespInputs]{genRespInputs()}}.
+\item \code{perturbations}: a data frame, one row per perturbation, returned by
+\code{\link[=parsePerturbations]{parsePerturbations()}}.
+\item \code{perturbedItems}: a list of perturbed item parameter matrices, one per row
+of \code{perturbations}.
+\item \code{perturbMap}: an integer cases by items matrix returned by
+\code{\link[=buildPerturbMap]{buildPerturbMap()}}. 0 where the case received the unperturbed item,
+otherwise the row of \code{perturbations} that was applied.
+\item \code{draws}: the uniform deviates used to draw each response
+(NA where the ability is NA).
+\item \code{probs}: a list, one cases by categories matrix per item, of the category
+probabilities used to draw each response (perturbed where applicable).
+\item \code{probsBase}: as \code{probs}, but under the unperturbed item parameters.
+}
 }
 \description{
 Generates response vectors for \code{n} cases to \code{i} items given
 known item parameters, person abilities, and (optionally) other inputs.
+
+Generation runs as a sequence of steps. Each step is also available as its
+own function so it can be checked in isolation:
+\enumerate{
+\item \code{\link[=genRespInputs]{genRespInputs()}} validates and standardises the inputs.
+\item \code{\link[=parsePerturbations]{parsePerturbations()}} validates \code{perturbR} and puts each perturbation
+into a standard form (one row per perturbation).
+\item \code{\link[=perturbItem]{perturbItem()}} builds the perturbed item parameters for each perturbation.
+\item \code{\link[=buildPerturbMap]{buildPerturbMap()}} decides which perturbation (if any) applies to each
+case-item pair, based on \code{groups}.
+\item Category probabilities are calculated and responses drawn (in C++).
+\item \code{\link[=genMissingMCAR]{genMissingMCAR()}} sets responses to missing completely at random.
+}
+
+Use \code{debug = TRUE} to return the output of every step, and
+\code{\link[=genResponsesProbs]{genResponsesProbs()}} to tabulate the response probabilities used for each
+case, with and without perturbation.
 }
 \examples{
   myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
   myItems <- list(myItem, myItem)
   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
   myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
+
+  # perturb item 2 for group "b" only, and keep the intermediate data
+  myGroups <- factor(sample(c("a", "b"), 100, replace = TRUE))
+  myPerturbations <- list(
+    list(item = 2L, type = "shift", pivot = 1, group = "b")
+  )
+  myDebug <- genResponses(
+    abilities = rnorm(100), groups = myGroups, itemParams = myItems,
+    perturbR = myPerturbations, debug = TRUE
+  )
+  head(genResponsesProbs(myDebug, items = 2))
 }
 \references{
 Adams, R. J., & Wright, B. D. (1994). When does misfit make a difference.
 In Objective Measurement Theory and Practice (Vol. 2). Ablex Publishing Corporation.
 }
 \seealso{
-\code{\link[=simplef]{simplef()}}, \code{browseVignettes("conquestr")}
+\code{\link[=simplef]{simplef()}}, \code{\link[=genResponsesProbs]{genResponsesProbs()}}, \code{browseVignettes("conquestr")}
 }

@@ -146,3 +146,198 @@ searchConQuestSys("history", myCqs)
 ```
 
 
+
+## Population statistics from plausible values
+
+Large-scale assessments such as PISA report student achievement as a set of
+plausible values (PVs) and provide replicate weights for estimating sampling
+error. `conquestr` provides a family of functions that compute a statistic for
+each PV under the full-sample weight and under every replicate weight, then
+combine the results using Rubin's rules:
+
+- `pvStat()` - the core function (any supported statistic, optionally by group)
+- `pvMean()`, `pvSd()`, `pvVar()`, `pvMedian()`, `pvQuantile()`, `pvIqr()` and `pvDescribe()`
+- `pvDiff()` - differences between groups (e.g., girls minus boys)
+- `pvCor()` - correlations between PVs and background variables
+- `pvRegression()` - weighted linear regression of PVs on background variables
+
+Supported replication methods are `"BRR"`, `"Fay"` (Fay's variant of BRR, as
+used in PISA), `"JK1"` (delete-one jackknife) and `"JK2"` (paired jackknife, as
+used in TIMSS and PIRLS).
+
+### Simulate a PISA-style dataset
+
+The example below simulates 64 schools in 32 variance strata (pairs of
+schools), 20 students per school, 10 PVs and Fay replicate weights
+(`k = 0.5`) built from a Hadamard matrix. PISA uses 80 replicates; 32 are used
+here to keep the example small.
+
+```{r pv-sim}
+set.seed(5309)
+nStrata <- 32
+nSchools <- nStrata * 2
+nPerSchool <- 20
+nPVs <- 10
+
+# Sylvester construction of a 32 x 32 Hadamard matrix
+hadamard <- matrix(1)
+while (nrow(hadamard) < nStrata) hadamard <- rbind(cbind(hadamard, hadamard), cbind(hadamard, -hadamard))
+
+school <- rep(seq_len(nSchools), each = nPerSchool)
+stratum <- (school + 1) %/% 2
+unit <- ifelse(school %% 2 == 1, 1, -1) # first or second school in the pair
+n <- length(school)
+
+pisaSim <- data.frame(
+  school = school,
+  sex = factor(sample(c("boy", "girl"), n, replace = TRUE)),
+  escs = rnorm(nSchools, 0, 0.5)[school] + rnorm(n, 0, 0.8),
+  W_FSTUWT = runif(n, 5, 50)
+)
+schoolEffect <- rnorm(nSchools, 0, 40)[school]
+trueTheta <- 480 + 30 * pisaSim$escs + 12 * (pisaSim$sex == "girl") + schoolEffect + rnorm(n, 0, 70)
+for (p in seq_len(nPVs)) {
+  pisaSim[[paste0("PV", p, "READ")]] <- trueTheta + rnorm(n, 0, 25) # imputation noise
+}
+
+# Fay replicate weights: one school in each pair gets 1.5, the other 0.5
+fayK <- 0.5
+for (r in seq_len(nStrata)) {
+  factorR <- ifelse(hadamard[stratum, r] * unit > 0, 2 - fayK, fayK)
+  pisaSim[[paste0("W_FSTR", r)]] <- pisaSim$W_FSTUWT * factorR
+}
+
+pvs <- paste0("PV", seq_len(nPVs), "READ")
+repWts <- paste0("W_FSTR", seq_len(nStrata))
+```
+
+### Descriptive statistics
+
+`pvDescribe()` returns the mean, SD, variance, quartiles and IQR. Each row
+reports the estimate, its standard error (`se`), the sampling variance U
+(`samplingVar`) and the between-PV variance B (`imputationVar`).
+
+```{r pv-describe}
+pvDescribe(pisaSim, pvs, weight = "W_FSTUWT", repWeights = repWts,
+           repMethod = "Fay", fayK = fayK, by = "sex")
+```
+
+`imputationVar` is B *before* Rubin's correction, so the columns do not
+simply add up to `se^2`. The reported estimate is the average of only M PV
+estimates, and that average has its own simulation error with variance B / M.
+Rubin's rules add it, so the total error variance is
+
+$$\mathrm{SE}^2 = U + \left(1 + \tfrac{1}{M}\right) B.$$
+
+With 10 PVs this adds 10% to B. To recover `se` from the columns:
+
+```{r pv-se-check}
+desc <- pvDescribe(pisaSim, pvs, weight = "W_FSTUWT", repWeights = repWts,
+                   repMethod = "Fay", fayK = fayK)
+all.equal(desc$se, sqrt(desc$samplingVar + (1 + 1 / desc$nPVs) * desc$imputationVar))
+```
+
+The same holds for `pvDiff()`, `pvCor()` (on the z scale when
+`combine = "fisherZ"`) and `pvRegression()`. See `?pvStat` for details.
+
+### Group differences
+
+`pvDiff()` computes the difference within each PV and replicate, so the
+standard error accounts for the covariance between groups that is induced by
+the sampling design.
+
+```{r pv-diff}
+pvDiff(pisaSim, pvs, by = "sex", pairs = list(c("girl", "boy")),
+       weight = "W_FSTUWT", repWeights = repWts, repMethod = "Fay", fayK = fayK)
+```
+
+### Correlations
+
+`pvCor()` combines correlations on the raw r scale by default, or on the
+Fisher-z scale with `combine = "fisherZ"`. The Fisher-z option gives
+confidence intervals that stay within [-1, 1].
+
+```{r pv-cor}
+pvCor(pisaSim, pvs, "escs", weight = "W_FSTUWT", repWeights = repWts,
+      repMethod = "Fay", fayK = fayK, combine = "fisherZ")
+```
+
+### Regression
+
+`pvRegression()` takes a one-sided formula of predictors; the PVs are the
+outcome.
+
+```{r pv-reg}
+pvRegression(pisaSim, pvs, ~ escs + sex, weight = "W_FSTUWT",
+             repWeights = repWts, repMethod = "Fay", fayK = fayK)
+```
+
+### Correlation and covariance matrices
+
+`pvCorMatrix()` and `pvCovMatrix()` estimate the matrix for several
+measures at once. Each measure is either latent (its PV columns, in draw
+order) or manifest (a single observed column). Latent measures are paired by
+draw (PV1 with PV1, PV2 with PV2, ...), which is appropriate when their PVs
+were drawn jointly from one multidimensional model. A manifest variable is
+the same in every draw, so its column is reused for each PV.
+
+To illustrate, add a second latent domain (mathematics) drawn jointly with
+reading, and an observed variable (age in months):
+
+```{r pv-sim-md}
+trueMath <- 0.7 * (trueTheta - 480) + 470 + rnorm(n, 0, 60)
+for (p in seq_len(nPVs)) {
+  shared <- rnorm(n) # joint draw: reading and maths PV p share an error component
+  pisaSim[[paste0("PV", p, "MATH")]] <- trueMath + 20 * shared + rnorm(n, 0, 15)
+}
+pisaSim$age <- round(rnorm(n, 189, 3.5))
+
+measures <- list(
+  read = paste0("PV", seq_len(nPVs), "READ"),
+  math = paste0("PV", seq_len(nPVs), "MATH"),
+  escs = "escs",
+  age = "age"
+)
+```
+
+The matrix format returns symmetric matrices of estimates, standard errors
+and confidence limits:
+
+```{r pv-cormat}
+corMat <- pvCorMatrix(pisaSim, measures, weight = "W_FSTUWT", repWeights = repWts,
+                      repMethod = "Fay", fayK = fayK, format = "matrix")
+round(corMat$estimate, 3)
+round(corMat$se, 3)
+```
+
+The long format has one row per pair. Pairs of two manifest variables are
+ordinary weighted correlations, so `imputationVar` is 0 and `nPVs` is 1:
+
+```{r pv-cormat-long}
+pvCorMatrix(pisaSim, measures, weight = "W_FSTUWT", repWeights = repWts,
+            repMethod = "Fay", fayK = fayK)[, c("dim1", "dim2", "estimate", "se",
+                                                 "imputationVar", "nPVs")]
+```
+
+`pvCovMatrix()` returns variances on the diagonal; these match `pvVar()`:
+
+```{r pv-covmat}
+covMat <- pvCovMatrix(pisaSim, measures, weight = "W_FSTUWT", repWeights = repWts,
+                      repMethod = "Fay", fayK = fayK, format = "matrix")
+round(covMat$estimate, 1)
+pvVar(pisaSim, measures$read, weight = "W_FSTUWT", repWeights = repWts,
+      repMethod = "Fay", fayK = fayK)$estimate
+```
+
+Two cautions apply when mixing latent and manifest measures:
+
+- A correlation between PVs and an observed variable is unbiased only if
+  that variable (or a good proxy) was in the population (conditioning) model
+  used to draw the PVs; otherwise it is biased towards zero. Here `age` was
+  not used to generate the PVs and is unrelated to proficiency, so its
+  correlations are near zero by construction. Check the study's scaling
+  documentation before interpreting such correlations.
+- With `combine = "fisherZ"`, each element is back-transformed separately,
+  so the matrix is not guaranteed to be positive semi-definite; a warning is
+  given if it is not. The default, `combine = "raw"`, always gives a valid
+  matrix.

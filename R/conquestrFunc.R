@@ -651,18 +651,26 @@ getCqParams <- function(sysFile) {
   # which gins are not identified?
   #  note this is a 0-offset list of gins
   MyProblemGins <- unlist(sysFile$gProblemGins)
-  tmpP <- sysFile$gParam
-  if (length(MyProblemGins) > 0) tmpP <- tmpP[-(MyProblemGins+1)]
 
   # get param est values and associated info
   # est params or anchors
   tmpParams <- as.data.frame(
-    matrix(unlist(tmpP), ncol = tmpDim, byrow = TRUE)
+    matrix(unlist(sysFile$gParam), ncol = tmpDim, byrow = TRUE)
   )
   if (tmpTrimReq) tmpParams <- tmpParams[ , 2:tmpDim]
   tmpNames <- c("gin_no", "step_involved", "sign") #, "constrained", "anchor")
   names(tmpParams) <- tmpNames
   tmpParams$gin_no <- as.integer(tmpParams$gin_no)
+  # Drop params for gins that are not identified. Match on gin number, not
+  # position: gParam need not hold an entry for every gin (e.g., when the
+  # problem gin has no parameter), so dropping by position removed the wrong
+  # rows and misaligned every later param.
+  if (length(MyProblemGins) > 0) {
+    tmpParams <- tmpParams[!tmpParams$gin_no %in% MyProblemGins, , drop = FALSE]
+  }
+  # gParam can carry trailing entries beyond the estimated xsi
+  tmpParams <- tmpParams[seq_len(min(nrow(tmpParams), length(sysFile$gXsi))), , drop = FALSE]
+  rownames(tmpParams) <- NULL
   # which gins are constrained
   tmpParams$constrained <- FALSE # we will replace this later (TODO: check)
 

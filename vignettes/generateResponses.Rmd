@@ -410,5 +410,142 @@ myCCC_item3c <- plotCCC(
 plot(myCCC_item3c)
 ```
 
+## Checking perturbed response probabilities
+
+Misfit is introduced by changing the probabilities used to draw each response,
+so it is worth checking that the probabilities were changed for the intended
+cases, and by the intended amount, before relying on the generated data.
+
+Calling `conquestr::genResponses` with `debug = TRUE` returns a list holding the
+responses and the intermediate data produced at each step, including:
+
+* `perturbations`: the perturbations, one row each, in a standard form,
+* `perturbMap`: a cases by items matrix giving the perturbation applied to each
+  case and item (0 means the item was not perturbed for that case),
+* `probs`: the category probabilities used to draw each response, and
+* `probsBase`: the category probabilities under the unperturbed item.
+
+The responses are identical to those generated with `debug = FALSE` for the
+same seed, so `debug = TRUE` can be used to inspect any simulation.
+
+Perturbations can apply to all cases (omit `group`), to one group, or to several
+groups. Here, item 2 is made to discriminate more for groups "g2" and "g3"
+(with "g1" unaffected), and item 6 is made two logits harder for every case:
+
+```{r debugGen}
+set.seed(4086)
+myN3 <- 1500
+myData3 <- data.frame(
+  ability = rnorm(myN3, 0, 1.5),
+  group = factor(sample(c("g1", "g2", "g3"), myN3, replace = TRUE))
+)
+
+myPerturbations3 <- list(
+  list(item = 2L, type = "discrimination", factor = 2, pivot = 0, group = c("g2", "g3")),
+  list(item = 6L, type = "shift", pivot = 2)
+)
+
+myDebug <- genResponses(
+  abilities = myData3$ability, groups = myData3$group, itemParams = myItems,
+  perturbR = myPerturbations3, debug = TRUE
+)
+
+myDebug$perturbations
+```
+
+`perturbMap` confirms which cases received each perturbation. Item 2 should be
+perturbed (by perturbation 1) for groups "g2" and "g3" only, and item 6 (by
+perturbation 2) for every case:
+
+```{r debugMap}
+table(group = myData3$group, item2 = myDebug$perturbMap[, 2])
+table(group = myData3$group, item6 = myDebug$perturbMap[, 6])
+```
+
+`conquestr::genResponsesProbs` puts these together in a data frame with one row
+per case, item, and response category. It holds each case's group and ability,
+the perturbation applied, the probability used to draw the response (`prob`),
+the probability under the unperturbed item (`probBase`), the random draw
+(`draw`), and the response:
+
+```{r debugProbs}
+myProbs <- genResponsesProbs(myDebug, items = 2)
+head(myProbs)
+```
+
+For cases that were not perturbed, `prob` and `probBase` should be identical.
+For perturbed cases, they should differ:
+
+```{r debugProbsCheck}
+myProbs |>
+  group_by(group, perturbation) |>
+  summarise(
+    cases = n_distinct(case),
+    maxAbsDiff = max(abs(prob - probBase)),
+    .groups = "drop"
+  )
+```
+
+Plotting the probability of each response category against ability shows the
+size and shape of the perturbation. Solid lines are the probabilities used to
+generate the responses and dashed lines are the probabilities under the
+unperturbed item. For groups "g2" and "g3", the category curves are steeper,
+as expected for an increase in discrimination; for group "g1" the two sets of
+curves coincide. The perturbed curves are also closer to theta = 0. In
+ACER ConQuest's parameterisation the discrimination multiplies theta but not
+the item location, so the curves pivot around
+theta = pivot / (a * (factor - 1)), which is 0 here.
+
+To change the discrimination without moving the item, use `pivotAt = "item"`.
+`pivot` is then the distance from the item's location to the point where the
+perturbed and unperturbed curves cross, so `pivot = 0` pivots at the item's
+location. A `shift` can also be added to move the item's location separately:
+
+```{r debugPivotItem, fig.width=7, fig.height=4}
+myDebugItem <- genResponses(
+  abilities = myData3$ability, groups = myData3$group, itemParams = myItems,
+  perturbR = list(
+    list(
+      item = 2L, type = "discrimination", factor = 2, pivot = 0,
+      pivotAt = "item", group = c("g2", "g3")
+    )
+  ),
+  debug = TRUE
+)
+myProbsItem <- genResponsesProbs(myDebugItem, items = 2)
+
+ggplot(
+  bind_rows(
+    mutate(myProbsItem, probability = prob, source = "perturbed (used)"),
+    mutate(myProbsItem, probability = probBase, source = "unperturbed")
+  ),
+  aes(theta, probability, colour = factor(score), linetype = source)
+) +
+  geom_line() +
+  facet_wrap(vars(group)) +
+  labs(
+    x = "ability (theta)", y = "probability", colour = "category score",
+    linetype = NULL
+  )
+```
+
+```{r debugPlot, fig.width=7, fig.height=4}
+myProbsLong <- bind_rows(
+  mutate(myProbs, probability = prob, source = "perturbed (used)"),
+  mutate(myProbs, probability = probBase, source = "unperturbed")
+)
+
+ggplot(
+  myProbsLong,
+  aes(theta, probability, colour = factor(score), linetype = source)
+) +
+  geom_line() +
+  facet_wrap(vars(group)) +
+  labs(
+    x = "ability (theta)", y = "probability", colour = "category score",
+    linetype = NULL
+  )
+```
+
 ## References
 

@@ -25,8 +25,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // genResponsesCpp
-NumericMatrix genResponsesCpp(NumericMatrix abilities, List itemParams, IntegerVector itemDim, List perturbItems, IntegerVector perturbIdx, LogicalMatrix perturbCase);
-RcppExport SEXP _conquestr_genResponsesCpp(SEXP abilitiesSEXP, SEXP itemParamsSEXP, SEXP itemDimSEXP, SEXP perturbItemsSEXP, SEXP perturbIdxSEXP, SEXP perturbCaseSEXP) {
+List genResponsesCpp(NumericMatrix abilities, List itemParams, IntegerVector itemDim, List perturbItems, IntegerMatrix perturbMap, bool debug);
+RcppExport SEXP _conquestr_genResponsesCpp(SEXP abilitiesSEXP, SEXP itemParamsSEXP, SEXP itemDimSEXP, SEXP perturbItemsSEXP, SEXP perturbMapSEXP, SEXP debugSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -34,9 +34,64 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type itemParams(itemParamsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type itemDim(itemDimSEXP);
     Rcpp::traits::input_parameter< List >::type perturbItems(perturbItemsSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type perturbIdx(perturbIdxSEXP);
-    Rcpp::traits::input_parameter< LogicalMatrix >::type perturbCase(perturbCaseSEXP);
-    rcpp_result_gen = Rcpp::wrap(genResponsesCpp(abilities, itemParams, itemDim, perturbItems, perturbIdx, perturbCase));
+    Rcpp::traits::input_parameter< IntegerMatrix >::type perturbMap(perturbMapSEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    rcpp_result_gen = Rcpp::wrap(genResponsesCpp(abilities, itemParams, itemDim, perturbItems, perturbMap, debug));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pvRepStatCpp
+NumericMatrix pvRepStatCpp(const NumericMatrix& pv, const NumericMatrix& wts, int stat, double prob);
+RcppExport SEXP _conquestr_pvRepStatCpp(SEXP pvSEXP, SEXP wtsSEXP, SEXP statSEXP, SEXP probSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type pv(pvSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type wts(wtsSEXP);
+    Rcpp::traits::input_parameter< int >::type stat(statSEXP);
+    Rcpp::traits::input_parameter< double >::type prob(probSEXP);
+    rcpp_result_gen = Rcpp::wrap(pvRepStatCpp(pv, wts, stat, prob));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pvRepRegCpp
+NumericVector pvRepRegCpp(const NumericMatrix& X, const NumericMatrix& pv, const NumericMatrix& wts);
+RcppExport SEXP _conquestr_pvRepRegCpp(SEXP XSEXP, SEXP pvSEXP, SEXP wtsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type pv(pvSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type wts(wtsSEXP);
+    rcpp_result_gen = Rcpp::wrap(pvRepRegCpp(X, pv, wts));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pvRepCorMatCpp
+NumericVector pvRepCorMatCpp(const NumericMatrix& pv, const NumericMatrix& wts, int D, int M);
+RcppExport SEXP _conquestr_pvRepCorMatCpp(SEXP pvSEXP, SEXP wtsSEXP, SEXP DSEXP, SEXP MSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type pv(pvSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type wts(wtsSEXP);
+    Rcpp::traits::input_parameter< int >::type D(DSEXP);
+    Rcpp::traits::input_parameter< int >::type M(MSEXP);
+    rcpp_result_gen = Rcpp::wrap(pvRepCorMatCpp(pv, wts, D, M));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pvRepCovMatCpp
+NumericVector pvRepCovMatCpp(const NumericMatrix& pv, const NumericMatrix& wts, int D, int M);
+RcppExport SEXP _conquestr_pvRepCovMatCpp(SEXP pvSEXP, SEXP wtsSEXP, SEXP DSEXP, SEXP MSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type pv(pvSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type wts(wtsSEXP);
+    Rcpp::traits::input_parameter< int >::type D(DSEXP);
+    Rcpp::traits::input_parameter< int >::type M(MSEXP);
+    rcpp_result_gen = Rcpp::wrap(pvRepCovMatCpp(pv, wts, D, M));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -912,6 +967,10 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_conquestr_simplepCpp", (DL_FUNC) &_conquestr_simplepCpp, 4},
     {"_conquestr_genResponsesCpp", (DL_FUNC) &_conquestr_genResponsesCpp, 6},
+    {"_conquestr_pvRepStatCpp", (DL_FUNC) &_conquestr_pvRepStatCpp, 4},
+    {"_conquestr_pvRepRegCpp", (DL_FUNC) &_conquestr_pvRepRegCpp, 3},
+    {"_conquestr_pvRepCorMatCpp", (DL_FUNC) &_conquestr_pvRepCorMatCpp, 4},
+    {"_conquestr_pvRepCovMatCpp", (DL_FUNC) &_conquestr_pvRepCovMatCpp, 4},
     {"_conquestr_cqReaderNew", (DL_FUNC) &_conquestr_cqReaderNew, 1},
     {"_conquestr_cqReadDouble", (DL_FUNC) &_conquestr_cqReadDouble, 1},
     {"_conquestr_cqReadInteger", (DL_FUNC) &_conquestr_cqReadInteger, 1},

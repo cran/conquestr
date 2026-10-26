@@ -3,10 +3,26 @@
 #' @description Generates response vectors for `n` cases to `i` items given
 #'   known item parameters, person abilities, and (optionally) other inputs.
 #'
+#'   Generation runs as a sequence of steps. Each step is also available as its
+#'   own function so it can be checked in isolation:
+#'
+#'   1. [genRespInputs()] validates and standardises the inputs.
+#'   2. [parsePerturbations()] validates `perturbR` and puts each perturbation
+#'      into a standard form (one row per perturbation).
+#'   3. [perturbItem()] builds the perturbed item parameters for each perturbation.
+#'   4. [buildPerturbMap()] decides which perturbation (if any) applies to each
+#'      case-item pair, based on `groups`.
+#'   5. Category probabilities are calculated and responses drawn (in C++).
+#'   6. [genMissingMCAR()] sets responses to missing completely at random.
+#'
+#'   Use `debug = TRUE` to return the output of every step, and
+#'   [genResponsesProbs()] to tabulate the response probabilities used for each
+#'   case, with and without perturbation.
+#'
 #' @param abilities A person by latent-dimension matrix of abilities.
 #'   One column per dimension.
 #' @param groups A vector of factors of the same length as `abilities` that
-#'   allocates each case to a group. Used in perturbR. Defaults to NULL such that
+#'   allocates each case to a group. Used in `perturbR`. Defaults to NULL such that
 #'   all cases are in the one group.
 #' @param itemParams A list of item parameters of the structure used in `simplef`
 #'   (a matrix of k categories by four (category score, delta dot, tau, discrimination)).
@@ -15,170 +31,494 @@
 #'   Or the integer "1" if the abilities are uni-dimensional.
 #' @param mcarP A double indicating the proportion of missing data
 #'   under the MCAR assumption.
-#' @param perturbR A list of lists, where each element of the list refers to one item
-#'  and contains a list of elements describing how responses to that item should
-#'  be perturbed to model misfit.
-#'  Each element of the list should contain, in order:
+#' @param perturbR A list of perturbations used to model misfit, or NULL (default)
+#'  for none. Each element is a list describing one perturbation of one item.
+#'  Elements can be given by name (recommended) or, when unnamed, in this order:
 #'
-#'  * item number (int). Which item in `itemParams` is affected,
-#'  * type of perturbation (string) to apply. One of
-#'     * "discrimination" - increases or decreases the discrimination of the item
-#'        at a location specified by the user.
-#'     * "shift" - increases or decreases the location of the item as to create a 
-#'       uniform shift in the CCC.
-#'     * ...more to come,
-#'  * scoring perturbation factor (double). When the type is "discrimination", this defines
-#'      the scale that the discrimination is increased or decreased. For example, if
-#'      the item has discrimination of 1, and the perturbation factor is 1.2, the
-#'      resulting probabilities will be calculated assuming the discrimination
-#'      is 1 * 1.2 = 1.2. Note that is the value given here is 1, than this kind of
-#'      perturbation is the same as "shift".
-#'      When the type is "shift" this value is always ignored.
-#'  * pivot point (double), When the type is "discrimination", this defines the
-#'      location  around which the perturbation is applied relative to
-#'      the delta dot. That is, when the type is "discrimination" and the
-#'      "perturbation factor" is > 1, probabilities above the pivot point
-#'      will be overestimated (generated responses will higher than expectation)
-#'      and probabilities below the pivot point will be underestimated
-#'      (generated responses will lower than expectation). When the pivot point
-#'      is 0, this calculation happens at the item location parameter (e.g., at the
-#'      category boundary).
-#'      When the type is "shift", this is the value added to the item location (delta dot)
-#'      as to create a uniform shift (DIF) for the group.
-#'  * group (string). The group found in `groups that should be perturbed.
-#'      note that if `groups` is not used in call to `genResponses` than this
-#'      value is ignored and all cases' responses are perturbed.
+#'  * `item` (integer). Which item in `itemParams` is affected.
+#'  * `type` (string). One of
+#'     * "discrimination" - multiplies the item's discrimination (column 4 of
+#'       the item matrix) by `factor`, and adds `pivot` to the delta dot.
+#'     * "shift" - adds `pivot` to the delta dot, creating a uniform shift in
+#'       the category characteristic curves (e.g., DIF for a group).
+#'  * `factor` (double). The multiplier applied to the discrimination when the
+#'      type is "discrimination". For example, if the item has discrimination of
+#'      1 and `factor` is 1.2, responses are generated assuming a discrimination
+#'      of 1.2. Ignored when the type is "shift".
+#'  * `pivot` (double). For "shift", the value added to the delta dot (column
+#'      2, rows 2 to k, of the item matrix), i.e., the size of the shift. For
+#'      "discrimination", its meaning depends on `pivotAt`.
+#'  * `group` (character vector, optional). The group(s) in `groups` whose
+#'      responses are perturbed, for example `"bfit"` or `c("g1", "g2")`. Omit
+#'      it, or use `NULL` or `NA`, to perturb all cases. Ignored (all cases are
+#'      perturbed) when `groups` is NULL. When elements are unnamed, every
+#'      element from the fifth onwards is treated as a group.
+#'  * `pivotAt` (string, optional, by name only). Used by "discrimination":
+#'     * "theta" (default) - `pivot` is added to the delta dot. The perturbed
+#'       and unperturbed curves of a dichotomous item then cross at
+#'       theta = pivot / (a * (factor - 1)), where `a` is the item's
+#'       discrimination. That is, the crossing point is on the theta scale,
+#'       does not depend on the item's location, and the item location moves
+#'       unless `pivot` is 0 and the item is centred at theta = 0.
+#'     * "item" - the discrimination is changed around a point `pivot` logits
+#'       from the item's location (its delta dot divided by its
+#'       discrimination). At that point the category probabilities of the
+#'       perturbed and unperturbed item are equal, for dichotomous and partial
+#'       credit items, so the item's location does not move. Use `pivot = 0` to
+#'       pivot at the item location.
+#'  * `shift` (double, optional, by name only, default 0). Used by
+#'      "discrimination": a value added to the delta dot after the
+#'      discrimination is changed, moving the item location without moving
+#'      the discrimination pivot relative to the original item. Use the
+#'      "shift" type to shift an item without changing its discrimination.
 #'
-#' @references  Adams, R. J., & Wright, B. D. (1994). When does misfit make a difference. 
+#'  An item can appear in more than one perturbation, for example to perturb it
+#'  differently for different groups. If two perturbations apply to the same
+#'  case and item, the later one is used, with a warning.
+#' @param debug A Boolean. If `TRUE`, returns a list holding the responses and
+#'   the intermediate data products of each step (see Value). Responses are
+#'   identical to those from `debug = FALSE` for the same seed.
+#'
+#' @references  Adams, R. J., & Wright, B. D. (1994). When does misfit make a difference.
 #'   In Objective Measurement Theory and Practice (Vol. 2). Ablex Publishing Corporation.
-#' @return A matrix, `n` cases by `i` items, of scored item responses.
-#' @seealso [conquestr::simplef()], `browseVignettes("conquestr")`
+#' @return If `debug = FALSE` (default), a matrix, `n` cases by `i` items, of
+#'   scored item responses. If `debug = TRUE`, a list with elements:
+#'
+#'   * `responses`: the matrix returned when `debug = FALSE`.
+#'   * `responsesComplete`: responses before MCAR missingness was applied.
+#'   * `missing`: a logical cases by items matrix, TRUE where [genMissingMCAR()]
+#'     selected the case-item pair to be missing.
+#'   * `inputs`: the standardised inputs returned by [genRespInputs()].
+#'   * `perturbations`: a data frame, one row per perturbation, returned by
+#'     [parsePerturbations()].
+#'   * `perturbedItems`: a list of perturbed item parameter matrices, one per row
+#'     of `perturbations`.
+#'   * `perturbMap`: an integer cases by items matrix returned by
+#'     [buildPerturbMap()]. 0 where the case received the unperturbed item,
+#'     otherwise the row of `perturbations` that was applied.
+#'   * `draws`: the uniform deviates used to draw each response
+#'     (NA where the ability is NA).
+#'   * `probs`: a list, one cases by categories matrix per item, of the category
+#'     probabilities used to draw each response (perturbed where applicable).
+#'   * `probsBase`: as `probs`, but under the unperturbed item parameters.
+#' @seealso [conquestr::simplef()], [genResponsesProbs()], `browseVignettes("conquestr")`
 #' @examples
 #'   myItem <- matrix(c(0, 0, 0, 0, 1, 1, 0, 1), ncol = 4, byrow = TRUE)
 #'   myItems <- list(myItem, myItem)
 #'   myItems[[2]][2, 2] <- -1 # make the second item delta equal to -1
 #'   myResponses <- genResponses(abilities = rnorm(100), itemParams = myItems)
+#'
+#'   # perturb item 2 for group "b" only, and keep the intermediate data
+#'   myGroups <- factor(sample(c("a", "b"), 100, replace = TRUE))
+#'   myPerturbations <- list(
+#'     list(item = 2L, type = "shift", pivot = 1, group = "b")
+#'   )
+#'   myDebug <- genResponses(
+#'     abilities = rnorm(100), groups = myGroups, itemParams = myItems,
+#'     perturbR = myPerturbations, debug = TRUE
+#'   )
+#'   head(genResponsesProbs(myDebug, items = 2))
 #' @importFrom stats runif
 genResponses <- function(
     abilities, groups = NULL, itemParams,
-    BMatrix = 1, mcarP = 0, perturbR = NULL
+    BMatrix = 1, mcarP = 0, perturbR = NULL, debug = FALSE
   ) {
 
-  # error checking
-  if (!is.list(itemParams)) {
+  if (!is.logical(debug) || length(debug) != 1 || is.na(debug)) {
+    stop("`debug` must be TRUE or FALSE")
+  }
+
+  inputs <- genRespInputs(abilities, groups, itemParams, BMatrix, mcarP)
+  perturbations <- parsePerturbations(perturbR, inputs$nItems, inputs$groups)
+  perturbedItems <- lapply(seq_len(nrow(perturbations)), function(i) {
+    perturbItem(
+      inputs$itemParams[[perturbations$item[i]]],
+      type = perturbations$type[i],
+      factor = perturbations$factor[i],
+      pivot = perturbations$pivot[i],
+      pivotAt = perturbations$pivotAt[i],
+      shift = perturbations$shift[i]
+    )
+  })
+  perturbMap <- buildPerturbMap(perturbations, inputs$groups, inputs$nCases, inputs$nItems)
+
+  generated <- genResponsesCpp(
+    inputs$abilities, inputs$itemParams, inputs$itemDim,
+    perturbedItems, perturbMap, debug
+  )
+
+  # drawn after the responses, so MCAR does not change the responses drawn
+  missing <- genMissingMCAR(inputs$nCases, inputs$nItems, mcarP)
+  responses <- generated$responses
+  responses[missing] <- NA
+
+  if (!debug) return(responses)
+
+  list(
+    responses = responses,
+    responsesComplete = generated$responses,
+    missing = missing,
+    inputs = inputs,
+    perturbations = perturbations,
+    perturbedItems = perturbedItems,
+    perturbMap = perturbMap,
+    draws = generated$draws,
+    probs = generated$probs,
+    probsBase = generated$probsBase
+  )
+}
+
+#' @title genRespInputs
+#'
+#' @description Step 1 of [genResponses()]. Validates and standardises the
+#'   inputs used to generate responses.
+#'
+#' @inheritParams genResponses
+#' @return A list with elements `abilities` (a cases by dimensions double
+#'   matrix), `groups` (a factor, or NULL), `itemParams` (a list of double
+#'   matrices), `itemDim` (an integer vector, the ability column used by each
+#'   item), `nCases`, and `nItems`.
+#' @keywords internal
+#' @seealso [genResponses()]
+genRespInputs <- function(abilities, groups = NULL, itemParams, BMatrix = 1, mcarP = 0) {
+  if (!is.list(itemParams) || length(itemParams) == 0) {
     stop(
       "`itemParams` should be a list of item params of the structure used in `simplef`"
     )
   }
-
-  # in unidimensional case myNCases could be a vector so coerce to matrix
-  myAbilitiesT <- as.matrix(abilities)
-  myNCases <- length(myAbilitiesT[, 1]) # can includes NAs - responses will all be NA
-  myNItems <- length(itemParams)
-  isMultDim <- FALSE
-  if (is.matrix(BMatrix) && ncol(as.matrix(BMatrix)) > 1) {
-      isMultDim <- TRUE
-      if (!all(rowSums(BMatrix) == 1)) stop("only between-item designs currently allowed")
-  }
-  # handle groups
-  isGroups <- FALSE
-  if (is.null(groups)) {
-    myGroups <- factor(rep(1, myNCases))
-  } else {
-    if (!is.factor(groups)) groups <- as.factor(groups) # attempt to cast to factor
-    if (!is.factor(groups) || length(groups) != myNCases) {
+  for (j in seq_along(itemParams)) {
+    item <- as.matrix(itemParams[[j]])
+    if (!is.numeric(item) || ncol(item) < 3 || nrow(item) < 2) {
       stop(
-        "groups must be the same length as the number of cases in abilities
-        and must be of type factor"
+        "item ", j, " in `itemParams` must be a numeric matrix with at least ",
+        "2 rows (categories) and 3 columns (score, delta dot, tau)"
       )
     }
-    isGroups <- TRUE
-    myGroups <- groups
+    storage.mode(item) <- "double"
+    itemParams[[j]] <- item
   }
-  # handle perturbations
-  myNperturb <- 0 # how many perturbed items?
-  myPerturbI <- NULL # which items are perturbed?
-  if (!is.null(perturbR)) {
-    myNperturb <- length(perturbR)
-    for (i in seq(perturbR)) {
-      tmpI <- as.integer(perturbR[[i]][1])
-      if (!is.integer(tmpI)) {
-        stop(
-          paste0(
-            "item number in perturbR must be integer, problem with element ",
-            i,
-            " in list of perturbations and the value: ",
-            tmpI
-          )
-        )
-      }
-      if (!perturbR[[i]][2] %in% c("discrimination", "shift")) {
-        stop(
-          paste0(
-            "type of perturbation must be one of 'discrimination' or 'shift', 
-            problem with element ",
-            i,
-            " in list of perturbations and value: ",
-            perturbR[[i]][2]
-          )
-        )
-      }
-      if (!tmpI %in% seq_len(myNItems)) {
-        stop(
-          paste0(
-            "item number in perturbR must refer to an item in `itemParams`, problem with element ",
-            i
-          )
-        )
-      }
-      myPerturbI <- c(myPerturbI, tmpI)
-    }
-  }
+  nItems <- length(itemParams)
 
-  # ability column used by each item
-  if (isMultDim) {
-    myItemDim <- apply(BMatrix, 1, function(r) which(r == 1))
+  # in the unidimensional case abilities can be a vector, so coerce to matrix
+  abilities <- as.matrix(abilities)
+  storage.mode(abilities) <- "double"
+  nCases <- nrow(abilities) # can include NAs - responses will all be NA
+
+  if (is.matrix(BMatrix) && ncol(BMatrix) > 1) {
+    if (nrow(BMatrix) != nItems) {
+      stop("`BMatrix` must have one row per item in `itemParams`")
+    }
+    if (!all(rowSums(BMatrix) == 1)) stop("only between-item designs currently allowed")
+    itemDim <- as.integer(apply(BMatrix, 1, function(r) which(r == 1)))
   } else {
-    myItemDim <- rep(1L, myNItems)
+    itemDim <- rep(1L, nItems)
   }
 
-  # perturbed item matrices, and which cases receive them
-  # (when an item appears more than once in perturbR, the last entry is used)
-  myPerturbIdx <- integer(myNItems)
-  myPerturbItems <- list()
-  myPerturbCase <- matrix(FALSE, 0, 0)
-  if (myNperturb > 0) {
-    myPerturbCase <- matrix(TRUE, myNCases, myNperturb)
-    for (i in seq_len(myNperturb)) {
-      thisPerturb <- perturbR[[i]]
-      tmpI <- itemParams[[myPerturbI[i]]]
-      nCats <- nrow(tmpI)
-      if (thisPerturb[[2]] == "discrimination") {
-        tmpI[, 4] <- tmpI[, 4] * as.numeric(thisPerturb[[3]])
-      }
-      # any value in perturbation[3] is ignored for "shift"
-      tmpI[2:nCats, 2] <- tmpI[2:nCats, 2] + as.numeric(thisPerturb[[4]])
-      myPerturbItems[[i]] <- tmpI
-      myPerturbIdx[myPerturbI[i]] <- i
-      if (isGroups) {
-        myPerturbCase[, i] <- as.character(myGroups) %in% as.character(thisPerturb[[5]])
-      }
+  if (!is.null(groups)) {
+    if (!is.factor(groups)) groups <- as.factor(groups)
+    if (length(groups) != nCases) {
+      stop("`groups` must be the same length as the number of cases in `abilities`")
     }
   }
 
-  storage.mode(myAbilitiesT) <- "double"
-  myResponses <- genResponsesCpp(
-    myAbilitiesT, lapply(itemParams, as.matrix), as.integer(myItemDim),
-    myPerturbItems, myPerturbIdx, myPerturbCase
-  )
-
-  # add missing if requested
-  if (mcarP > 0) {
-    myRand2 <- matrix(runif(myNCases * myNItems), myNCases, myNItems)
-    myResponses[myRand2 > (1 - mcarP)] <- NA
+  if (!is.numeric(mcarP) || length(mcarP) != 1 || is.na(mcarP) || mcarP < 0 || mcarP > 1) {
+    stop("`mcarP` must be a single number between 0 and 1")
   }
 
-  return(myResponses)
+  list(
+    abilities = abilities,
+    groups = groups,
+    itemParams = itemParams,
+    itemDim = itemDim,
+    nCases = nCases,
+    nItems = nItems
+  )
+}
+
+#' @title parsePerturbations
+#'
+#' @description Step 2 of [genResponses()]. Validates a list of perturbations
+#'   and returns it in a standard form.
+#'
+#' @param perturbR A list of perturbations, as described in [genResponses()].
+#' @param nItems An integer, the number of items in `itemParams`.
+#' @param groups A factor allocating each case to a group, or NULL. Used to
+#'   check that the groups named in `perturbR` exist.
+#' @return A data frame with one row per perturbation and columns `item`,
+#'   `type`, `factor` (NA for "shift"), `pivot`, `pivotAt` (NA for "shift"),
+#'   `shift` (0 for "shift"), and `group` (a list column; NA means all cases).
+#' @keywords internal
+#' @seealso [genResponses()]
+parsePerturbations <- function(perturbR, nItems, groups = NULL) {
+  fields <- c("item", "type", "factor", "pivot", "group")
+  out <- data.frame(
+    item = integer(), type = character(), factor = numeric(), pivot = numeric(),
+    pivotAt = character(), shift = numeric()
+  )
+  out$group <- I(list())
+  if (is.null(perturbR) || length(perturbR) == 0) return(out)
+  if (!is.list(perturbR)) stop("`perturbR` must be a list of perturbations")
+
+  isNumber <- function(x) {
+    x <- suppressWarnings(as.numeric(unlist(x)))
+    length(x) == 1 && is.finite(x)
+  }
+
+  rows <- vector("list", length(perturbR))
+  for (i in seq_along(perturbR)) {
+    p <- as.list(perturbR[[i]])
+    where <- paste0(" (element ", i, " of `perturbR`)")
+    nms <- names(p)
+    byName <- !is.null(nms) && any(nms %in% fields)
+    getField <- function(name) {
+      if (byName) return(p[[name]]) # NULL if absent
+      pos <- match(name, fields)
+      if (length(p) < pos) return(NULL)
+      if (name == "group") return(unlist(p[pos:length(p)]))
+      p[[pos]]
+    }
+
+    item <- suppressWarnings(as.integer(unlist(getField("item"))))
+    if (length(item) != 1 || is.na(item) || !item %in% seq_len(nItems)) {
+      stop("`item` must be a single item number between 1 and ", nItems, where)
+    }
+
+    type <- as.character(unlist(getField("type")))
+    if (length(type) != 1 || !type %in% c("discrimination", "shift")) {
+      stop("`type` must be one of 'discrimination' or 'shift'", where)
+    }
+
+    factor <- NA_real_
+    if (type == "discrimination") {
+      if (!isNumber(getField("factor"))) stop("`factor` must be a single number", where)
+      factor <- as.numeric(unlist(getField("factor")))
+    }
+
+    if (!isNumber(getField("pivot"))) stop("`pivot` must be a single number", where)
+    pivot <- as.numeric(unlist(getField("pivot")))
+
+    # pivotAt and shift are only available by name
+    pivotAt <- NA_character_
+    shift <- 0
+    if (byName) {
+      if (type == "shift" && (!is.null(p$pivotAt) || !is.null(p$shift))) {
+        stop("`pivotAt` and `shift` are only used by type 'discrimination'", where)
+      }
+      if (!is.null(p$shift)) {
+        if (!isNumber(p$shift)) stop("`shift` must be a single number", where)
+        shift <- as.numeric(unlist(p$shift))
+      }
+    }
+    if (type == "discrimination") {
+      pivotAt <- if (byName && !is.null(p$pivotAt)) as.character(unlist(p$pivotAt)) else "theta"
+      if (length(pivotAt) != 1 || !pivotAt %in% c("theta", "item")) {
+        stop("`pivotAt` must be one of 'theta' or 'item'", where)
+      }
+    }
+
+    group <- as.character(unlist(getField("group")))
+    if (length(group) == 0 || all(is.na(group))) {
+      group <- NA_character_
+    } else {
+      if (anyNA(group)) stop("`group` cannot mix NA with group names", where)
+      group <- unique(group)
+      if (!is.null(groups)) {
+        unknown <- setdiff(group, levels(groups))
+        if (length(unknown) > 0) {
+          stop(
+            "`group` refers to group(s) not found in `groups`: ",
+            paste0("'", unknown, "'", collapse = ", "), where
+          )
+        }
+      }
+    }
+
+    rows[[i]] <- list(
+      item = item, type = type, factor = factor, pivot = pivot,
+      pivotAt = pivotAt, shift = shift, group = group
+    )
+  }
+
+  out <- data.frame(
+    item = vapply(rows, function(r) r$item, integer(1)),
+    type = vapply(rows, function(r) r$type, character(1)),
+    factor = vapply(rows, function(r) r$factor, numeric(1)),
+    pivot = vapply(rows, function(r) r$pivot, numeric(1)),
+    pivotAt = vapply(rows, function(r) r$pivotAt, character(1)),
+    shift = vapply(rows, function(r) r$shift, numeric(1))
+  )
+  out$group <- I(lapply(rows, function(r) r$group))
+  out
+}
+
+#' @title perturbItem
+#'
+#' @description Step 3 of [genResponses()]. Returns the item parameters after
+#'   applying one perturbation.
+#'
+#' @param item An item matrix of the structure used in `simplef`
+#'   (k categories by score, delta dot, tau, and discrimination).
+#' @param type A string, "discrimination" or "shift".
+#' @param factor A double, the multiplier applied to the discrimination
+#'   (column 4) when `type` is "discrimination". Ignored for "shift".
+#' @param pivot A double. For "shift", and for "discrimination" with
+#'   `pivotAt = "theta"`, it is added to the delta dot (column 2, rows 2 to k).
+#'   For "discrimination" with `pivotAt = "item"`, it is the distance, in
+#'   logits, from the item location to the point around which the
+#'   discrimination is changed.
+#' @param pivotAt A string, "theta" (default) or "item". See [genResponses()].
+#'   Ignored for "shift".
+#' @param shift A double, added to the delta dot after the discrimination is
+#'   changed. Ignored for "shift" (use `pivot`).
+#' @return The perturbed item matrix.
+#' @keywords internal
+#' @seealso [genResponses()]
+#' @examples
+#' myItem <- matrix(c(0, 0, 0, 1, 1, 0.5, 0, 1), ncol = 4, byrow = TRUE)
+#' perturbItem(myItem, type = "discrimination", factor = 2, pivot = 0)
+#' # pivot at the item location (0.5), so the location does not move
+#' perturbItem(myItem, type = "discrimination", factor = 2, pivot = 0, pivotAt = "item")
+perturbItem <- function(item, type, factor = 1, pivot = 0, pivotAt = "theta", shift = 0) {
+  item <- as.matrix(item)
+  nCats <- nrow(item)
+  if (nCats < 2) stop("`item` must have at least 2 categories")
+  steps <- 2:nCats # the first category's delta is a placeholder (always 0)
+  if (type == "shift") {
+    item[steps, 2] <- item[steps, 2] + pivot
+    return(item)
+  }
+  if (type != "discrimination") stop("`type` must be one of 'discrimination' or 'shift'")
+  if (!pivotAt %in% c("theta", "item")) stop("`pivotAt` must be one of 'theta' or 'item'")
+  if (ncol(item) < 4) item <- cbind(item, 1)
+
+  if (pivotAt == "theta") {
+    deltaChange <- rep(pivot, nCats - 1)
+  } else {
+    # The category logit is a_k * x_k * theta - sum_{j <= k} (delta_j + tau_j).
+    # Multiplying a by `factor` and adding (factor - 1) * a_k * x_k * theta0 to
+    # the cumulative deltas leaves every category logit, and so every category
+    # probability, unchanged at theta0.
+    location <- mean(item[steps, 2] / item[steps, 4])
+    theta0 <- location + pivot
+    cumChange <- (factor - 1) * item[, 4] * item[, 1] * theta0
+    deltaChange <- diff(cumChange)
+  }
+  item[, 4] <- item[, 4] * factor
+  item[steps, 2] <- item[steps, 2] + deltaChange + shift
+  item
+}
+
+#' @title buildPerturbMap
+#'
+#' @description Step 4 of [genResponses()]. Decides which perturbation (if any)
+#'   applies to each case-item pair.
+#'
+#' @param perturbations A data frame returned by [parsePerturbations()].
+#' @param groups A factor allocating each case to a group, or NULL. When NULL,
+#'   every perturbation applies to all cases.
+#' @param nCases An integer, the number of cases.
+#' @param nItems An integer, the number of items.
+#' @return An integer cases by items matrix: 0 where the case receives the
+#'   unperturbed item, otherwise the row of `perturbations` that applies.
+#'   Where perturbations overlap, the later one is used, with a warning.
+#' @keywords internal
+#' @seealso [genResponses()]
+buildPerturbMap <- function(perturbations, groups, nCases, nItems) {
+  perturbMap <- matrix(0L, nCases, nItems)
+  for (i in seq_len(nrow(perturbations))) {
+    group <- perturbations$group[[i]]
+    if (is.null(groups) || all(is.na(group))) {
+      cases <- rep(TRUE, nCases)
+    } else {
+      cases <- as.character(groups) %in% group
+    }
+    j <- perturbations$item[i]
+    overlap <- cases & perturbMap[, j] > 0L
+    if (any(overlap)) {
+      warning(
+        "perturbation(s) ", paste(unique(perturbMap[overlap, j]), collapse = ", "),
+        " and ", i, " both apply to item ", j, " for ", sum(overlap),
+        " case(s); perturbation ", i, " is used",
+        call. = FALSE
+      )
+    }
+    perturbMap[cases, j] <- i
+  }
+  perturbMap
+}
+
+#' @title genMissingMCAR
+#'
+#' @description Step 6 of [genResponses()]. Selects case-item pairs to set to
+#'   missing, completely at random.
+#'
+#' @param nCases An integer, the number of cases.
+#' @param nItems An integer, the number of items.
+#' @param mcarP A double, the probability that each case-item pair is missing.
+#' @return A logical cases by items matrix, TRUE where the response is missing.
+#' @keywords internal
+#' @seealso [genResponses()]
+#' @importFrom stats runif
+genMissingMCAR <- function(nCases, nItems, mcarP = 0) {
+  if (mcarP <= 0) return(matrix(FALSE, nCases, nItems))
+  matrix(runif(nCases * nItems), nCases, nItems) > (1 - mcarP)
+}
+
+#' @title genResponsesProbs
+#'
+#' @description Tabulates the response probabilities used by [genResponses()]
+#'   for each case, item, and category, alongside the probabilities under the
+#'   unperturbed item. Use it to check that perturbations were applied to the
+#'   intended cases, and by the intended amount.
+#'
+#' @param x The list returned by `genResponses(..., debug = TRUE)`.
+#' @param items An integer vector of the items to include. Defaults to all items.
+#' @return A data frame with one row per case, item, and category, and columns:
+#'   `case`, `item`, `group`, `theta`, `perturbation` (0 if unperturbed,
+#'   otherwise the row of `x$perturbations` applied), `category`, `score`,
+#'   `prob` (used to draw the response), `probBase` (under the unperturbed
+#'   item), `draw` (the uniform deviate), and `response` (before MCAR
+#'   missingness).
+#' @seealso [genResponses()]
+#' @examples
+#' myItem <- matrix(c(0, 0, 0, 1, 1, 0.5, 0, 1), ncol = 4, byrow = TRUE)
+#' myDebug <- genResponses(
+#'   abilities = rnorm(10), itemParams = list(myItem),
+#'   perturbR = list(list(item = 1L, type = "shift", pivot = 1)), debug = TRUE
+#' )
+#' genResponsesProbs(myDebug)
+genResponsesProbs <- function(x, items = NULL) {
+  need <- c("inputs", "perturbMap", "probs", "probsBase", "draws", "responsesComplete")
+  if (!is.list(x) || !all(need %in% names(x))) {
+    stop("`x` must be the list returned by `genResponses(..., debug = TRUE)`")
+  }
+  inputs <- x$inputs
+  if (is.null(items)) items <- seq_len(inputs$nItems)
+  if (!all(items %in% seq_len(inputs$nItems))) {
+    stop("`items` must be item numbers between 1 and ", inputs$nItems)
+  }
+
+  out <- lapply(items, function(j) {
+    nCats <- ncol(x$probs[[j]])
+    expandCase <- function(v) rep(v, times = nCats)
+    data.frame(
+      case = expandCase(seq_len(inputs$nCases)),
+      item = j,
+      group = if (is.null(inputs$groups)) NA else expandCase(inputs$groups),
+      theta = expandCase(inputs$abilities[, inputs$itemDim[j]]),
+      perturbation = expandCase(x$perturbMap[, j]),
+      category = rep(seq_len(nCats), each = inputs$nCases),
+      score = rep(inputs$itemParams[[j]][, 1], each = inputs$nCases),
+      prob = as.vector(x$probs[[j]]),
+      probBase = as.vector(x$probsBase[[j]]),
+      draw = expandCase(x$draws[, j]),
+      response = expandCase(x$responsesComplete[, j])
+    )
+  })
+  out <- do.call(rbind, out)
+  out <- out[order(out$item, out$case, out$category), ]
+  rownames(out) <- NULL
+  out
 }
 
 #' @title perturbResp
@@ -186,77 +526,40 @@ genResponses <- function(
 #' @description Perturbs a response given specified (item) misfit to implied model.
 #'
 #' @param ability a double - the location of the person on the measure.
-#' @param item a matrix - the item parameters in the format required by 
-#'   `conquestr::simplef` 
-#' @param group a string - the group this case belongs to. If NULL, the case is 
+#' @param item a matrix - the item parameters in the format required by
+#'   `conquestr::simplef`
+#' @param group a string - the group this case belongs to. If NULL, the case is
 #'   always in this group.
-#' @param perturbation A matrix - the description of the way this item should be 
-#'   perturbed. In the format required by `conquestr::genResponses` 
+#' @param perturbation A list - the description of the way this item should be
+#'   perturbed. In the (unnamed) format described in `conquestr::genResponses`
 #' @return A double - the observed response.
 #' @keywords internal
-#' @seealso [conquestr::simplef()], [conquestr::genResponses()], 
-#'   `browseVignettes("conquestr")`
+#' @seealso [conquestr::simplef()], [conquestr::genResponses()],
+#'   [perturbItem()], `browseVignettes("conquestr")`
 #' @examples
-#' myN <- 250
-#' myMean <- 0
-#' mySd <- 2
-#' myGroups <- c("gfit", "bfit")
-#' myAbilities <- rnorm(myN, myMean, mySd)
-#' # students with large weights and unperturbed responses (good fit)
-#' #   and students with small weights and perturbed responses (bad fit)
-#' myData <- data.frame(
-#'   ability = myAbilities,
-#'   group = factor(sample(x = myGroups, size = myN, replace = TRUE))
-#' )
-#' myData$weight <- ifelse(myData$group == myGroups[1], 1, 0.001)
-#' myItems <- list()
-#' myItems[[1]] <- matrix(c(
+#' myItem <- matrix(c(
 #'   0, 0, 0   , 1,
 #'   1, 1, -0.2, 1,
 #'   2, 1, 0.2 , 1
 #' ), ncol = 4, byrow = TRUE)
-#' myPerturbations<- list()
-#' myPerturbations[[1]] <- list()
-#' myPerturbations[[1]] <- append(myPerturbations[[1]], 1L)
-#' myPerturbations[[1]] <- append(myPerturbations[[1]], "discrimination")
-#' myPerturbations[[1]] <- append(myPerturbations[[1]],  0.50)
-#' myPerturbations[[1]] <- append(myPerturbations[[1]], 0)
-#' myPerturbations[[1]] <- append(myPerturbations[[1]], "bfit")
-#' names(myPerturbations[[1]]) <- c("item", "type", "factor", "pivot", "group")
-#' myResponses <- genResponses(
-#'     abilities = myData$ability, itemParams = myItems, perturbR = myPerturbations,
-#'     groups = myData$group
-#' )
+#' perturbResp(0, myItem, "bfit", list(1L, "discrimination", 0.5, 0, "bfit"))
 #' @importFrom stats runif
 perturbResp <- function(ability, item, group, perturbation) {
+  perturbation <- as.list(perturbation)
+  pGroup <- NA_character_
+  if (length(perturbation) >= 5) pGroup <- unlist(perturbation[5:length(perturbation)])
 
-  # Is this case is in the group to be perturbed?
-  caseIsInGroup <- FALSE
-  if (is.null(group) || group == perturbation[5]) caseIsInGroup <- TRUE
+  # Is this case in a group to be perturbed?
+  caseIsInGroup <- is.null(group) || all(is.na(pGroup)) || group %in% pGroup
+  if (!caseIsInGroup) return(itemResp(ability, item))
 
-  if (!caseIsInGroup) {
-    thisResp <- itemResp(ability, item)
-  } else {
-    # work through the allowed perturbation types
-    if (perturbation[2] == "discrimination") {
-      tmpI <- item
-      nCats <- length(tmpI[ , 2])
-      tFac <- as.numeric(perturbation[3])
-      tPivot <- as.numeric(perturbation[4])
-      tmpI[, 4] <- tmpI[, 4] * tFac
-      tmpI[(2:nCats), 2] <- tmpI[(2:nCats), 2] + tPivot
-      thisResp <- itemResp(ability, tmpI)
-    } 
-    if (perturbation[2] == "shift") {
-      tmpI <- item
-      nCats <- length(tmpI[ , 2])
-      # any value in perturbation[3] is ignored
-      tPivot <- as.numeric(perturbation[4])
-      tmpI[(2:nCats), 2] <- tmpI[(2:nCats), 2] + tPivot
-      thisResp <- itemResp(ability, tmpI)
-    } 
-  }
-  return(thisResp)
+  tmpI <- perturbItem(
+    item,
+    type = perturbation[[2]],
+    factor = as.numeric(perturbation[[3]]),
+    pivot = as.numeric(perturbation[[4]])
+  )
+  itemResp(ability, tmpI)
 }
 
 

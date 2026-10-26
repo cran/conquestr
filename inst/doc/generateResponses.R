@@ -235,3 +235,84 @@ myCCC_item3c <- plotCCC(
 )
 plot(myCCC_item3c)
 
+## ----debugGen-----------------------------------------------------------------
+set.seed(4086)
+myN3 <- 1500
+myData3 <- data.frame(
+  ability = rnorm(myN3, 0, 1.5),
+  group = factor(sample(c("g1", "g2", "g3"), myN3, replace = TRUE))
+)
+
+myPerturbations3 <- list(
+  list(item = 2L, type = "discrimination", factor = 2, pivot = 0, group = c("g2", "g3")),
+  list(item = 6L, type = "shift", pivot = 2)
+)
+
+myDebug <- genResponses(
+  abilities = myData3$ability, groups = myData3$group, itemParams = myItems,
+  perturbR = myPerturbations3, debug = TRUE
+)
+
+myDebug$perturbations
+
+## ----debugMap-----------------------------------------------------------------
+table(group = myData3$group, item2 = myDebug$perturbMap[, 2])
+table(group = myData3$group, item6 = myDebug$perturbMap[, 6])
+
+## ----debugProbs---------------------------------------------------------------
+myProbs <- genResponsesProbs(myDebug, items = 2)
+head(myProbs)
+
+## ----debugProbsCheck----------------------------------------------------------
+myProbs |>
+  group_by(group, perturbation) |>
+  summarise(
+    cases = n_distinct(case),
+    maxAbsDiff = max(abs(prob - probBase)),
+    .groups = "drop"
+  )
+
+## ----debugPivotItem, fig.width=7, fig.height=4--------------------------------
+myDebugItem <- genResponses(
+  abilities = myData3$ability, groups = myData3$group, itemParams = myItems,
+  perturbR = list(
+    list(
+      item = 2L, type = "discrimination", factor = 2, pivot = 0,
+      pivotAt = "item", group = c("g2", "g3")
+    )
+  ),
+  debug = TRUE
+)
+myProbsItem <- genResponsesProbs(myDebugItem, items = 2)
+
+ggplot(
+  bind_rows(
+    mutate(myProbsItem, probability = prob, source = "perturbed (used)"),
+    mutate(myProbsItem, probability = probBase, source = "unperturbed")
+  ),
+  aes(theta, probability, colour = factor(score), linetype = source)
+) +
+  geom_line() +
+  facet_wrap(vars(group)) +
+  labs(
+    x = "ability (theta)", y = "probability", colour = "category score",
+    linetype = NULL
+  )
+
+## ----debugPlot, fig.width=7, fig.height=4-------------------------------------
+myProbsLong <- bind_rows(
+  mutate(myProbs, probability = prob, source = "perturbed (used)"),
+  mutate(myProbs, probability = probBase, source = "unperturbed")
+)
+
+ggplot(
+  myProbsLong,
+  aes(theta, probability, colour = factor(score), linetype = source)
+) +
+  geom_line() +
+  facet_wrap(vars(group)) +
+  labs(
+    x = "ability (theta)", y = "probability", colour = "category score",
+    linetype = NULL
+  )
+

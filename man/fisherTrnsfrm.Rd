@@ -2,16 +2,38 @@
 % Please edit documentation in R/residHelpers.R
 \name{fisherTrnsfrm}
 \alias{fisherTrnsfrm}
-\title{fisherTrnsfrm}
+\title{Fisher z-transform a correlation matrix}
 \usage{
 fisherTrnsfrm(myCorMat)
 }
 \arguments{
-\item{myCorMat}{A correlation matrix.}
+\item{myCorMat}{A correlation matrix (unit diagonal, no missing values).}
 }
 \value{
-A correlation matrix with Fisher's transform applied to values -1 > x > 1.
+A matrix of the same dimensions with \eqn{z_{ij}} off the diagonal
+and 1 on the diagonal.
 }
 \description{
-Helper function to apply Fisher's transformation to a correlation matrix.
+Applies Fisher's (1915) variance-stabilising transformation to
+the off-diagonal elements of a correlation matrix.
+}
+\details{
+Each off-diagonal correlation is mapped to
+\deqn{z_{ij} = \operatorname{artanh}(r_{ij}) = \frac{1}{2}\ln\frac{1 + r_{ij}}{1 - r_{ij}}, \quad i \neq j.}{z_ij = atanh(r_ij) = 0.5 * log((1 + r_ij) / (1 - r_ij)).}
+For bivariate-normal data with population correlation \eqn{\rho},
+\eqn{z_{ij}} is approximately normal with mean \eqn{\operatorname{artanh}(\rho)}
+and variance \eqn{1/(N-3)}, independent of \eqn{\rho}.
+
+Since \eqn{\operatorname{artanh}(\pm 1) = \pm\infty}, off-diagonal values with
+\eqn{|r_{ij}| \ge 1 - 10^{-7}} are first truncated to \eqn{\pm(1 - 10^{-7})}
+(giving \eqn{|z_{ij}| \approx 8.4}) and a warning is issued. The diagonal is
+left at 1 and is not meaningful on the z scale.
+}
+\references{
+Fisher, R. A. (1915). Frequency distribution of the values of the
+correlation coefficient in samples from an indefinitely large population.
+\emph{Biometrika, 10}(4), 507--521. \doi{10.2307/2331838}
+}
+\seealso{
+\code{\link[=q3ExpCorrect]{q3ExpCorrect()}}, \code{\link[=steigerStat]{steigerStat()}}
 }

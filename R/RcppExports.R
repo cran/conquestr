@@ -17,19 +17,89 @@ simplepCpp <- function(theta, item, muraki = FALSE, D = 1.0) {
 #'
 #' Loops over cases (outer) and items (inner), drawing one uniform deviate per
 #' non-missing case-item pair, in the same order as the original R implementation.
+#' Debug output reuses the same deviates, so it does not change the responses.
 #'
 #' @param abilities A cases by dimensions NumericMatrix.
 #' @param itemParams A list of item matrices (see `simplep`).
 #' @param itemDim An IntegerVector (1-based), the ability column for each item.
 #' @param perturbItems A list of perturbed item matrices.
-#' @param perturbIdx An IntegerVector of length `length(itemParams)`; 0 if the item
-#'   is not perturbed, otherwise a 1-based index into `perturbItems`.
-#' @param perturbCase A cases by `length(perturbItems)` LogicalMatrix; TRUE where
-#'   the case receives the perturbed item.
-#' @return A cases by items NumericMatrix of responses.
+#' @param perturbMap A cases by items IntegerMatrix; 0 where the case-item uses
+#'   the unperturbed item, otherwise a 1-based index into `perturbItems`.
+#' @param debug A Boolean. If TRUE, also return the uniform deviates and the
+#'   category probabilities used, and those under the unperturbed item.
+#' @return A list with element `responses` (a cases by items NumericMatrix).
+#'   When `debug` is TRUE, also `draws` (cases by items), and `probs` and
+#'   `probsBase` (lists, one cases by categories matrix per item).
 #' @keywords internal
-genResponsesCpp <- function(abilities, itemParams, itemDim, perturbItems, perturbIdx, perturbCase) {
-    .Call('_conquestr_genResponsesCpp', PACKAGE = 'conquestr', abilities, itemParams, itemDim, perturbItems, perturbIdx, perturbCase)
+genResponsesCpp <- function(abilities, itemParams, itemDim, perturbItems, perturbMap, debug = FALSE) {
+    .Call('_conquestr_genResponsesCpp', PACKAGE = 'conquestr', abilities, itemParams, itemDim, perturbItems, perturbMap, debug)
+}
+
+#' Compute a weighted statistic over plausible values and replicate weights
+#'
+#' Internal workhorse for [pvStat()]. For each plausible value (column of `pv`)
+#' and each weight vector (the full-sample weight followed by each replicate
+#' weight), computes the requested statistic.
+#'
+#' @param pv A numeric matrix, n cases by M plausible values.
+#' @param wts A numeric matrix, n cases by (R + 1) weights. Column 1 is the
+#'   full-sample weight, columns 2..(R + 1) are the replicate weights.
+#' @param stat An integer statistic code: 1 mean, 2 variance, 3 SD,
+#'   4 quantile, 5 sum of weights, 6 IQR.
+#' @param prob A double in \[0, 1\], used when `stat == 4`.
+#' @return A numeric matrix, M by (R + 1), of estimates.
+#' @keywords internal
+pvRepStatCpp <- function(pv, wts, stat, prob) {
+    .Call('_conquestr_pvRepStatCpp', PACKAGE = 'conquestr', pv, wts, stat, prob)
+}
+
+#' Weighted least squares over PVs and replicate weights
+#'
+#' Internal workhorse for [pvRegression()]. The normal equations are formed
+#' and Cholesky-factored once per weight and reused for every PV.
+#'
+#' @param X A numeric design matrix, n by p (including intercept if wanted).
+#' @param pv A numeric matrix, n cases by M plausible values (outcomes).
+#' @param wts A numeric matrix, n cases by (R + 1) weights (full-sample first).
+#' @return A numeric array, (p + 1) by M by (R + 1): rows 1..p are the
+#'   coefficients, row p + 1 is the weighted R-squared.
+#' @keywords internal
+pvRepRegCpp <- function(X, pv, wts) {
+    .Call('_conquestr_pvRepRegCpp', PACKAGE = 'conquestr', X, pv, wts)
+}
+
+#' Weighted correlation matrices across PV dimensions, per PV and weight
+#'
+#' Internal workhorse for [pvCorMatrix()]. PVs are paired by index across
+#' dimensions: the m-th PV of each dimension is used together.
+#'
+#' @param pv A numeric matrix, n cases by (D * M) columns, ordered by
+#'   dimension then PV: column `d * M + m` (0-based) is PV m of dimension d.
+#' @param wts A numeric matrix, n cases by (R + 1) weights (full-sample first).
+#' @param D Number of dimensions.
+#' @param M Number of PVs per dimension.
+#' @return A numeric array, P by M by (R + 1), where P = D (D - 1) / 2 and
+#'   rows are the lower-triangle pairs in column-major order
+#'   ((2,1), (3,1), ..., (D,1), (3,2), ...).
+#' @keywords internal
+pvRepCorMatCpp <- function(pv, wts, D, M) {
+    .Call('_conquestr_pvRepCorMatCpp', PACKAGE = 'conquestr', pv, wts, D, M)
+}
+
+#' Weighted covariance matrices across PV dimensions, per PV and weight
+#'
+#' Internal workhorse for [pvCovMatrix()]. PVs are paired by index across
+#' dimensions, as in [pvRepCorMatCpp()]. Covariances use the same
+#' n / (n - 1) correction as the weighted variance in [pvRepStatCpp()], where
+#' n is the number of cases with positive weight.
+#'
+#' @inheritParams pvRepCorMatCpp
+#' @return A numeric array, P by M by (R + 1), where P = D (D + 1) / 2 and
+#'   rows are the lower triangle *including the diagonal* in column-major
+#'   order ((1,1), (2,1), ..., (D,1), (2,2), (3,2), ...).
+#' @keywords internal
+pvRepCovMatCpp <- function(pv, wts, D, M) {
+    .Call('_conquestr_pvRepCovMatCpp', PACKAGE = 'conquestr', pv, wts, D, M)
 }
 
 .cqReaderNew <- function(x) {

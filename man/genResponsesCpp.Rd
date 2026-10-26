@@ -9,8 +9,8 @@ genResponsesCpp(
   itemParams,
   itemDim,
   perturbItems,
-  perturbIdx,
-  perturbCase
+  perturbMap,
+  debug = FALSE
 )
 }
 \arguments{
@@ -22,17 +22,20 @@ genResponsesCpp(
 
 \item{perturbItems}{A list of perturbed item matrices.}
 
-\item{perturbIdx}{An IntegerVector of length \code{length(itemParams)}; 0 if the item
-is not perturbed, otherwise a 1-based index into \code{perturbItems}.}
+\item{perturbMap}{A cases by items IntegerMatrix; 0 where the case-item uses
+the unperturbed item, otherwise a 1-based index into \code{perturbItems}.}
 
-\item{perturbCase}{A cases by \code{length(perturbItems)} LogicalMatrix; TRUE where
-the case receives the perturbed item.}
+\item{debug}{A Boolean. If TRUE, also return the uniform deviates and the
+category probabilities used, and those under the unperturbed item.}
 }
 \value{
-A cases by items NumericMatrix of responses.
+A list with element \code{responses} (a cases by items NumericMatrix).
+When \code{debug} is TRUE, also \code{draws} (cases by items), and \code{probs} and
+\code{probsBase} (lists, one cases by categories matrix per item).
 }
 \description{
 Loops over cases (outer) and items (inner), drawing one uniform deviate per
 non-missing case-item pair, in the same order as the original R implementation.
+Debug output reuses the same deviates, so it does not change the responses.
 }
 \keyword{internal}

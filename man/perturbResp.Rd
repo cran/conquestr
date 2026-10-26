@@ -15,8 +15,8 @@ perturbResp(ability, item, group, perturbation)
 \item{group}{a string - the group this case belongs to. If NULL, the case is
 always in this group.}
 
-\item{perturbation}{A matrix - the description of the way this item should be
-perturbed. In the format required by \code{conquestr::genResponses}}
+\item{perturbation}{A list - the description of the way this item should be
+perturbed. In the (unnamed) format described in \code{conquestr::genResponses}}
 }
 \value{
 A double - the observed response.
@@ -25,39 +25,15 @@ A double - the observed response.
 Perturbs a response given specified (item) misfit to implied model.
 }
 \examples{
-myN <- 250
-myMean <- 0
-mySd <- 2
-myGroups <- c("gfit", "bfit")
-myAbilities <- rnorm(myN, myMean, mySd)
-# students with large weights and unperturbed responses (good fit)
-#   and students with small weights and perturbed responses (bad fit)
-myData <- data.frame(
-  ability = myAbilities,
-  group = factor(sample(x = myGroups, size = myN, replace = TRUE))
-)
-myData$weight <- ifelse(myData$group == myGroups[1], 1, 0.001)
-myItems <- list()
-myItems[[1]] <- matrix(c(
+myItem <- matrix(c(
   0, 0, 0   , 1,
   1, 1, -0.2, 1,
   2, 1, 0.2 , 1
 ), ncol = 4, byrow = TRUE)
-myPerturbations<- list()
-myPerturbations[[1]] <- list()
-myPerturbations[[1]] <- append(myPerturbations[[1]], 1L)
-myPerturbations[[1]] <- append(myPerturbations[[1]], "discrimination")
-myPerturbations[[1]] <- append(myPerturbations[[1]],  0.50)
-myPerturbations[[1]] <- append(myPerturbations[[1]], 0)
-myPerturbations[[1]] <- append(myPerturbations[[1]], "bfit")
-names(myPerturbations[[1]]) <- c("item", "type", "factor", "pivot", "group")
-myResponses <- genResponses(
-    abilities = myData$ability, itemParams = myItems, perturbR = myPerturbations,
-    groups = myData$group
-)
+perturbResp(0, myItem, "bfit", list(1L, "discrimination", 0.5, 0, "bfit"))
 }
 \seealso{
 \code{\link[=simplef]{simplef()}}, \code{\link[=genResponses]{genResponses()}},
-\code{browseVignettes("conquestr")}
+\code{\link[=perturbItem]{perturbItem()}}, \code{browseVignettes("conquestr")}
 }
 \keyword{internal}

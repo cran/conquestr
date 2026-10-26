@@ -12,7 +12,7 @@
 
 <meta name="author" content="Dan Cloney" />
 
-<meta name="date" content="2026-10-07" />
+<meta name="date" content="2026-10-26" />
 
 <title>Introduction to conquestr</title>
 
@@ -341,7 +341,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Introduction to conquestr</h1>
 <h4 class="author">Dan Cloney</h4>
-<h4 class="date">2026-10-07</h4>
+<h4 class="date">2026-10-26</h4>
 
 
 
@@ -709,6 +709,237 @@ helper function <code>searchConQuestSys</code>:</p>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">searchConQuestSys</span>(<span class="st">&quot;history&quot;</span>, myCqs)</span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;gHistoryWeights&quot; &quot;gOldHistory&quot;     &quot;gBestHistory&quot;    &quot;gHistory&quot;       </span></span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; [5] &quot;gCommandHistory&quot;</span></span></code></pre></div>
+</div>
+<div id="population-statistics-from-plausible-values" class="section level2">
+<h2>Population statistics from plausible values</h2>
+<p>Large-scale assessments such as PISA report student achievement as a
+set of plausible values (PVs) and provide replicate weights for
+estimating sampling error. <code>conquestr</code> provides a family of
+functions that compute a statistic for each PV under the full-sample
+weight and under every replicate weight, then combine the results using
+Rubin’s rules:</p>
+<ul>
+<li><code>pvStat()</code> - the core function (any supported statistic,
+optionally by group)</li>
+<li><code>pvMean()</code>, <code>pvSd()</code>, <code>pvVar()</code>,
+<code>pvMedian()</code>, <code>pvQuantile()</code>, <code>pvIqr()</code>
+and <code>pvDescribe()</code></li>
+<li><code>pvDiff()</code> - differences between groups (e.g., girls
+minus boys)</li>
+<li><code>pvCor()</code> - correlations between PVs and background
+variables</li>
+<li><code>pvRegression()</code> - weighted linear regression of PVs on
+background variables</li>
+</ul>
+<p>Supported replication methods are <code>&quot;BRR&quot;</code>,
+<code>&quot;Fay&quot;</code> (Fay’s variant of BRR, as used in PISA),
+<code>&quot;JK1&quot;</code> (delete-one jackknife) and <code>&quot;JK2&quot;</code> (paired
+jackknife, as used in TIMSS and PIRLS).</p>
+<div id="simulate-a-pisa-style-dataset" class="section level3">
+<h3>Simulate a PISA-style dataset</h3>
+<p>The example below simulates 64 schools in 32 variance strata (pairs
+of schools), 20 students per school, 10 PVs and Fay replicate weights
+(<code>k = 0.5</code>) built from a Hadamard matrix. PISA uses 80
+replicates; 32 are used here to keep the example small.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">5309</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>nStrata <span class="ot">&lt;-</span> <span class="dv">32</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>nSchools <span class="ot">&lt;-</span> nStrata <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>nPerSchool <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>nPVs <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co"># Sylvester construction of a 32 x 32 Hadamard matrix</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>hadamard <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="cf">while</span> (<span class="fu">nrow</span>(hadamard) <span class="sc">&lt;</span> nStrata) hadamard <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="fu">cbind</span>(hadamard, hadamard), <span class="fu">cbind</span>(hadamard, <span class="sc">-</span>hadamard))</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>school <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">seq_len</span>(nSchools), <span class="at">each =</span> nPerSchool)</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>stratum <span class="ot">&lt;-</span> (school <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">%/%</span> <span class="dv">2</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>unit <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(school <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>) <span class="co"># first or second school in the pair</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">length</span>(school)</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>pisaSim <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>  <span class="at">school =</span> school,</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  <span class="at">sex =</span> <span class="fu">factor</span>(<span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">&quot;boy&quot;</span>, <span class="st">&quot;girl&quot;</span>), n, <span class="at">replace =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  <span class="at">escs =</span> <span class="fu">rnorm</span>(nSchools, <span class="dv">0</span>, <span class="fl">0.5</span>)[school] <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="fl">0.8</span>),</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>  <span class="at">W_FSTUWT =</span> <span class="fu">runif</span>(n, <span class="dv">5</span>, <span class="dv">50</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>)</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>schoolEffect <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(nSchools, <span class="dv">0</span>, <span class="dv">40</span>)[school]</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>trueTheta <span class="ot">&lt;-</span> <span class="dv">480</span> <span class="sc">+</span> <span class="dv">30</span> <span class="sc">*</span> pisaSim<span class="sc">$</span>escs <span class="sc">+</span> <span class="dv">12</span> <span class="sc">*</span> (pisaSim<span class="sc">$</span>sex <span class="sc">==</span> <span class="st">&quot;girl&quot;</span>) <span class="sc">+</span> schoolEffect <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">70</span>)</span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="cf">for</span> (p <span class="cf">in</span> <span class="fu">seq_len</span>(nPVs)) {</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>  pisaSim[[<span class="fu">paste0</span>(<span class="st">&quot;PV&quot;</span>, p, <span class="st">&quot;READ&quot;</span>)]] <span class="ot">&lt;-</span> trueTheta <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">25</span>) <span class="co"># imputation noise</span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>}</span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co"># Fay replicate weights: one school in each pair gets 1.5, the other 0.5</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>fayK <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="cf">for</span> (r <span class="cf">in</span> <span class="fu">seq_len</span>(nStrata)) {</span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>  factorR <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(hadamard[stratum, r] <span class="sc">*</span> unit <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="dv">2</span> <span class="sc">-</span> fayK, fayK)</span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a>  pisaSim[[<span class="fu">paste0</span>(<span class="st">&quot;W_FSTR&quot;</span>, r)]] <span class="ot">&lt;-</span> pisaSim<span class="sc">$</span>W_FSTUWT <span class="sc">*</span> factorR</span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a>}</span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a></span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a>pvs <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;PV&quot;</span>, <span class="fu">seq_len</span>(nPVs), <span class="st">&quot;READ&quot;</span>)</span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a>repWts <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;W_FSTR&quot;</span>, <span class="fu">seq_len</span>(nStrata))</span></code></pre></div>
+</div>
+<div id="descriptive-statistics" class="section level3">
+<h3>Descriptive statistics</h3>
+<p><code>pvDescribe()</code> returns the mean, SD, variance, quartiles
+and IQR. Each row reports the estimate, its standard error
+(<code>se</code>), the sampling variance U (<code>samplingVar</code>)
+and the between-PV variance B (<code>imputationVar</code>).</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">pvDescribe</span>(pisaSim, pvs, <span class="at">weight =</span> <span class="st">&quot;W_FSTUWT&quot;</span>, <span class="at">repWeights =</span> repWts,</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>           <span class="at">repMethod =</span> <span class="st">&quot;Fay&quot;</span>, <span class="at">fayK =</span> fayK, <span class="at">by =</span> <span class="st">&quot;sex&quot;</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt;     sex  stat   estimate         se  samplingVar imputationVar nPVs nReps   n</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt; 1   boy  mean  474.72213   4.615953 2.062039e+01  6.242144e-01   10    32 641</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; 2  girl  mean  492.81577   6.041746 3.521152e+01  1.173790e+00   10    32 639</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; 3   boy    sd   85.62484   3.084488 8.775039e+00  6.718418e-01   10    32 641</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; 4  girl    sd   91.17207   4.443683 1.899471e+01  6.832780e-01   10    32 639</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; 5   boy   var 7332.21824 524.164517 2.531133e+05  1.966830e+04   10    32 641</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; 6  girl   var 8312.96079 798.009731 6.119363e+05  2.262115e+04   10    32 639</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; 7   boy q0.25  417.07024   6.941046 3.946863e+01  7.917720e+00   10    32 641</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; 8  girl q0.25  432.98922   7.586118 5.056095e+01  6.352941e+00   10    32 639</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; 9   boy  q0.5  475.96979   5.755930 2.620271e+01  6.298201e+00   10    32 641</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; 10 girl  q0.5  493.03316   7.089010 4.478777e+01  4.969361e+00   10    32 639</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; 11  boy q0.75  531.27454   5.420923 2.443540e+01  4.500914e+00   10    32 641</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; 12 girl q0.75  549.38333   7.168611 4.739688e+01  3.629189e+00   10    32 639</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt; 13  boy   iqr  114.20429   6.681075 3.344801e+01  1.017159e+01   10    32 641</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt; 14 girl   iqr  116.39411   7.784710 5.017918e+01  9.475030e+00   10    32 639</span></span></code></pre></div>
+<p><code>imputationVar</code> is B <em>before</em> Rubin’s correction,
+so the columns do not simply add up to <code>se^2</code>. The reported
+estimate is the average of only M PV estimates, and that average has its
+own simulation error with variance B / M. Rubin’s rules add it, so the
+total error variance is</p>
+<p><span class="math display">\[\mathrm{SE}^2 = U + \left(1 +
+\tfrac{1}{M}\right) B.\]</span></p>
+<p>With 10 PVs this adds 10% to B. To recover <code>se</code> from the
+columns:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>desc <span class="ot">&lt;-</span> <span class="fu">pvDescribe</span>(pisaSim, pvs, <span class="at">weight =</span> <span class="st">&quot;W_FSTUWT&quot;</span>, <span class="at">repWeights =</span> repWts,</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>                   <span class="at">repMethod =</span> <span class="st">&quot;Fay&quot;</span>, <span class="at">fayK =</span> fayK)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="fu">all.equal</span>(desc<span class="sc">$</span>se, <span class="fu">sqrt</span>(desc<span class="sc">$</span>samplingVar <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span> <span class="sc">/</span> desc<span class="sc">$</span>nPVs) <span class="sc">*</span> desc<span class="sc">$</span>imputationVar))</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>The same holds for <code>pvDiff()</code>, <code>pvCor()</code> (on
+the z scale when <code>combine = &quot;fisherZ&quot;</code>) and
+<code>pvRegression()</code>. See <code>?pvStat</code> for details.</p>
+</div>
+<div id="group-differences" class="section level3">
+<h3>Group differences</h3>
+<p><code>pvDiff()</code> computes the difference within each PV and
+replicate, so the standard error accounts for the covariance between
+groups that is induced by the sampling design.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">pvDiff</span>(pisaSim, pvs, <span class="at">by =</span> <span class="st">&quot;sex&quot;</span>, <span class="at">pairs =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">&quot;girl&quot;</span>, <span class="st">&quot;boy&quot;</span>)),</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>       <span class="at">weight =</span> <span class="st">&quot;W_FSTUWT&quot;</span>, <span class="at">repWeights =</span> repWts, <span class="at">repMethod =</span> <span class="st">&quot;Fay&quot;</span>, <span class="at">fayK =</span> fayK)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt;     contrast stat estimate       se samplingVar imputationVar        t</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; 1 girl - boy mean 18.09364 5.634755    29.94789      1.638702 3.211079</span></span></code></pre></div>
+</div>
+<div id="correlations" class="section level3">
+<h3>Correlations</h3>
+<p><code>pvCor()</code> combines correlations on the raw r scale by
+default, or on the Fisher-z scale with <code>combine = &quot;fisherZ&quot;</code>.
+The Fisher-z option gives confidence intervals that stay within [-1,
+1].</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">pvCor</span>(pisaSim, pvs, <span class="st">&quot;escs&quot;</span>, <span class="at">weight =</span> <span class="st">&quot;W_FSTUWT&quot;</span>, <span class="at">repWeights =</span> repWts,</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>      <span class="at">repMethod =</span> <span class="st">&quot;Fay&quot;</span>, <span class="at">fayK =</span> fayK, <span class="at">combine =</span> <span class="st">&quot;fisherZ&quot;</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="co">#&gt;   variable  estimate         se samplingVar imputationVar   ciLower   ciUpper</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt; 1     escs 0.2801781 0.04637565 0.002369299   0.000148575 0.1870107 0.3683502</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#&gt;   zEstimate        zSe combine nPVs nReps    n</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt; 1 0.2878754 0.05032625 fisherZ   10    32 1280</span></span></code></pre></div>
+</div>
+<div id="regression" class="section level3">
+<h3>Regression</h3>
+<p><code>pvRegression()</code> takes a one-sided formula of predictors;
+the PVs are the outcome.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">pvRegression</span>(pisaSim, pvs, <span class="sc">~</span> escs <span class="sc">+</span> sex, <span class="at">weight =</span> <span class="st">&quot;W_FSTUWT&quot;</span>,</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>             <span class="at">repWeights =</span> repWts, <span class="at">repMethod =</span> <span class="st">&quot;Fay&quot;</span>, <span class="at">fayK =</span> fayK)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt; Plausible-value regression</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; pvRegression(data = pisaSim, pvs = pvs, formula = ~escs + sex, </span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt;     weight = &quot;W_FSTUWT&quot;, repWeights = repWts, repMethod = &quot;Fay&quot;, </span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt;     fayK = fayK)</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; Coefficients:</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co">#&gt; (Intercept)         escs      sexgirl  </span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">#&gt;       476.8         27.1         16.8</span></span></code></pre></div>
+</div>
+<div id="correlation-and-covariance-matrices" class="section level3">
+<h3>Correlation and covariance matrices</h3>
+<p><code>pvCorMatrix()</code> and <code>pvCovMatrix()</code> estimate
+the matrix for several measures at once. Each measure is either latent
+(its PV columns, in draw order) or manifest (a single observed column).
+Latent measures are paired by draw (PV1 with PV1, PV2 with PV2, …),
+which is appropriate when their PVs were drawn jointly from one
+multidimensional model. A manifest variable is the same in every draw,
+so its column is reused for each PV.</p>
+<p>To illustrate, add a second latent domain (mathematics) drawn jointly
+with reading, and an observed variable (age in months):</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>trueMath <span class="ot">&lt;-</span> <span class="fl">0.7</span> <span class="sc">*</span> (trueTheta <span class="sc">-</span> <span class="dv">480</span>) <span class="sc">+</span> <span class="dv">470</span> <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">60</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="cf">for</span> (p <span class="cf">in</span> <span class="fu">seq_len</span>(nPVs)) {</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  shared <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n) <span class="co"># joint draw: reading and maths PV p share an error component</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  pisaSim[[<span class="fu">paste0</span>(<span class="st">&quot;PV&quot;</span>, p, <span class="st">&quot;MATH&quot;</span>)]] <span class="ot">&lt;-</span> trueMath <span class="sc">+</span> <span class="dv">20</span> <span class="sc">*</span> shared <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">15</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>}</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>pisaSim<span class="sc">$</span>age <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(n, <span class="dv">189</span>, <span class="fl">3.5</span>))</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>measures <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>  <span class="at">read =</span> <span class="fu">paste0</span>(<span class="st">&quot;PV&quot;</span>, <span class="fu">seq_len</span>(nPVs), <span class="st">&quot;READ&quot;</span>),</span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>  <span class="at">math =</span> <span class="fu">paste0</span>(<span class="st">&quot;PV&quot;</span>, <span class="fu">seq_len</span>(nPVs), <span class="st">&quot;MATH&quot;</span>),</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>  <span class="at">escs =</span> <span class="st">&quot;escs&quot;</span>,</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>  <span class="at">age =</span> <span class="st">&quot;age&quot;</span></span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>)</span></code></pre></div>
+<p>The matrix format returns symmetric matrices of estimates, standard
+errors and confidence limits:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>corMat <span class="ot">&lt;-</span> <span class="fu">pvCorMatrix</span>(pisaSim, measures, <span class="at">weight =</span> <span class="st">&quot;W_FSTUWT&quot;</span>, <span class="at">repWeights =</span> repWts,</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>                      <span class="at">repMethod =</span> <span class="st">&quot;Fay&quot;</span>, <span class="at">fayK =</span> fayK, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="fu">round</span>(corMat<span class="sc">$</span>estimate, <span class="dv">3</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co">#&gt;        read   math   escs    age</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="co">#&gt; read  1.000  0.653  0.280 -0.029</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co">#&gt; math  0.653  1.000  0.165 -0.012</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="co">#&gt; escs  0.280  0.165  1.000 -0.036</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="co">#&gt; age  -0.029 -0.012 -0.036  1.000</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="fu">round</span>(corMat<span class="sc">$</span>se, <span class="dv">3</span>)</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co">#&gt;       read  math  escs   age</span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt; read 0.000 0.027 0.047 0.029</span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="co">#&gt; math 0.027 0.000 0.049 0.029</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt; escs 0.047 0.049 0.000 0.027</span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co">#&gt; age  0.029 0.029 0.027 0.000</span></span></code></pre></div>
+<p>The long format has one row per pair. Pairs of two manifest variables
+are ordinary weighted correlations, so <code>imputationVar</code> is 0
+and <code>nPVs</code> is 1:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">pvCorMatrix</span>(pisaSim, measures, <span class="at">weight =</span> <span class="st">&quot;W_FSTUWT&quot;</span>, <span class="at">repWeights =</span> repWts,</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>            <span class="at">repMethod =</span> <span class="st">&quot;Fay&quot;</span>, <span class="at">fayK =</span> fayK)[, <span class="fu">c</span>(<span class="st">&quot;dim1&quot;</span>, <span class="st">&quot;dim2&quot;</span>, <span class="st">&quot;estimate&quot;</span>, <span class="st">&quot;se&quot;</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>                                                 <span class="st">&quot;imputationVar&quot;</span>, <span class="st">&quot;nPVs&quot;</span>)]</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#&gt;   dim1 dim2    estimate         se imputationVar nPVs</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#&gt; 1 read math  0.65324792 0.02732784  0.0001841724   10</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co">#&gt; 2 read escs  0.28014371 0.04678477  0.0001263433   10</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co">#&gt; 3 read  age -0.02853492 0.02922657  0.0000592743   10</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co">#&gt; 4 math escs  0.16526651 0.04878659  0.0000119018   10</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="co">#&gt; 5 math  age -0.01200695 0.02889484  0.0001165340   10</span></span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="co">#&gt; 6 escs  age -0.03620490 0.02697831  0.0000000000    1</span></span></code></pre></div>
+<p><code>pvCovMatrix()</code> returns variances on the diagonal; these
+match <code>pvVar()</code>:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>covMat <span class="ot">&lt;-</span> <span class="fu">pvCovMatrix</span>(pisaSim, measures, <span class="at">weight =</span> <span class="st">&quot;W_FSTUWT&quot;</span>, <span class="at">repWeights =</span> repWts,</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>                      <span class="at">repMethod =</span> <span class="st">&quot;Fay&quot;</span>, <span class="at">fayK =</span> fayK, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="fu">round</span>(covMat<span class="sc">$</span>estimate, <span class="dv">1</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co">#&gt;        read   math escs  age</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co">#&gt; read 7894.1 5151.4 22.7 -8.9</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co">#&gt; math 5151.4 7877.7 13.4 -3.7</span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co">#&gt; escs   22.7   13.4  0.8 -0.1</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="co">#&gt; age    -8.9   -3.7 -0.1 12.2</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="fu">pvVar</span>(pisaSim, measures<span class="sc">$</span>read, <span class="at">weight =</span> <span class="st">&quot;W_FSTUWT&quot;</span>, <span class="at">repWeights =</span> repWts,</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>      <span class="at">repMethod =</span> <span class="st">&quot;Fay&quot;</span>, <span class="at">fayK =</span> fayK)<span class="sc">$</span>estimate</span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="co">#&gt; [1] 7894.085</span></span></code></pre></div>
+<p>Two cautions apply when mixing latent and manifest measures:</p>
+<ul>
+<li>A correlation between PVs and an observed variable is unbiased only
+if that variable (or a good proxy) was in the population (conditioning)
+model used to draw the PVs; otherwise it is biased towards zero. Here
+<code>age</code> was not used to generate the PVs and is unrelated to
+proficiency, so its correlations are near zero by construction. Check
+the study’s scaling documentation before interpreting such
+correlations.</li>
+<li>With <code>combine = &quot;fisherZ&quot;</code>, each element is
+back-transformed separately, so the matrix is not guaranteed to be
+positive semi-definite; a warning is given if it is not. The default,
+<code>combine = &quot;raw&quot;</code>, always gives a valid matrix.</li>
+</ul>
+</div>
 </div>
 
 

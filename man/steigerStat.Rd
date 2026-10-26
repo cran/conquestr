@@ -2,30 +2,131 @@
 % Please edit documentation in R/residHelpers.R
 \name{steigerStat}
 \alias{steigerStat}
-\title{steigerStat}
+\title{Steiger test of local independence of residuals}
 \usage{
-steigerStat(myDat, q3Adj = TRUE, fisher = TRUE, dfAdj = FALSE, tpm)
+steigerStat(
+  myDat,
+  q3Adj = TRUE,
+  fisher = TRUE,
+  dfAdj = FALSE,
+  tpm,
+  abilityType = c("ML", "WLE", "EAP", "PV")
+)
 }
 \arguments{
-\item{myDat}{A data frame or matrix containing standardised residuals.}
+\item{myDat}{A data frame or matrix of standardised residuals, persons in
+rows and items in columns.}
 
-\item{q3Adj}{A bool indicating whether the Q3 correction should be applied.}
+\item{q3Adj}{Logical; apply the Q3 expectation correction (step 2)?}
 
-\item{fisher}{A bool indicating whether the Fisher Transform should be applied.}
+\item{fisher}{Logical; apply the Fisher z-transform (step 3)?}
 
-\item{dfAdj}{A bool indicating whether the df should be adjusted for sample size, L, and targeting.
-If dfAdj is TRUE, then you must pass in the optional argument \code{tmp} (test-person match)}
+\item{dfAdj}{Logical; adjust the degrees of freedom for sample size, number
+of items and targeting using the Chou and Wang (2010) adjustment (step 5)?
+Recommended when \eqn{N} is large relative to \eqn{L}; calibrated only for
+dichotomous Rasch data with \eqn{10 \le L \le 60},
+\eqn{100 \le N \le 1500} and \eqn{t \in [-1, 0]}; a warning is issued outside this range. If \code{TRUE}, supply \code{tpm}.}
 
 \item{tpm}{A double indicating the test-person match, where 0 indicates that
 mean item difficulty is equal to mean person ability, and -1 indicates that
-mean item difficulty is 1 logit below mean person ability.}
+mean item difficulty is 1 logit below mean person ability. Defaults to 0.}
+
+\item{abilityType}{The ability estimate used to compute the residuals:
+\code{"ML"} (default), \code{"WLE"}, \code{"EAP"} or \code{"PV"}. Passed to \code{\link[=q3ExpCorrect]{q3ExpCorrect()}};
+the \eqn{-1/(L-1)} correction is applied only for \code{"ML"} and \code{"WLE"}.
+Ignored when \code{q3Adj = FALSE}.}
 }
 \value{
-A list of class "steigerStat" with the Steiger Statistic,
-correlation matrix, and chi square test.
+A list with elements:
+\itemize{
+\item \code{Cor}: the (corrected and/or transformed) residual correlation matrix;
+\item \code{steigerStat}: the \eqn{\chi^2} statistic;
+\item \code{Chisq_p}: the upper-tail p-value;
+\item \code{Chisq_crit}: the 95th percentile of the reference \eqn{\chi^2};
+\item \code{N}, \code{L}, \code{DF}: number of persons, items and degrees of freedom.
+}
 }
 \description{
-Function to calculate the Steiger statistic.
-The Steiger statistic is a test of independence of
-the standardised residuals ((O-E)/sqrt(Var(E))), where Var(E) = p(x)/(1-p(x)).
+Tests whether the matrix of item-residual correlations (Yen's
+\eqn{Q_3}) is consistent with an identity matrix, i.e. whether the
+standardised residuals are mutually uncorrelated (local independence).
+}
+\details{
+The input is an \eqn{N \times L}{N x L} matrix of standardised residuals
+\deqn{z_{ni} = \frac{x_{ni} - E(X_{ni})}{\sqrt{\mathrm{Var}(X_{ni})}},}
+where for a dichotomous item \eqn{E(X_{ni}) = p_{ni}} and
+\eqn{\mathrm{Var}(X_{ni}) = p_{ni}(1 - p_{ni})}. The steps are:
+\enumerate{
+\item \strong{Residual correlations.} Rows with any missing value are dropped
+(listwise deletion) and the Pearson correlation matrix
+\eqn{R = [Q_{3,ij}]} is computed.
+\item \strong{Q3 correction} (\code{q3Adj = TRUE}). For ML/WLE abilities each
+off-diagonal element is shifted by its approximate null expectation,
+\eqn{Q_{3,ij} + 1/(L-1)}. The correction assumes ML/WLE abilities; for
+\code{abilityType = "EAP"} or \code{"PV"} it is turned off. See \code{\link[=q3ExpCorrect]{q3ExpCorrect()}}.
+\item \strong{Fisher transform} (\code{fisher = TRUE}). Each off-diagonal element is
+transformed, \eqn{z_{ij} = \operatorname{artanh}(r_{ij})}; see
+\code{\link[=fisherTrnsfrm]{fisherTrnsfrm()}}.
+\item \strong{Test statistic.} Following Steiger (1980), under
+\eqn{H_0: P = I} the \eqn{z_{ij}} are approximately independent
+\eqn{N(0, 1/(N-3))}, so
+\deqn{\chi^2 = (N - 3) \sum_{i < j} z_{ij}^2}
+is referred to a \eqn{\chi^2} distribution with
+\deqn{df = \frac{L(L-1)}{2}.}
+\item \strong{Optional df adjustment} (\code{dfAdj = TRUE}). The degrees of freedom are
+replaced by the empirical approximation
+\deqn{df^{*} = \frac{L(L-1)}{2} + \frac{N}{70} - \frac{L}{4} - 12\,t
+     - \frac{N t}{40} + \frac{2 L t}{3},}
+where \eqn{t} is the test-person match (\code{tpm}). Chou and Wang (2010)
+found that, even after the \eqn{-1/(L-1)} correction, the Type I error
+rate of the Steiger statistic remained inflated in some conditions
+(e.g., large samples and short tests). They derived this adjustment by
+stepwise regression on simulated data as a simple correction that works
+reasonably well across a variety of conditions. The coefficients are
+therefore an empirical calibration, not an analytic result, and are best
+trusted within the range of conditions they simulated. The adjustment
+applies only to the Steiger statistic.
+
+The calibration data were 32 null (Rasch-generating, Rasch-analysed)
+conditions with 100 replications each: dichotomous items only, test
+lengths \eqn{L \in \{10, 20, 40, 60\}}, sample sizes
+\eqn{N \in \{100, 200, 500, 1500\}}, and test-person match
+\eqn{t \in \{0, -1\}}, where \eqn{t} is mean item difficulty minus mean
+person ability (item difficulties drawn from \eqn{U(-2, 2)}, abilities
+normal with variance 1). The response variable was the observed
+\eqn{\chi^2} minus its nominal df, regressed on \eqn{N}, \eqn{L},
+\eqn{t} and their interactions. Even with the adjustment, Type I error
+stayed above the acceptable range in a few conditions, most notably
+\eqn{N = 1500}, \eqn{L = 10}, \eqn{t = -1} (Chou & Wang, 2010, Table 4).
+Results outside these ranges (e.g., \eqn{t > 0}, polytomous items, or
+\eqn{N > 1500}) are extrapolations. The calibration also used
+ML-type (Winsteps) abilities with the \eqn{-1/(L-1)} correction applied,
+so with EAP or PV residuals the adjustment is untested.
+}
+
+If \code{fisher = FALSE} the statistic is computed from the untransformed
+correlations, which is only a reasonable approximation when all
+correlations are small.
+}
+\references{
+Steiger, J. H. (1980). Tests for comparing elements of a correlation
+matrix. \emph{Psychological Bulletin, 87}(2), 245--251.
+\doi{10.1037/0033-2909.87.2.245}
+
+Fisher, R. A. (1915). Frequency distribution of the values of the
+correlation coefficient in samples from an indefinitely large population.
+\emph{Biometrika, 10}(4), 507--521. \doi{10.2307/2331838}
+
+Yen, W. M. (1984). Effects of local item dependence on the fit and equating
+performance of the three-parameter logistic model.
+\emph{Applied Psychological Measurement, 8}(2), 125--145.
+\doi{10.1177/014662168400800201}
+
+Chou, Y.-T., & Wang, W.-C. (2010). Checking dimensionality in item response
+models with principal component analysis on standardized residuals.
+\emph{Educational and Psychological Measurement, 70}(5), 717--731.
+\doi{10.1177/0013164410379322}
+}
+\seealso{
+\code{\link[=q3ExpCorrect]{q3ExpCorrect()}}, \code{\link[=fisherTrnsfrm]{fisherTrnsfrm()}}
 }

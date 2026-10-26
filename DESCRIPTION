@@ -1,7 +1,7 @@
 Type: Package
 Package: conquestr
 Title: An R Package to Extend 'ACER ConQuest'
-Version: 1.8.2
+Version: 1.9.2
 Authors@R: c(
     person(
       given = "Dan",
@@ -40,14 +40,14 @@ Collate: "RcppExports.R" "ReadConQuestLibrary.R"
         "postProcessCqSysfile.R" "ReadConQuestState_createDF.R"
         "conquestr.R" "conquestrFunc.R" "generateItems.R"
         "generateHelpers.R" "infoHelpers.R" "itanalHelpers.R"
-        "plotGeneral.R" "plotRout.R" "pvHelpers.R" "residHelpers.R"
+        "plotGeneral.R" "plotRout.R" "pvStats.R" "residHelpers.R"
         "showHelpers.R" "thrstThrsh.R" "cleaningHelpers.R"
 Depends: R (>= 4.1.0)
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.1.1
 NeedsCompilation: yes
-Packaged: 2026-10-06 15:48:33 UTC; acercloneyd
+Packaged: 2026-10-26 07:39:29 UTC; acercloneyd
 Author: Dan Cloney [aut, cre] (ORCID: <https://orcid.org/0000-0002-2130-237X>),
   Ray Adams [aut]
 Maintainer: Dan Cloney <dan.cloney@acer.org>
 Repository: CRAN
-Date/Publication: 2026-10-06 22:50:02 UTC
+Date/Publication: 2026-10-26 11:50:02 UTC

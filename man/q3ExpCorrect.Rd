@@ -2,18 +2,72 @@
 % Please edit documentation in R/residHelpers.R
 \name{q3ExpCorrect}
 \alias{q3ExpCorrect}
-\title{q3ExpCorrect}
+\title{Correct Yen's Q3 for its expected value}
 \usage{
-q3ExpCorrect(myCorMat)
+q3ExpCorrect(myCorMat, abilityType = c("ML", "WLE", "EAP", "PV"))
 }
 \arguments{
-\item{myCorMat}{A correlation matrix.}
+\item{myCorMat}{A correlation matrix (unit diagonal, no missing values) of
+item residuals, with at least 2 items.}
+
+\item{abilityType}{The type of ability estimate used to compute the
+residuals: one of \code{"ML"} (default), \code{"WLE"}, \code{"EAP"} or \code{"PV"}. The
+\eqn{-1/(L-1)} correction is applied only for \code{"ML"} and \code{"WLE"}.}
 }
 \value{
-A correlation matrix with the Q3 statistic correction applied.
+A matrix of the same dimensions (and dimnames). For ML/WLE it holds
+the corrected off-diagonal values \eqn{Q_{3,ij}^{*}}; for EAP/PV it is
+\code{myCorMat} unchanged.
 }
 \description{
-Helper function to apply correction to correlation matrix.
-When working with standardised residuals,
-the expectation of the correlations is -1/(L-1) rather than 0 See DOI: 10.1177/0013164410379322
+Shifts the off-diagonal elements of a matrix of residual
+correlations (Yen's \eqn{Q_3}) so that their expectation under local
+independence is approximately zero.
+}
+\details{
+Yen's (1984) \eqn{Q_3} for items \eqn{i} and \eqn{j} is the Pearson
+correlation, across persons \eqn{n = 1, \ldots, N}, of the raw item residuals
+\deqn{d_{ni} = x_{ni} - E(X_{ni} \mid \hat\theta_n), \qquad Q_{3,ij} = r(d_i, d_j).}
+Chou and Wang (2010) instead correlate the standardised residuals
+\eqn{z_{ni} = d_{ni} / \sqrt{\mathrm{Var}(X_{ni} \mid \hat\theta_n)}}{z_ni = d_ni / sqrt(Var(X_ni | theta_n))}.
+\code{\link[=steigerStat]{steigerStat()}} uses whichever residuals it is given.
+
+When abilities are maximum-likelihood (ML) or weighted-likelihood (WLE)
+estimates from the same responses, the residuals are constrained, and under
+local independence the expected value of \eqn{Q_3} is approximately
+\eqn{-1/(L-1)} rather than 0, where \eqn{L} is the number of items
+(Yen, 1993; Chou & Wang, 2010). For these abilities the function removes
+that expectation from every off-diagonal element:
+\deqn{Q_{3,ij}^{*} = Q_{3,ij} + \frac{1}{L-1}, \quad i \neq j.}
+The diagonal is left at 1. Values pushed outside \eqn{[-1, 1]} are clamped
+to the boundary.
+
+\strong{The \eqn{-1/(L-1)} expectation assumes ML/WLE abilities.} EAP estimates
+are shrunk towards the population mean, and plausible values (PVs) are random
+draws from each person's posterior. Either way the residuals are less tightly
+constrained, so the null mean of \eqn{Q_3} is closer to 0, and adding
+\eqn{1/(L-1)} over-corrects and inflates apparent dependence. In a
+simulated Rasch example (\eqn{N = 1000}, \eqn{L = 10}) the null mean was
+\eqn{-0.111} with ML abilities but \eqn{-0.075} with EAP. For
+\code{abilityType = "EAP"} or \code{"PV"} the correction is therefore turned off,
+and the input is returned unchanged after validation. No analytic
+expectation is applied for these cases.
+}
+\references{
+Yen, W. M. (1984). Effects of local item dependence on the fit and equating
+performance of the three-parameter logistic model.
+\emph{Applied Psychological Measurement, 8}(2), 125--145.
+\doi{10.1177/014662168400800201}
+
+Yen, W. M. (1993). Scaling performance assessments: Strategies for managing
+local item dependence. \emph{Journal of Educational Measurement, 30}(3),
+187--213. \doi{10.1111/j.1745-3984.1993.tb00423.x}
+
+Chou, Y.-T., & Wang, W.-C. (2010). Checking dimensionality in item response
+models with principal component analysis on standardized residuals.
+\emph{Educational and Psychological Measurement, 70}(5), 717--731.
+\doi{10.1177/0013164410379322}
+}
+\seealso{
+\code{\link[=fisherTrnsfrm]{fisherTrnsfrm()}}, \code{\link[=steigerStat]{steigerStat()}}
 }

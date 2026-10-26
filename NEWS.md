@@ -1,3 +1,100 @@
+# CHANGES IN conquestr VERSION 1.9.2
+
+## NEW FEATURES
+
+* `pvRegression()` now returns an object of class `"pvRegression"` (still a
+  data frame) with `print()`, `summary()`, `coef()`, `vcov()`, `confint()`,
+  `predict()` and `nobs()` methods. `vcov()` gives the full Rubin-combined
+  covariance matrix of the coefficients.
+
+## DEPRECATED AND DEFUNCT
+
+* `pvMeanVar()` has been removed. 
+  Use `pvMean()` and `pvVar()` (or `pvDescribe()`) instead, which also
+  support weights and replicate standard errors.
+
+# CHANGES IN conquestr VERSION 1.8.3
+
+## NEW FEATURES
+
+* `genResponses()` gains a `debug` argument. When `debug = TRUE` it returns a
+  list holding the responses and the intermediate data from each step: the
+  standardised inputs, the parsed perturbations, the perturbed item
+  parameters, which perturbation was applied to each case and item, the
+  random draws, and the category probabilities used (and those under the
+  unperturbed items). Responses are identical to `debug = FALSE` for the same
+  seed.
+* New `genResponsesProbs()` tabulates the response probabilities used for
+  each case, item, and category alongside the unperturbed probabilities, to
+  check that perturbations were applied to the intended cases. See the
+  "Generate item responses" vignette.
+* Perturbations in `genResponses(perturbR = )` can now apply to all cases
+  (omit `group`, or use `NULL` or `NA`), one group, or several groups
+  (e.g., `group = c("g1", "g2")`). Elements can be given by name.
+* The same item can now be perturbed differently for different groups. If two
+  perturbations apply to the same case and item, the later one is used, with a
+  warning (previously, the last was used silently).
+* "discrimination" perturbations gain `pivotAt = "item"`, which changes the
+  discrimination around a point `pivot` logits from the item's location, so
+  that the item location does not move (category probabilities are unchanged
+  at the pivot point). The default, `pivotAt = "theta"`, keeps the previous
+  behaviour. A separate `shift` can be added to move the item location without
+  moving the discrimination pivot.
+* New family of functions for population statistics from plausible values
+  (PVs) with replicate-weight standard errors. Each statistic is computed for
+  every PV under the full-sample weight and each replicate weight (in C++),
+  then combined with Rubin's rules. Supported replication methods are BRR,
+  Fay's variant of BRR (`repMethod = "Fay"`, with `fayK`), and the delete-one
+  (`"JK1"`) and paired (`"JK2"`) jackknife. All support a grouping variable
+  (`by`). See the "Population statistics from plausible values" section of
+  the introductory vignette.
+    * `pvStat()` is the core function: mean, variance, SD, median, quantiles,
+      IQR, sum of weights, or a user-supplied `function(x, w)`.
+    * `pvMean()`, `pvVar()`, `pvSd()`, `pvMedian()`, `pvQuantile()`, `pvIqr()`
+      and `pvDescribe()` are wrappers for common descriptive statistics.
+    * `pvDiff()` estimates differences between groups (e.g., girls minus
+      boys), computing the difference within each PV and replicate so the
+      standard error reflects covariance induced by the sampling design.
+    * `pvCor()` estimates correlations between a measure and one or more
+      other measures, combined on the r scale (default) or the Fisher-z scale
+      (`combine = "fisherZ"`), with confidence intervals. Each measure may be
+      latent (a set of PVs) or manifest (a single observed column).
+    * `pvCorMatrix()` and `pvCovMatrix()` estimate the correlation and
+      covariance matrices of several measures, e.g., the outcome domains of
+      IELS, PISA or TIMSS. Latent and manifest measures can be mixed: latent
+      measures are paired by PV draw, and a manifest variable's column is
+      reused for every draw. With only manifest variables, the ordinary
+      weighted matrix is returned with replicate standard errors. Results are
+      available in long or matrix form. Cases are dropped listwise so the
+      matrix is valid; a warning is given if Fisher-z combining produces a
+      matrix that is not positive semi-definite.
+    * `pvRegression()` fits a weighted linear regression of PVs on
+      background variables given as a one-sided formula, and returns
+      coefficients and R-squared with standard errors and confidence
+      intervals.
+
+## MINOR CHANGES
+
+* `pvMeanVar()` is now a thin wrapper around `pvMean()` and `pvVar()`. Results
+  are unchanged. Its documentation now correctly describes the input as n
+  cases by m PVs.
+* `genResponses()` has been split into steps (`genRespInputs()`,
+  `parsePerturbations()`, `perturbItem()`, `buildPerturbMap()`, and
+  `genMissingMCAR()`), each of which can be called on its own.
+* `genResponses()` now gives informative errors for invalid perturbations
+  (e.g., a missing `factor` or `pivot`, or a `group` not found in `groups`) and
+  for `mcarP` outside 0 to 1.
+* The documentation of `pivot` in `genResponses()` has been corrected: it is
+  added to the delta dot. For a dichotomous item, perturbed and unperturbed
+  curves cross at theta = pivot / (a * (factor - 1)).
+
+## BUG FIXES
+
+* `getCqParams()` (and so `getCqRespModel()`) removed the wrong parameters
+  when a model had unidentified (problem) gins, misaligning parameter
+  estimates with their gins and, in some cases, failing with "arguments imply
+  differing number of rows".
+
 # CHANGES IN conquestr VERSION 1.8.1
 
 ## MAJOR CHANGES
